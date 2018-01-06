@@ -1,0 +1,63 @@
+name: askalono
+about: A license thingy
+settings:
+    - SubcommandRequiredElseHelp
+args:
+    - cache:
+        short: c
+        long: cache
+        help: Custom cache file to use
+        takes_value: true
+subcommands:
+    - identify:
+        about: ID a license file
+        alias: id
+        args:
+            - FILE:
+                help: file to identify
+                required: true
+                index: 1
+            - diff:
+                short: d
+                long: diff
+                help: print a colored diff of match
+    - cache:
+        about: Cache management
+        subcommands:
+            - load-spdx:
+                about: Add SPDX license directories to cache
+                args:
+                    - DIR:
+                        help: JSON directory
+                        required: true
+                        index: 1
+                    - store-texts:
+                        long: store
+                        help: Store texts in cache in addition to matching data
+            - add:
+                args:
+                    - NAME:
+                        help: license name
+                        required: true
+                        index: 1
+                    - header:
+                        long: header
+                        help: add as a license header
+                    - alternate:
+                        long: alternate
+                        help: add as a format variant
+                    - template:
+                        long: template
+                        help: add as an SPDX template (for computing reference score)
+                    - negative:
+                        long: negative
+                        help: add as a negative match
+
+                groups:
+                    - license-type:
+                        args:
+                            - header
+                            - alternate
+                            - template
+                            - negative
+

@@ -1,0 +1,24 @@
+[package]
+name = "askalono"
+version = "0.1.0"
+authors = ["Jacob Peddicord <peddicor@amazon.com>"]
+
+[dependencies]
+flate2 = "1.0.1"
+lazy_static = "0.2.9"
+log = "0.3"
+rayon = "0.8.2"
+regex = "0.2.1"
+rmp-serde = "0.13.6"
+serde = "1.0.11"
+serde_derive = "1.0.11"
+serde_json = "1.0"
+unicode-normalization = "0.1.5"
+walkdir = "1.0.7"
+
+[workspace]
+members = ["cli"]
+
+[lib]
+name = "askalono"
+path = "src/lib.rs"
