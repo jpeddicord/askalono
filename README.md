@@ -8,7 +8,7 @@ This tool does not provide legal advice. It can match your input to a database o
 
 ### Additional pre-release warning
 
-This software is in the early stages of its lifecycle. While it's goals are to be as accurate as it can be, there may be more bugs than expected of a production product. Please use caution when using or deploying this tool.
+This software is in the early stages of its lifecycle. While its goals are to be as accurate as it can be, there may be more bugs than expected of a production product. Please use caution when using or deploying this tool.
 
 ## Usage
 
