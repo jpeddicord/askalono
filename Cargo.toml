@@ -1,7 +1,13 @@
 [package]
 name = "askalono"
 version = "0.1.0"
+description = "a library to detect the contents of license files"
+license = "Apache-2.0"
+repository = "https://github.com/amzn/askalono"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
+exclude = [
+    "/license-list-data/**/*"
+]
 
 [dependencies]
 flate2 = "1.0.1"

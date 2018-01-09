@@ -18,16 +18,21 @@ extern crate askalono;
 extern crate clap;
 extern crate difference;
 extern crate env_logger;
+#[macro_use]
+extern crate log;
 extern crate rayon;
 
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
+use std::process::exit;
 use std::time::Instant;
 
 use clap::{App, ArgMatches};
 
 use askalono::{LicenseContent, Store};
+
+const MIN_SCORE: f32 = 0.8;
 
 #[cfg(feature = "embedded-cache")]
 static CACHE_DATA: &'static [u8] = include_bytes!(env!("ASKALONO_EMBEDDED_CACHE"));
@@ -61,7 +66,7 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Box<Error>> {
     let store = *Store::from_cache(CACHE_DATA)?;
     #[cfg(not(feature = "embedded-cache"))]
     let store = *Store::from_cache_file(cache_file)?;
-    println!(
+    info!(
         "Cache loaded in {} ms",
         cache_inst.elapsed().subsec_nanos() as f32 / 1000_000.0
     );
@@ -74,7 +79,7 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Box<Error>> {
     let inst = Instant::now();
     let matched = store.analyze_content(&content);
 
-    println!(
+    info!(
         "{:?} in {} ms",
         matched,
         inst.elapsed().subsec_nanos() as f32 / 1000_000.0
@@ -82,6 +87,15 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Box<Error>> {
 
     if want_diff {
         diff_result(&content, matched.content);
+    }
+
+    if matched.score > MIN_SCORE {
+        println!("License: {}", matched.name);
+        println!("Score: {}", matched.score);
+    } else {
+        println!("License: Unknown");
+        println!("Confidence threshold not high enough for any known license");
+        exit(1);
     }
 
     Ok(())
@@ -93,7 +107,7 @@ fn cache(matches: &ArgMatches, cache_file: &str) -> Result<(), Box<Error>> {
 }
 
 fn cache_load_spdx(matches: &ArgMatches, cache_file: &str) -> Result<(), Box<Error>> {
-    println!("Processing licenses...");
+    info!("Processing licenses...");
     let mut store = Store::new();
     store.load_spdx(
         matches.value_of("DIR").unwrap(),
