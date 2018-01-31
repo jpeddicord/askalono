@@ -14,6 +14,8 @@ This software is in the early stages of its lifecycle. While its goals are to be
 
 ### On the command line
 
+Pre-built binaries are available on the [Releases section](https://github.com/amzn/askalono/releases) on GitHub.
+
 Basic usage:
 
     askalono id <filename>
