@@ -4,7 +4,7 @@ askalono is a library and command-line tool to help detect license texts. It's d
 
 [![releases](https://img.shields.io/github/release-date-pre/amzn/askalono.svg)](https://github.com/amzn/askalono/releases)
 [![askalono crate](https://img.shields.io/crates/v/askalono.svg)](https://crates.io/crates/askalono)
-[![Gitter chat](https://badges.gitter.im/amzn/askalono.png)](https://gitter.im/amzn/askalono)
+[![Gitter chat](https://img.shields.io/gitter/room/amzn/askalono.svg)](https://gitter.im/amzn/askalono)
 
 ## Notice
 
