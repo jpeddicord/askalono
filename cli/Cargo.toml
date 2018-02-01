@@ -6,6 +6,9 @@ license = "Apache-2.0"
 repository = "https://github.com/amzn/askalono"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 readme = "../README.md"
+exclude = [
+    "/embedded-cache.bin.gz"
+]
 
 [dependencies]
 askalono = { version = "0.1.0", path = "../" }

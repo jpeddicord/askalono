@@ -14,6 +14,8 @@ This software is in the early stages of its lifecycle. While its goals are to be
 
 ### On the command line
 
+**NOTE:** This is not currently `cargo install`-able from crates.io, but when it is you'll find it under `askalono-cli`.
+
 Pre-built binaries are available on the [Releases section](https://github.com/amzn/askalono/releases) on GitHub.
 
 Basic usage:
