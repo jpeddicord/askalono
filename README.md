@@ -2,6 +2,10 @@
 
 askalono is a library and command-line tool to help detect license texts. It's designed to be fast, accurate, and to support a wide variety of license texts.
 
+[![releases](https://img.shields.io/github/release-date-pre/amzn/askalono.svg)](https://github.com/amzn/askalono/releases)
+[![askalono crate](https://img.shields.io/crates/v/askalono.svg)](https://crates.io/crates/askalono)
+[![Gitter chat](https://badges.gitter.im/amzn/askalono.png)](https://gitter.im/amzn/askalono)
+
 ## Notice
 
 This tool does not provide legal advice and it is not a lawyer. It endeavors to match your input to a database of similar license texts, and tell you what it thinks is a close match. But, it can't tell you that the given license is authoritative over a project. Nor can it tell you what to do with a license once it's identified. You are not entitled to rely on the accuracy of the output of this tool, and should seek independent legal advice for any licensing questions that may arise from using this tool.
