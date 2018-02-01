@@ -1,17 +1,30 @@
+os:
+- linux
+- osx
 language: rust
 rust:
-    - stable
-    - beta
-    - nightly
-
+- stable
+- beta
+- nightly
 matrix:
-    allow_failures:
-        - rust: nightly
-
+  allow_failures:
+  - rust: nightly
 cache: cargo
-
 script:
-    - git submodule update --init
-    - cargo build --verbose --all
-    - cargo test --verbose --all
-    # TODO: --release, strip, push to GH releases
+- cargo build --verbose --all
+- cargo test --verbose --all
+before_deploy:
+- cargo build --release --all
+- "[[ ${TRAVIS_OS_NAME} = linux ]] && strip target/release/askalono"
+- mv target/release/askalono target/askalono.${TRAVIS_OS_NAME}
+deploy:
+  provider: releases
+  api_key:
+    secure: KieTZrK+PbkhGnbFDre3ztaKs3WNlnuQnVUPVtSWX8npCrgDtnnac8Y1JNRY3Jpnb9UYUU+fWlt7gEExW01jmCZHdj949DrJxgEL0ojPELlYBpvNdR+bWGGY4ghxDAeeA7+8QgfgEqNC65l1rl2UutAvky2Y0Br2TG1tHUJVMMAp/urJeatry80Jh9qnxWErE2JjtOweabhHMQzDVHF2HCufV2Z4h2nVAWbNfq/Jb8jH7pdby8RAuvOEQGXUU/D0TIgPgCpvcoVOLKj186x9HBVysBsQqpblPqfh1zoqdcvlig2ElSzpM5W/Ei3vxxpfU3mgwXpgdT/1vRQ6VdN3hiTnaFR6JWbOhkLvmbimM7faogwKOg1fYeCoYddir3Bb/hmw0xPfCQXvtrrk+Tyw7+f1KutMBqO1RK43MANtkEOmgHHnzC/U/9Gaiha2M83NPGEUBZV+3h3ooIKYJ3rTfAJ7ctpCXdDdAy2hXLm3wLrJGpu2jB1101U9ZV2n+F8AXQdpLdJLB6+qRurjEixImEb7LOVTh/0gD9xIoh6ExwTZbIG2+AcZQ87tTaAnSfBObYvXcsj2ioo0eQUs4GIvpoOWlGgwqWrPQ9V9e65hBepqjGAbAVjY4nNKF6L/3COMLXaPQZHok/gyBwOZE7chtawGTPfJWXeS/4XcMxSK0ow=
+  file: target/askalono.*
+  file_glob: true
+  skip_cleanup: true
+  on:
+    repo: amzn/askalono
+    tags: true
+    condition: "${TRAVIS_RUST_VERSION} = stable"
