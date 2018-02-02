@@ -12,10 +12,10 @@
 // permissions and limitations under the License.
 
 use std::collections::HashMap;
-use std::error::Error;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::prelude::*;
+use failure::Error;
 
 use walkdir::WalkDir;
 
@@ -52,7 +52,7 @@ impl Store {
         }
     }
 
-    pub fn load_spdx(&mut self, dir: &str, include_texts: bool) -> Result<(), Box<Error>> {
+    pub fn load_spdx(&mut self, dir: &str, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
@@ -66,8 +66,12 @@ impl Store {
             f.read_to_string(&mut data)?;
             let val: Value = from_str(&data)?;
 
-            let name = val["licenseId"].as_str().ok_or("missing licenseId")?;
-            let text = val["licenseText"].as_str().ok_or("missing licenseText")?;
+            let name = val["licenseId"]
+                .as_str()
+                .ok_or(format_err!("missing licenseId"))?;
+            let text = val["licenseText"]
+                .as_str()
+                .ok_or(format_err!("missing licenseText"))?;
             let template = val["standardLicenseTemplate"].as_str();
             let header = val["standardLicenseHeader"].as_str();
 
