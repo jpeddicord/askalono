@@ -15,4 +15,7 @@ mod base;
 mod analyze;
 mod cache;
 
+#[cfg(feature = "spdx")]
+mod spdx;
+
 pub use self::base::Store;
