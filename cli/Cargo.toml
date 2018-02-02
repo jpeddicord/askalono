@@ -11,7 +11,7 @@ exclude = [
 ]
 
 [dependencies]
-askalono = { version = "0.1.0", path = "../" }
+askalono = { version = "0.2.0", path = "../" }
 clap = { version = "2.26.2", features = ["yaml"] }
 difference = "1.0"
 env_logger = "0.4.3"
@@ -20,7 +20,7 @@ rayon = "0.8.2"
 failure = "0.1.1"
 
 [build-dependencies]
-askalono = { version = "0.1.0", path = "../" }
+askalono = { version = "0.2.0", path = "../" }
 
 [[bin]]
 name = "askalono"

@@ -26,11 +26,10 @@ pub struct Texts {
     pub processed: String,
 }
 
+// TODO: API cleanup: drop this
 #[derive(Serialize, Deserialize)]
 pub struct Grams {
-    pub uni: NgramSet,
     pub bi: NgramSet,
-    pub tri: NgramSet,
 }
 
 impl LicenseContent {
@@ -39,34 +38,27 @@ impl LicenseContent {
         let processed = apply_aggressive(&normalized);
 
         let bi = NgramSet::from_str(&processed, 2);
-        // let (uni, bi, tri) = NgramSet::three_from_str(&processed);
 
         let grams = Grams {
-            uni: NgramSet::new(1),
             bi,
-            tri: NgramSet::new(3),
         };
 
-        if store_texts {
-            LicenseContent {
-                texts: Some(Texts {
+        LicenseContent {
+            texts: match store_texts {
+                true => Some(Texts {
                     normalized,
                     processed,
                 }),
-                grams,
-            }
-        } else {
-            LicenseContent { texts: None, grams }
+                false => None,
+            },
+            grams,
         }
     }
 }
 
 impl Grams {
+    // TODO: this can likely be dropped or mended into LicenseContent (API cleanup)
     pub fn combined_dice(&self, other: &Grams) -> f32 {
-        // let uni = self.uni.dice(&other.uni);
-        // let bi = self.bi.dice(&other.bi);
-        // let tri = self.tri.dice(&other.tri);
-        // (tri * 12.0 + bi * 4.0 + uni) / 17.0 // XXX: this is totally arbitrary
         self.bi.dice(&other.bi)
     }
 }

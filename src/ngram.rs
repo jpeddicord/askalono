@@ -40,14 +40,6 @@ impl<'a> NgramSet {
         set
     }
 
-    pub fn three_from_str(s: &str) -> (NgramSet, NgramSet, NgramSet) {
-        let mut uni = NgramSet::new(1);
-        let mut bi = NgramSet::new(2);
-        let mut tri = NgramSet::new(3);
-        NgramSet::analyze_three(&mut uni, &mut bi, &mut tri, s);
-        (uni, bi, tri)
-    }
-
     pub fn analyze(&mut self, s: &str) {
         let words = s.split(' ');
 
@@ -58,33 +50,6 @@ impl<'a> NgramSet {
                 let parts = deque.iter().cloned().collect::<Vec<&str>>();
                 self.add_gram(parts.join(" "));
                 deque.pop_front();
-            }
-        }
-    }
-
-    /// An optimized version of analyze that fills three ngram sets at once:
-    /// unigram, bigram, and trigram
-    fn analyze_three(uni: &mut NgramSet, bi: &mut NgramSet, tri: &mut NgramSet, s: &str) {
-        let words = s.split(' ');
-
-        let mut deque: VecDeque<&str> = VecDeque::with_capacity(3);
-        for w in words {
-            deque.push_back(w);
-            match deque.len() {
-                1 => {
-                    uni.add_gram(deque[0].to_owned());
-                }
-                2 => {
-                    uni.add_gram(deque[0].to_owned());
-                    bi.add_gram([deque[0], deque[1]].join(" "));
-                }
-                3 => {
-                    uni.add_gram(deque[0].to_owned());
-                    bi.add_gram([deque[0], deque[1]].join(" "));
-                    tri.add_gram([deque[0], deque[1], deque[2]].join(" "));
-                    deque.pop_front();
-                }
-                _ => unreachable!(),
             }
         }
     }
@@ -138,5 +103,18 @@ impl<'a> IntoIterator for &'a NgramSet {
 
     fn into_iter(self) -> Self::IntoIter {
         self.map.iter()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // this is a pretty banal test, but it's a starting point :P
+    #[test]
+    fn can_construct() {
+        let set = NgramSet::new(2);
+        assert_eq!(set.size, 0);
+        assert_eq!(set.n, 2);
     }
 }
