@@ -49,11 +49,13 @@ fn main() {
         .value_of("cache")
         .unwrap_or("./askalono-cache.bin.gz");
 
-    match matches.subcommand_name() {
-        Some("identify") => identify(matches.subcommand_matches("identify").unwrap(), cache_file),
-        Some("cache") => cache(matches.subcommand_matches("cache").unwrap(), cache_file),
+    if let Err(e) = match matches.subcommand() {
+        ("identify", Some(id_matches)) => identify(id_matches, cache_file),
+        ("cache", Some(cache_matches)) => cache(cache_matches, cache_file),
         _ => unreachable!(),
-    }.unwrap();
+    } {
+        println!("{}", e);
+    }
 }
 
 #[allow(unused_variables)]
