@@ -109,14 +109,15 @@ fn cache(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
     cache_load_spdx(matches.subcommand_matches("load-spdx").unwrap(), cache_file)
 }
 
-fn cache_load_spdx(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
+fn cache_load_spdx(matches: &ArgMatches, cache_filename: &str) -> Result<(), Error> {
     info!("Processing licenses...");
     let mut store = Store::new();
     store.load_spdx(
         matches.value_of("DIR").unwrap(),
         matches.is_present("store-texts"),
     )?;
-    store.save_cache_file(cache_file)?;
+    let cache_file = File::create(cache_filename)?;
+    store.to_cache(&cache_file)?;
     Ok(())
 }
 

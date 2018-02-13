@@ -11,7 +11,6 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-use std::fs::File;
 use std::io::copy;
 use std::io::prelude::*;
 use failure::Error;
@@ -32,11 +31,6 @@ use store::base::Store;
 const CACHE_VERSION: &[u8] = b"askalono-02";
 
 impl Store {
-    pub fn from_cache_file(filename: &str) -> Result<Store, Error> {
-        let cache = File::open(filename)?;
-        Store::from_cache(cache)
-    }
-
     pub fn from_cache<R>(readable: R) -> Result<Store, Error>
     where
         R: Read + Sized,
@@ -58,7 +52,10 @@ impl Store {
         Ok(store)
     }
 
-    pub fn save_cache_file(&self, filename: &str) -> Result<(), Error> {
+    pub fn to_cache<W>(&self, mut writable: W) -> Result<(), Error>
+    where
+        W: Write + Sized,
+    {
         let mut buf = Vec::new();
         {
             let mut serializer = Serializer::new(&mut buf);
@@ -67,10 +64,9 @@ impl Store {
 
         info!("Pre-compressed output is {} bytes", buf.len());
 
-        let mut out = File::create(filename)?;
         let mut gz = GzBuilder::new()
             .extra(CACHE_VERSION)
-            .write(&mut out, Compression::best());
+            .write(&mut writable, Compression::best());
         copy(&mut buf.as_slice(), &mut gz)?;
 
         Ok(())

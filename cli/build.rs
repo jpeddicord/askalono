@@ -14,7 +14,7 @@
 extern crate askalono;
 
 use std::env;
-use std::fs::remove_file;
+use std::fs::{remove_file, File};
 use std::path::Path;
 
 use askalono::Store;
@@ -42,5 +42,6 @@ fn main() {
     store
         .load_spdx("../license-list-data/json/details", false)
         .unwrap();
-    store.save_cache_file(EMBEDDED_CACHE).unwrap();
+    let mut cache = File::create(EMBEDDED_CACHE).unwrap();
+    store.to_cache(&mut cache).unwrap();
 }
