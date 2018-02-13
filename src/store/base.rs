@@ -13,28 +13,26 @@
 
 use std::collections::HashMap;
 
-use license::LicenseContent;
+use license::TextData;
 
 #[derive(Serialize, Deserialize)]
-pub struct LicenseData {
-    pub original: LicenseContent,
-    pub alternates: Vec<LicenseContent>,
-    pub headers: Vec<LicenseContent>,
-    pub reference_score: f32,
+pub(crate) struct LicenseEntry {
+    pub original: TextData,
+    pub headers: Vec<TextData>,
+    pub alternates: Vec<TextData>,
 }
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct Store {
-    pub licenses: HashMap<String, LicenseData>,
+    pub(super) licenses: HashMap<String, LicenseEntry>,
 }
 
-impl LicenseData {
-    pub fn new(original: LicenseContent) -> LicenseData {
-        LicenseData {
+impl LicenseEntry {
+    pub fn new(original: TextData) -> LicenseEntry {
+        LicenseEntry {
             original,
             alternates: Vec::new(),
             headers: Vec::new(),
-            reference_score: 0.0,
         }
     }
 }

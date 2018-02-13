@@ -31,7 +31,7 @@ use std::time::Instant;
 
 use clap::{App, ArgMatches};
 
-use askalono::{LicenseContent, Store};
+use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
 
@@ -77,10 +77,10 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
     let mut f = File::open(&filename)?;
     let mut text = String::new();
     f.read_to_string(&mut text)?;
-    let content = LicenseContent::from_text(&text, want_diff);
+    let text_data: TextData = text.into();
 
     let inst = Instant::now();
-    let matched = store.analyze_content(&content);
+    let matched = store.analyze(&text_data)?;
 
     info!(
         "{:?} in {} ms",
@@ -89,11 +89,11 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
     );
 
     if want_diff {
-        diff_result(&content, matched.content);
+        diff_result(&text_data, matched.data);
     }
 
     if matched.score > MIN_SCORE {
-        println!("License: {}", matched.name);
+        println!("License: {} ({})", matched.name, matched.license_type);
         println!("Score: {}", matched.score);
     } else {
         println!("License: Unknown");
@@ -120,17 +120,15 @@ fn cache_load_spdx(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> 
     Ok(())
 }
 
-fn diff_result(license: &LicenseContent, other: &LicenseContent) {
+fn diff_result(license: &TextData, other: &TextData) {
     use difference::Changeset;
 
-    let license_texts = &license.texts.as_ref().expect("license texts is Some");
-    let other_texts = &other.texts.as_ref().expect("other texts is Some");
+    let license_texts = &license.text().expect("license texts is Some");
+    let other_texts = &other.text().expect("other texts is Some");
 
-    let processed = Changeset::new(&license_texts.processed, &other_texts.processed, " ");
+    let processed = Changeset::new(&license_texts, &other_texts, " ");
     println!(
         "{}\n\n---\n\n{}\n\n---\n\n{}",
-        &license_texts.processed,
-        &other_texts.processed,
-        processed
+        &license_texts, &other_texts, processed
     );
 }

@@ -18,8 +18,8 @@ use std::io::prelude::*;
 use failure::Error;
 use walkdir::WalkDir;
 
-use store::base::{Store, LicenseData};
-use license::LicenseContent;
+use store::base::{LicenseEntry, Store};
+use license::TextData;
 
 impl Store {
     pub fn load_spdx(&mut self, dir: &str, include_texts: bool) -> Result<(), Error> {
@@ -42,25 +42,26 @@ impl Store {
             let text = val["licenseText"]
                 .as_str()
                 .ok_or(format_err!("missing licenseText"))?;
-            let template = val["standardLicenseTemplate"].as_str();
+            //let template = val["standardLicenseTemplate"].as_str(); // unused
             let header = val["standardLicenseHeader"].as_str();
 
             info!("Processing {}", name);
 
-            let content = LicenseContent::from_text(text, include_texts);
+            let content = match include_texts {
+                false => TextData::new(text),
+                true => TextData::new(text).without_text(),
+            };
+
             let license = self.licenses
                 .entry(name.to_owned())
-                .or_insert_with(|| LicenseData::new(content));
+                .or_insert_with(|| LicenseEntry::new(content));
 
-            if template.is_some() {
-                let template_content = LicenseContent::from_text(template.unwrap(), include_texts);
-                license.reference_score = license
-                    .original
-                    .grams
-                    .combined_dice(&template_content.grams);
-            }
-            if header.is_some() {
-                license.headers = vec![LicenseContent::from_text(header.unwrap(), include_texts)];
+            if let Some(header_text) = header {
+                let header_data = match include_texts {
+                    false => TextData::new(header_text),
+                    true => TextData::new(header_text).without_text(),
+                };
+                license.headers = vec![header_data];
             }
         }
 

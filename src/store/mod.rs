@@ -19,3 +19,4 @@ mod cache;
 mod spdx;
 
 pub use self::base::Store;
+pub use self::analyze::Match;

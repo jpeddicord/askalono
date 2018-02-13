@@ -1,5 +1,5 @@
 extern crate askalono;
-use askalono::{Store, LicenseContent};
+use askalono::{Store, TextData};
 
 // Note: this example is stupid slow because it loads and parses licenses
 // each run instead of persisting to a cache file. Expect runs to take ~20s;
@@ -11,15 +11,23 @@ fn main() {
 
     // load up data from SPDX JSON files, opting to not embed full text
     println!("Loading SPDX data, this may take a while...");
-    store.load_spdx("../license-list-data/json/details", false).unwrap();
+    store
+        .load_spdx(
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/license-list-data/json/details"
+            ),
+            false,
+        )
+        .unwrap();
 
     // load input text
     println!("Parsing input text");
-    let input = LicenseContent::from_text(include_str!("../LICENSE"), false);
+    let input: TextData = include_str!("../LICENSE").into();
 
     // do the heavy lifting
     println!("Scoring licenses");
-    let matched = store.analyze_content(&input);
+    let matched = store.analyze(&input);
 
     println!("{:?}", matched);
 }

@@ -14,16 +14,19 @@
 use std::cmp::Ordering;
 use std::fmt;
 
+use failure::Error;
 use rayon::prelude::*;
 
 use store::base::Store;
-use license::LicenseContent;
+use license::TextData;
+use license::LicenseType;
 
 #[derive(Clone)]
 pub struct Match<'a> {
     pub score: f32,
     pub name: String,
-    pub content: &'a LicenseContent,
+    pub license_type: LicenseType,
+    pub data: &'a TextData,
 }
 
 impl<'a> PartialOrd for Match<'a> {
@@ -40,32 +43,39 @@ impl<'a> PartialEq for Match<'a> {
 
 impl<'a> fmt::Debug for Match<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Match {{ name: {}, score: {} }}", self.name, self.score)
+        write!(
+            f,
+            "Match {{ score: {}, name: {}, license_type: {:?} }}",
+            self.score, self.name, self.license_type
+        )
     }
 }
 
 impl Store {
-    pub fn analyze_content(&self, content: &LicenseContent) -> Match {
+    pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
         let mut res: Vec<Match> = self.licenses
             .par_iter()
             .fold(Vec::new, |mut a: Vec<Match>, (name, data)| {
                 a.push(Match {
-                    score: data.original.grams.combined_dice(&content.grams),
+                    score: data.original.match_score(&text),
                     name: name.clone(),
-                    content: &data.original,
+                    license_type: LicenseType::Original,
+                    data: &data.original,
                 });
                 data.alternates.iter().for_each(|alt| {
                     a.push(Match {
-                        score: alt.grams.combined_dice(&content.grams),
+                        score: alt.match_score(&text),
                         name: name.clone(),
-                        content: alt,
+                        license_type: LicenseType::Alternate,
+                        data: alt,
                     })
                 });
                 data.headers.iter().for_each(|head| {
                     a.push(Match {
-                        score: head.grams.combined_dice(&content.grams),
+                        score: head.match_score(&text),
                         name: name.clone(),
-                        content: head,
+                        license_type: LicenseType::Header,
+                        data: head,
                     })
                 });
                 a
@@ -76,6 +86,6 @@ impl Store {
             });
         res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
-        res[0].clone()
+        Ok(res[0].clone())
     }
 }

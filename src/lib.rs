@@ -38,5 +38,5 @@ mod preproc;
 mod store;
 mod license;
 
-pub use store::Store;
-pub use license::LicenseContent;
+pub use store::{Match, Store};
+pub use license::{LicenseType, TextData};
