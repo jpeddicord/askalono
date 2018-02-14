@@ -16,6 +16,7 @@
 extern crate askalono;
 extern crate difference;
 extern crate env_logger;
+#[macro_use]
 extern crate failure;
 #[macro_use]
 extern crate log;
@@ -25,6 +26,7 @@ extern crate structopt;
 
 use failure::Error;
 use std::fs::File;
+use std::io::stdin;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::process::exit;
@@ -52,14 +54,15 @@ struct Opt {
 enum Subcommand {
     #[structopt(name = "identify", alias = "id")]
     Identify {
-        #[structopt(name = "FILE", help = "file to identify", parse(from_os_str))]
-        filename: PathBuf,
+        #[structopt(name = "FILE", help = "file to identify", required_unless = "batch",
+                    parse(from_os_str))]
+        filename: Option<PathBuf>,
         #[structopt(long = "diff", short = "d", help = "print a colored diff of match")]
         diff: bool,
         // #[structopt(long = "output", short = "o", help = "output type")]
         // output: Option<OutputType>, // "json"
-        // #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
-        // batch: boolean,
+        #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
+        batch: bool,
     },
     #[structopt(name = "cache")]
     Cache {
@@ -76,7 +79,7 @@ enum CacheSubcommand {
         dir: PathBuf,
         #[structopt(long = "store", help = "store texts in cache along with match data")]
         store_texts: bool,
-    }
+    },
 }
 
 fn main() {
@@ -88,15 +91,25 @@ fn main() {
     let cache_file = options.cache.unwrap_or("./askalono-cache.bin.gz".into());
 
     if let Err(e) = match options.subcommand {
-        Subcommand::Identify { filename, diff } => identify(cache_file, filename, diff),
+        Subcommand::Identify {
+            filename,
+            diff,
+            batch,
+        } => identify(cache_file, filename, diff, batch),
         Subcommand::Cache { subcommand } => cache(cache_file, subcommand),
     } {
-        println!("{}", e);
+        eprintln!("{}", e);
+        exit(1);
     }
 }
 
 #[allow(unused_variables)]
-fn identify(cache_filename: PathBuf, filename: PathBuf, want_diff: bool) -> Result<(), Error> {
+fn identify(
+    cache_filename: PathBuf,
+    filename: Option<PathBuf>,
+    want_diff: bool,
+    batch: bool,
+) -> Result<(), Error> {
     // load the cache from disk or embedded data
     let cache_inst = Instant::now();
     #[cfg(feature = "embedded-cache")]
@@ -108,6 +121,27 @@ fn identify(cache_filename: PathBuf, filename: PathBuf, want_diff: bool) -> Resu
         cache_inst.elapsed().subsec_nanos() as f32 / 1000_000.0
     );
 
+    if !batch {
+        return identify_filename(&store, filename.unwrap(), want_diff);
+    }
+
+    // batch mode: read stdin line by line until eof
+    loop {
+        let mut buf = String::new();
+        stdin().read_line(&mut buf)?;
+        if buf.len() == 0 {
+            break;
+        }
+
+        identify_filename(&store, buf.trim().into(), want_diff).unwrap_or_else(|err| {
+            eprintln!("Error: {}", err);
+        });
+    }
+
+    Ok(())
+}
+
+fn identify_filename(store: &Store, filename: PathBuf, want_diff: bool) -> Result<(), Error> {
     let mut f = File::open(&filename)?;
     let mut text = String::new();
     f.read_to_string(&mut text)?;
@@ -129,28 +163,34 @@ fn identify(cache_filename: PathBuf, filename: PathBuf, want_diff: bool) -> Resu
     if matched.score > MIN_SCORE {
         println!("License: {} ({})", matched.name, matched.license_type);
         println!("Score: {}", matched.score);
+        Ok(())
     } else {
         println!("License: Unknown");
-        println!("Confidence threshold not high enough for any known license");
-        exit(1);
+        Err(format_err!(
+            "Confidence threshold not high enough for any known license"
+        ))
     }
-
-    Ok(())
 }
 
 fn cache(cache_filename: PathBuf, subcommand: CacheSubcommand) -> Result<(), Error> {
     // TODO
     match subcommand {
-        CacheSubcommand::LoadSpdx { dir, store_texts } => cache_load_spdx(cache_filename, dir, store_texts)
+        CacheSubcommand::LoadSpdx { dir, store_texts } => {
+            cache_load_spdx(cache_filename, dir, store_texts)
+        }
     }
 }
 
-fn cache_load_spdx(cache_filename: PathBuf, directory: PathBuf, store_texts: bool) -> Result<(), Error> {
+fn cache_load_spdx(
+    cache_filename: PathBuf,
+    directory: PathBuf,
+    store_texts: bool,
+) -> Result<(), Error> {
     info!("Processing licenses...");
     let mut store = Store::new();
     store.load_spdx(
         &directory.to_string_lossy(), // XXX gross
-        store_texts
+        store_texts,
     )?;
     let cache_file = File::create(cache_filename)?;
     store.to_cache(&cache_file)?;
