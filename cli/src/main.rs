@@ -14,22 +14,23 @@
 #![allow(dead_code)]
 
 extern crate askalono;
-#[macro_use]
-extern crate clap;
 extern crate difference;
 extern crate env_logger;
 extern crate failure;
 #[macro_use]
 extern crate log;
 extern crate rayon;
+#[macro_use]
+extern crate structopt;
 
 use failure::Error;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::PathBuf;
 use std::process::exit;
 use std::time::Instant;
 
-use clap::{App, ArgMatches};
+use structopt::StructOpt;
 
 use askalono::{Store, TextData};
 
@@ -38,31 +39,64 @@ const MIN_SCORE: f32 = 0.8;
 #[cfg(feature = "embedded-cache")]
 static CACHE_DATA: &'static [u8] = include_bytes!(env!("ASKALONO_EMBEDDED_CACHE"));
 
+#[derive(StructOpt)]
+#[structopt(name = "askalono")]
+struct Opt {
+    #[structopt(long = "cache", short = "c", parse(from_os_str))]
+    cache: Option<PathBuf>,
+    #[structopt(subcommand)]
+    subcommand: Subcommand,
+}
+
+#[derive(StructOpt)]
+enum Subcommand {
+    #[structopt(name = "identify", alias = "id")]
+    Identify {
+        #[structopt(name = "FILE", help = "file to identify", parse(from_os_str))]
+        filename: PathBuf,
+        #[structopt(long = "diff", short = "d", help = "print a colored diff of match")]
+        diff: bool,
+        // #[structopt(long = "output", short = "o", help = "output type")]
+        // output: Option<OutputType>, // "json"
+        // #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
+        // batch: boolean,
+    },
+    #[structopt(name = "cache")]
+    Cache {
+        #[structopt(subcommand)]
+        subcommand: CacheSubcommand,
+    },
+}
+
+#[derive(StructOpt)]
+enum CacheSubcommand {
+    #[structopt(name = "load-spdx")]
+    LoadSpdx {
+        #[structopt(name = "DIR", help = "JSON details directory", parse(from_os_str))]
+        dir: PathBuf,
+        #[structopt(long = "store", help = "store texts in cache along with match data")]
+        store_texts: bool,
+    }
+}
+
 fn main() {
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).version(crate_version!()).get_matches();
+    let options = Opt::from_args();
 
     env_logger::init().unwrap();
     rayon::initialize(rayon::Configuration::new()).unwrap();
 
-    let cache_file = matches
-        .value_of("cache")
-        .unwrap_or("./askalono-cache.bin.gz");
+    let cache_file = options.cache.unwrap_or("./askalono-cache.bin.gz".into());
 
-    if let Err(e) = match matches.subcommand() {
-        ("identify", Some(id_matches)) => identify(id_matches, cache_file),
-        ("cache", Some(cache_matches)) => cache(cache_matches, cache_file),
-        _ => unreachable!(),
+    if let Err(e) = match options.subcommand {
+        Subcommand::Identify { filename, diff } => identify(cache_file, filename, diff),
+        Subcommand::Cache { subcommand } => cache(cache_file, subcommand),
     } {
         println!("{}", e);
     }
 }
 
 #[allow(unused_variables)]
-fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
-    let filename = matches.value_of("FILE").unwrap();
-    let want_diff = matches.is_present("diff");
-
+fn identify(cache_filename: PathBuf, filename: PathBuf, want_diff: bool) -> Result<(), Error> {
     // load the cache from disk or embedded data
     let cache_inst = Instant::now();
     #[cfg(feature = "embedded-cache")]
@@ -104,17 +138,19 @@ fn identify(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn cache(matches: &ArgMatches, cache_file: &str) -> Result<(), Error> {
+fn cache(cache_filename: PathBuf, subcommand: CacheSubcommand) -> Result<(), Error> {
     // TODO
-    cache_load_spdx(matches.subcommand_matches("load-spdx").unwrap(), cache_file)
+    match subcommand {
+        CacheSubcommand::LoadSpdx { dir, store_texts } => cache_load_spdx(cache_filename, dir, store_texts)
+    }
 }
 
-fn cache_load_spdx(matches: &ArgMatches, cache_filename: &str) -> Result<(), Error> {
+fn cache_load_spdx(cache_filename: PathBuf, directory: PathBuf, store_texts: bool) -> Result<(), Error> {
     info!("Processing licenses...");
     let mut store = Store::new();
     store.load_spdx(
-        matches.value_of("DIR").unwrap(),
-        matches.is_present("store-texts"),
+        &directory.to_string_lossy(), // XXX gross
+        store_texts
     )?;
     let cache_file = File::create(cache_filename)?;
     store.to_cache(&cache_file)?;
