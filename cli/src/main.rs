@@ -28,7 +28,7 @@ use failure::Error;
 use std::fs::File;
 use std::io::stdin;
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::time::Instant;
 
@@ -95,8 +95,8 @@ fn main() {
             filename,
             diff,
             batch,
-        } => identify(cache_file, filename, diff, batch),
-        Subcommand::Cache { subcommand } => cache(cache_file, subcommand),
+        } => identify(&cache_file, filename, diff, batch),
+        Subcommand::Cache { subcommand } => cache(&cache_file, subcommand),
     } {
         eprintln!("{}", e);
         exit(1);
@@ -105,7 +105,7 @@ fn main() {
 
 #[allow(unused_variables)]
 fn identify(
-    cache_filename: PathBuf,
+    cache_filename: &Path,
     filename: Option<PathBuf>,
     want_diff: bool,
     batch: bool,
@@ -122,7 +122,14 @@ fn identify(
     );
 
     if !batch {
-        return identify_filename(&store, filename.unwrap(), want_diff);
+        let filename = filename.expect("no filename provided");
+        let stdin_indicator: PathBuf = "-".into();
+        let mut file: Box<Read> = if filename == stdin_indicator {
+            Box::new(stdin())
+        } else {
+            Box::new(File::open(filename)?)
+        };
+        return identify_file(&store, &mut file, want_diff);
     }
 
     // batch mode: read stdin line by line until eof
@@ -133,7 +140,15 @@ fn identify(
             break;
         }
 
-        identify_filename(&store, buf.trim().into(), want_diff).unwrap_or_else(|err| {
+        let filename: PathBuf = buf.trim().into();
+        let mut file = match File::open(filename) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("Input error: {}", e);
+                continue;
+            }
+        };
+        identify_file(&store, &mut file, want_diff).unwrap_or_else(|err| {
             eprintln!("Error: {}", err);
         });
     }
@@ -141,10 +156,12 @@ fn identify(
     Ok(())
 }
 
-fn identify_filename(store: &Store, filename: PathBuf, want_diff: bool) -> Result<(), Error> {
-    let mut f = File::open(&filename)?;
+fn identify_file<R>(store: &Store, file: &mut R, want_diff: bool) -> Result<(), Error>
+where
+    R: Read + Sized,
+{
     let mut text = String::new();
-    f.read_to_string(&mut text)?;
+    file.read_to_string(&mut text)?;
     let text_data: TextData = text.into();
 
     let inst = Instant::now();
@@ -172,18 +189,18 @@ fn identify_filename(store: &Store, filename: PathBuf, want_diff: bool) -> Resul
     }
 }
 
-fn cache(cache_filename: PathBuf, subcommand: CacheSubcommand) -> Result<(), Error> {
+fn cache(cache_filename: &Path, subcommand: CacheSubcommand) -> Result<(), Error> {
     // TODO
     match subcommand {
         CacheSubcommand::LoadSpdx { dir, store_texts } => {
-            cache_load_spdx(cache_filename, dir, store_texts)
+            cache_load_spdx(&cache_filename, &dir, store_texts)
         }
     }
 }
 
 fn cache_load_spdx(
-    cache_filename: PathBuf,
-    directory: PathBuf,
+    cache_filename: &Path,
+    directory: &Path,
     store_texts: bool,
 ) -> Result<(), Error> {
     info!("Processing licenses...");
