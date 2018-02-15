@@ -16,7 +16,6 @@
 extern crate askalono;
 extern crate difference;
 extern crate env_logger;
-#[macro_use]
 extern crate failure;
 #[macro_use]
 extern crate log;
@@ -24,7 +23,7 @@ extern crate rayon;
 #[macro_use]
 extern crate structopt;
 
-use failure::Error;
+use failure::{err_msg, Error};
 use std::fs::File;
 use std::io::stdin;
 use std::io::prelude::*;
@@ -88,7 +87,9 @@ fn main() {
     env_logger::init().unwrap();
     rayon::initialize(rayon::Configuration::new()).unwrap();
 
-    let cache_file = options.cache.unwrap_or("./askalono-cache.bin.gz".into());
+    let cache_file = options
+        .cache
+        .unwrap_or_else(|| "./askalono-cache.bin.gz".into());
 
     if let Err(e) = match options.subcommand {
         Subcommand::Identify {
@@ -136,7 +137,7 @@ fn identify(
     loop {
         let mut buf = String::new();
         stdin().read_line(&mut buf)?;
-        if buf.len() == 0 {
+        if buf.is_empty() {
             break;
         }
 
@@ -183,8 +184,8 @@ where
         Ok(())
     } else {
         println!("License: Unknown");
-        Err(format_err!(
-            "Confidence threshold not high enough for any known license"
+        Err(err_msg(
+            "Confidence threshold not high enough for any known license",
         ))
     }
 }
@@ -193,7 +194,7 @@ fn cache(cache_filename: &Path, subcommand: CacheSubcommand) -> Result<(), Error
     // TODO
     match subcommand {
         CacheSubcommand::LoadSpdx { dir, store_texts } => {
-            cache_load_spdx(&cache_filename, &dir, store_texts)
+            cache_load_spdx(cache_filename, &dir, store_texts)
         }
     }
 }
@@ -220,7 +221,7 @@ fn diff_result(license: &TextData, other: &TextData) {
     let license_texts = &license.text().expect("license texts is Some");
     let other_texts = &other.text().expect("other texts is Some");
 
-    let processed = Changeset::new(&license_texts, &other_texts, " ");
+    let processed = Changeset::new(license_texts, other_texts, " ");
     println!(
         "{}\n\n---\n\n{}\n\n---\n\n{}",
         &license_texts, &other_texts, processed
