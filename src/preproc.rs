@@ -18,15 +18,22 @@ use unicode_normalization::UnicodeNormalization;
 
 type PreprocFn = Fn(&str) -> String;
 
-pub const PREPROC_NORMALIZE: [&PreprocFn; 6] = [
+/// A list of preprocessors that normalize text without removing anything
+/// substantial. Shouldn't remove entire lines for the sake of preserving
+/// line number information.
+pub const PREPROC_NORMALIZE: [&PreprocFn; 5] = [
     &normalize_unicode,
     &normalize_junk,
-    &normalize_vertical_whitespace,
     &normalize_horizontal_whitespace,
     &normalize_punctuation,
     &trim_lines,
 ];
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 4] = [
+
+/// A list of preprocessors that more aggressively normalize/mangle text
+/// to make for friendlier matching. May remove statements and lines, and
+/// more heavily normalize punctuation.
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 5] = [
+    &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
     &remove_copyright_statements,
@@ -145,4 +152,34 @@ fn collapse_whitespace(input: &str) -> String {
         static ref RX: Regex = Regex::new(r"\s+").unwrap();
     }
     RX.replace_all(input, " ").into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_no_line_mangle() {
+        let text = "some license
+
+        copyright 2012 person
+
+        \tlicense\r
+        text
+
+        \t
+
+
+
+        goes
+        here";
+
+        let text_lines = text.lines().count();
+
+        let normalized = apply_normalizers(text);
+        let normalized_lines = normalized.lines().count();
+
+        assert_eq!(text_lines, normalized_lines, "normalizers shouldnt change line counts");
+    }
+
 }
