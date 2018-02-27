@@ -45,7 +45,7 @@ pub struct TextData {
 }
 
 impl TextData {
-    pub fn new<'a>(text: &'a str) -> TextData {
+    pub fn new(text: &str) -> TextData {
         let normalized = apply_normalizers(text);
         let processed = apply_aggressive(&normalized);
         let bigrams = NgramSet::from_str(&processed, 2);

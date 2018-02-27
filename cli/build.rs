@@ -40,7 +40,7 @@ fn main() {
 
     let mut store = Store::new();
     store
-        .load_spdx("../license-list-data/json/details", false)
+        .load_spdx(Path::new("../license-list-data/json/details"), false)
         .unwrap();
     let mut cache = File::create(EMBEDDED_CACHE).unwrap();
     store.to_cache(&mut cache).unwrap();

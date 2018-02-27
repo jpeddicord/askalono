@@ -179,7 +179,10 @@ mod tests {
         let normalized = apply_normalizers(text);
         let normalized_lines = normalized.lines().count();
 
-        assert_eq!(text_lines, normalized_lines, "normalizers shouldnt change line counts");
+        assert_eq!(
+            text_lines, normalized_lines,
+            "normalizers shouldnt change line counts"
+        );
     }
 
 }

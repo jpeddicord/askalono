@@ -206,10 +206,7 @@ fn cache_load_spdx(
 ) -> Result<(), Error> {
     info!("Processing licenses...");
     let mut store = Store::new();
-    store.load_spdx(
-        &directory.to_string_lossy(), // XXX gross
-        store_texts,
-    )?;
+    store.load_spdx(directory, store_texts)?;
     let cache_file = File::create(cache_filename)?;
     store.to_cache(&cache_file)?;
     Ok(())

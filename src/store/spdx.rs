@@ -14,6 +14,7 @@
 use std::ffi::OsStr;
 use std::fs::{File, metadata};
 use std::io::prelude::*;
+use std::path::Path;
 
 use failure::Error;
 use walkdir::WalkDir;
@@ -22,7 +23,7 @@ use store::base::{LicenseEntry, Store};
 use license::TextData;
 
 impl Store {
-    pub fn load_spdx(&mut self, dir: &str, include_texts: bool) -> Result<(), Error> {
+    pub fn load_spdx(&mut self, dir: &Path, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 
         metadata(dir)?;
@@ -40,10 +41,18 @@ impl Store {
             let name = val["licenseId"]
                 .as_str()
                 .ok_or(format_err!("missing licenseId"))?;
+
+            let deprecated = val["isDeprecatedLicenseId"]
+                .as_bool()
+                .ok_or(format_err!("missing isDeprecatedLicenseId"))?;
+            if deprecated {
+                debug!("Skipping {} (deprecated)", name);
+                continue;
+            }
+
             let text = val["licenseText"]
                 .as_str()
                 .ok_or(format_err!("missing licenseText"))?;
-            //let template = val["standardLicenseTemplate"].as_str(); // unused
             let header = val["standardLicenseHeader"].as_str();
 
             info!("Processing {}", name);
