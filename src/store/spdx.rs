@@ -12,7 +12,7 @@
 // permissions and limitations under the License.
 
 use std::ffi::OsStr;
-use std::fs::File;
+use std::fs::{File, metadata};
 use std::io::prelude::*;
 
 use failure::Error;
@@ -25,6 +25,7 @@ impl Store {
     pub fn load_spdx(&mut self, dir: &str, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 
+        metadata(dir)?;
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
             let path = entry.path();
             if !path.is_file() || path.extension().unwrap_or_else(|| OsStr::new("")) != "json" {
