@@ -84,8 +84,8 @@ enum CacheSubcommand {
 fn main() {
     let options = Opt::from_args();
 
-    env_logger::init().unwrap();
-    rayon::initialize(rayon::Configuration::new()).unwrap();
+    env_logger::init();
+    rayon::ThreadPoolBuilder::new().build_global().unwrap();
 
     let cache_file = options
         .cache
