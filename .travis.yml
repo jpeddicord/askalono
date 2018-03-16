@@ -9,6 +9,11 @@ rust:
 matrix:
   allow_failures:
   - rust: nightly
+  exclude:
+  - rust: beta
+    os: osx
+  - rust: nightly
+    os: osx
 cache: cargo
 script:
 - cargo build --verbose --all
