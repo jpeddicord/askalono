@@ -12,7 +12,7 @@
 // permissions and limitations under the License.
 
 use std::ffi::OsStr;
-use std::fs::{File, metadata};
+use std::fs::{metadata, File};
 use std::io::prelude::*;
 use std::path::Path;
 

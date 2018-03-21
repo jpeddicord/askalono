@@ -17,6 +17,7 @@ extern crate askalono;
 extern crate difference;
 extern crate env_logger;
 extern crate failure;
+extern crate ignore;
 #[macro_use]
 extern crate log;
 extern crate rayon;
@@ -63,6 +64,15 @@ enum Subcommand {
         #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
         batch: bool,
     },
+    #[structopt(name = "crawl")]
+    Crawl {
+        #[structopt(name = "DIR", help = "directory to crawl", parse(from_os_str))]
+        directory: PathBuf,
+        #[structopt(long = "follow", help = "follow symlinks")]
+        follow_links: bool,
+        #[structopt(long = "glob", help = "glob of files to check (defaults to license-like files)")]
+        glob: Option<String>,
+    },
     #[structopt(name = "cache")]
     Cache {
         #[structopt(subcommand)]
@@ -97,11 +107,26 @@ fn main() {
             diff,
             batch,
         } => identify(&cache_file, filename, diff, batch),
+        Subcommand::Crawl {
+            directory,
+            follow_links,
+            glob,
+        } => crawl(&cache_file, &directory, follow_links, glob.as_ref().map(String::as_str)),
         Subcommand::Cache { subcommand } => cache(&cache_file, subcommand),
     } {
         eprintln!("{}", e);
         exit(1);
     }
+}
+
+fn load_store(cache_filename: &Path) -> Result<Store, Error> {
+    #[cfg(feature = "embedded-cache")]
+    let store = Store::from_cache(CACHE_DATA)?;
+
+    #[cfg(not(feature = "embedded-cache"))]
+    let store = Store::from_cache_file(cache_filename)?;
+
+    Ok(store)
 }
 
 #[allow(unused_variables)]
@@ -113,10 +138,7 @@ fn identify(
 ) -> Result<(), Error> {
     // load the cache from disk or embedded data
     let cache_inst = Instant::now();
-    #[cfg(feature = "embedded-cache")]
-    let store = Store::from_cache(CACHE_DATA)?;
-    #[cfg(not(feature = "embedded-cache"))]
-    let store = Store::from_cache_file(cache_file)?;
+    let store = load_store(cache_filename)?;
     info!(
         "Cache loaded in {} ms",
         cache_inst.elapsed().subsec_nanos() as f32 / 1000_000.0
@@ -188,6 +210,50 @@ where
             "Confidence threshold not high enough for any known license",
         ))
     }
+}
+
+fn crawl(cache_filename: &Path, directory: &Path, follow_links: bool, glob: Option<&str>) -> Result<(), Error> {
+    use ignore::types::TypesBuilder;
+    use ignore::WalkBuilder;
+
+    let store = load_store(cache_filename)?;
+
+    let mut types_builder = TypesBuilder::new();
+    if let Some(globstr) = glob {
+        types_builder.add("custom", globstr)?;
+        types_builder.select("custom");
+    } else {
+        types_builder.add_defaults();
+        types_builder.select("license");
+    }
+    let matcher = types_builder.build().unwrap();
+
+    WalkBuilder::new(directory)
+        .types(matcher)
+        .follow_links(follow_links)
+        .build() // TODO: build_parallel? see if it's faster overall, or if it just chokes the ID threads
+        .filter_map(|e| match e.is_ok() {
+            true => Some(e),
+            false => {
+                eprintln!("{}", e.unwrap_err());
+                None
+            }
+        })
+        .filter(|e| match e {
+            &Ok(ref entry) => !entry.metadata().unwrap().is_dir(),
+            &Err(_) => false,
+        })
+        .for_each(|e| {
+            let entry = e.unwrap();
+            let path = entry.path();
+            println!("{}", path.display());
+
+            if let Ok(mut reader) = File::open(path) {
+                identify_file(&store, &mut reader, false);
+            }
+        });
+
+    Ok(())
 }
 
 fn cache(cache_filename: &Path, subcommand: CacheSubcommand) -> Result<(), Error> {
