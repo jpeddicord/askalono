@@ -1,4 +1,5 @@
 extern crate askalono;
+use std::path::Path;
 use askalono::{Store, TextData};
 
 // Note: this example is stupid slow because it loads and parses licenses
@@ -13,10 +14,10 @@ fn main() {
     println!("Loading SPDX data, this may take a while...");
     store
         .load_spdx(
-            concat!(
+            Path::new(concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/license-list-data/json/details"
-            ),
+            )),
             false,
         )
         .unwrap();

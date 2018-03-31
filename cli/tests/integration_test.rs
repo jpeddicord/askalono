@@ -2,7 +2,7 @@ extern crate askalono;
 
 use std::fs::File;
 use std::io::Read;
-use askalono::{TextData, Store};
+use askalono::{Store, TextData};
 
 macro_rules! license_path {
     ($name:expr) => {
