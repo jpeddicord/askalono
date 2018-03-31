@@ -40,41 +40,69 @@ impl fmt::Display for LicenseType {
 #[derive(Serialize, Deserialize)]
 pub struct TextData {
     match_data: NgramSet,
-    text_normalized: Option<String>,
+    lines_normalized: Option<Vec<String>>,
+    lines_view: (usize, usize),
     text_processed: Option<String>,
 }
 
 impl TextData {
     pub fn new(text: &str) -> TextData {
         let normalized = apply_normalizers(text);
-        let processed = apply_aggressive(&normalized);
-        let bigrams = NgramSet::from_str(&processed, 2);
+        let normalized_joined = normalized.join("\n");
+        let processed = apply_aggressive(&normalized_joined);
+        let match_data = NgramSet::from_str(&processed, 2);
 
         TextData {
-            match_data: bigrams,
-            text_normalized: Some(normalized),
+            match_data,
+            lines_normalized: Some(normalized),
+            lines_view: (0, normalized.len()),
             text_processed: Some(processed),
         }
     }
 
+    // impl specialization might be nice to indicate that this type
+    // is lacking stored text; perhaps there's another way to indicate that?
+    // maybe an impl on an enum variant if/when that's available:
+    // https://github.com/rust-lang/rfcs/pull/1450
     pub fn without_text(self) -> Self {
         TextData {
             match_data: self.match_data,
-            text_normalized: None,
+            lines_normalized: None,
+            lines_view: (0, 0),
             text_processed: None,
         }
     }
 
-    // TODO: Cow<str>?
-    pub fn text(&self) -> Option<&str> {
-        match self.text_normalized {
-            Some(ref t) => Some(t.as_str()),
+    pub fn view(&mut self, start: usize, end: usize) {
+        let view = match &self.lines_normalized {
+            &Some(ref lines) => Self::vec_view(&lines, start, end),
+            &None => return, // XXX: probably not the right thing to do
+        };
+        let view_joined = view.join("\n");
+        let processed = apply_aggressive(&view_joined);
+
+        self.match_data = NgramSet::from_str(&processed, 2);
+        self.lines_view = (start, view.len());
+        self.text_processed = Some(processed);
+    }
+
+    pub fn lines(&self) -> Option<&[String]> {
+        match self.lines_normalized {
+            Some(ref lines) => Some(&lines),
             None => None,
         }
     }
 
     pub fn match_score(&self, other: &TextData) -> f32 {
         self.match_data.dice(&other.match_data)
+    }
+
+    fn vec_view(lines: &[String], start: usize, end: usize) -> &[String] {
+        if end == 0 {
+            lines
+        } else {
+            &lines[start .. end]
+        }
     }
 }
 
