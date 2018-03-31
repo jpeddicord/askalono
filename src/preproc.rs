@@ -180,7 +180,7 @@ mod tests {
         let text_lines = text.lines().count();
 
         let normalized = apply_normalizers(text);
-        let normalized_lines = normalized.lines().count();
+        let normalized_lines = normalized.len();
 
         assert_eq!(
             text_lines, normalized_lines,
