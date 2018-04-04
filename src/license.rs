@@ -76,6 +76,10 @@ impl TextData {
         }
     }
 
+    pub fn lines_view(&self) -> (usize, usize) {
+        self.lines_view
+    }
+
     pub fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
         let view = match &self.lines_normalized {
             &Some(ref lines) => &lines[start..end],
@@ -93,7 +97,7 @@ impl TextData {
 
     pub fn lines(&self) -> Option<&[String]> {
         match self.lines_normalized {
-            Some(ref lines) => Some(&lines[self.lines_view.0 .. self.lines_view.1]),
+            Some(ref lines) => Some(&lines[self.lines_view.0..self.lines_view.1]),
             None => None,
         }
     }
@@ -102,64 +106,57 @@ impl TextData {
         self.match_data.dice(&other.match_data)
     }
 
-    pub fn optimize_bounds(&self, other: &TextData) -> Self {
-        println!("{:?}", self.lines_normalized);
+    pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         // optimize the ending bounds of the text match
-        let end_optimized = self.search_optimize(
+        let (end_optimized, _) = self.search_optimize(
             &|end| self.with_view(0, end).unwrap().match_score(other),
             &|end| self.with_view(0, end).unwrap(),
         );
         let new_end = end_optimized.lines_view.1;
-        println!("new_end {}", new_end);
 
         // then optimize the starting bounds
-        let optimized = end_optimized.search_optimize(
-            &|start| end_optimized.with_view(start, new_end).unwrap().match_score(other),
+        let (optimized, score) = end_optimized.search_optimize(
+            &|start| {
+                end_optimized
+                    .with_view(start, new_end)
+                    .unwrap()
+                    .match_score(other)
+            },
             &|start| end_optimized.with_view(start, new_end).unwrap(),
         );
-        println!("view {:?}", optimized.lines_view);
-        optimized
+        (optimized, score)
     }
 
-    fn search_optimize(&self, score: &Fn(usize) -> f32, value: &Fn(usize) -> Self) -> Self {
+    fn search_optimize(&self, score: &Fn(usize) -> f32, value: &Fn(usize) -> Self) -> (Self, f32) {
         // cache score checks, since they're kinda expensive
         let mut memo: HashMap<usize, f32> = HashMap::new();
-        let mut check_score = |index: usize| -> f32 {
-            *memo.entry(index).or_insert_with(|| score(index))
-        };
+        let mut check_score =
+            |index: usize| -> f32 { *memo.entry(index).or_insert_with(|| score(index)) };
 
-        fn search(score: &mut FnMut(usize) -> f32, left: usize, right: usize) -> usize {
-            println!("  *** {} {}", left, right);
+        fn search(score: &mut FnMut(usize) -> f32, left: usize, right: usize) -> (usize, f32) {
             if right - left <= 3 {
-                println!("  final few elements; checking all");
                 // find the index of the highest score in the remaining items
                 let highest = (left .. right + 1) // inclusive
                   .map(|x| (x, score(x)))
                   .fold((0usize, 0f32), |acc, x| if x.1 > acc.1 { x } else { acc });
-                return highest.0;
+                return highest;
             }
 
             let low = (left * 2 + right) / 3;
             let high = (left + right * 2) / 3;
             let score_low = score(low);
             let score_high = score(high);
-            println!("    low  {} {}\n    high {} {}", low, score_low, high, score_high);
 
-            // XXX check this one
             if score_low > score_high {
-                println!("  >>> low");
                 search(score, left, high - 1)
             } else {
-                println!("  >>> high");
                 search(score, low + 1, right)
             }
         }
 
-        println!("  searching with {:?}", self.lines_view);
         let optimal = search(&mut check_score, self.lines_view.0, self.lines_view.1);
-        value(optimal)
+        (value(optimal.0), optimal.1)
     }
-
 }
 
 impl<'a> From<&'a str> for TextData {

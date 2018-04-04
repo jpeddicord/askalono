@@ -57,7 +57,10 @@ enum Subcommand {
         #[structopt(name = "FILE", help = "file to identify", required_unless = "batch",
                     parse(from_os_str))]
         filename: Option<PathBuf>,
-        #[structopt(long = "diff", short = "d", help = "print a colored diff of match")]
+        #[structopt(long = "optimize", short = "o",
+                    help = "try to find the location of a license within the file")]
+        optimize: bool,
+        #[structopt(long = "diff", help = "print a colored diff of match (debugging feature)")]
         diff: bool,
         // #[structopt(long = "output", short = "o", help = "output type")]
         // output: Option<OutputType>, // "json"
@@ -70,7 +73,8 @@ enum Subcommand {
         directory: PathBuf,
         #[structopt(long = "follow", help = "follow symlinks")]
         follow_links: bool,
-        #[structopt(long = "glob", help = "glob of files to check (defaults to license-like files)")]
+        #[structopt(long = "glob",
+                    help = "glob of files to check (defaults to license-like files)")]
         glob: Option<String>,
     },
     #[structopt(name = "cache")]
@@ -104,14 +108,20 @@ fn main() {
     if let Err(e) = match options.subcommand {
         Subcommand::Identify {
             filename,
+            optimize,
             diff,
             batch,
-        } => identify(&cache_file, filename, diff, batch),
+        } => identify(&cache_file, filename, optimize, diff, batch),
         Subcommand::Crawl {
             directory,
             follow_links,
             glob,
-        } => crawl(&cache_file, &directory, follow_links, glob.as_ref().map(String::as_str)),
+        } => crawl(
+            &cache_file,
+            &directory,
+            follow_links,
+            glob.as_ref().map(String::as_str),
+        ),
         Subcommand::Cache { subcommand } => cache(&cache_file, subcommand),
     } {
         eprintln!("{}", e);
@@ -119,6 +129,7 @@ fn main() {
     }
 }
 
+#[allow(unused_variables)]
 fn load_store(cache_filename: &Path) -> Result<Store, Error> {
     #[cfg(feature = "embedded-cache")]
     let store = Store::from_cache(CACHE_DATA)?;
@@ -129,10 +140,10 @@ fn load_store(cache_filename: &Path) -> Result<Store, Error> {
     Ok(store)
 }
 
-#[allow(unused_variables)]
 fn identify(
     cache_filename: &Path,
     filename: Option<PathBuf>,
+    optimize: bool,
     want_diff: bool,
     batch: bool,
 ) -> Result<(), Error> {
@@ -152,7 +163,7 @@ fn identify(
         } else {
             Box::new(File::open(filename)?)
         };
-        return identify_file(&store, &mut file, want_diff);
+        return identify_file(&store, &mut file, optimize, want_diff);
     }
 
     // batch mode: read stdin line by line until eof
@@ -171,7 +182,7 @@ fn identify(
                 continue;
             }
         };
-        identify_file(&store, &mut file, want_diff).unwrap_or_else(|err| {
+        identify_file(&store, &mut file, optimize, want_diff).unwrap_or_else(|err| {
             eprintln!("Error: {}", err);
         });
     }
@@ -179,7 +190,12 @@ fn identify(
     Ok(())
 }
 
-fn identify_file<R>(store: &Store, file: &mut R, want_diff: bool) -> Result<(), Error>
+fn identify_file<R>(
+    store: &Store,
+    file: &mut R,
+    optimize: bool,
+    want_diff: bool,
+) -> Result<(), Error>
 where
     R: Read + Sized,
 {
@@ -203,16 +219,44 @@ where
     if matched.score > MIN_SCORE {
         println!("License: {} ({})", matched.name, matched.license_type);
         println!("Score: {}", matched.score);
-        Ok(())
-    } else {
-        println!("License: Unknown");
-        Err(err_msg(
-            "Confidence threshold not high enough for any known license",
-        ))
+        return Ok(());
     }
+
+    println!("License: Unknown");
+
+    // try again, optimizing for the current best match
+    if optimize {
+        let (opt, score) = text_data.optimize_bounds(&matched.data);
+        let (lower, upper) = opt.lines_view();
+
+        if want_diff {
+            diff_result(&opt, matched.data);
+        }
+
+        if score > MIN_SCORE {
+            println!(
+                "But, there's probably {} ({}) at lines {} - {} with a score of {}",
+                matched.name,
+                matched.license_type,
+                lower + 1,
+                upper,
+                score
+            );
+            return Ok(());
+        }
+    }
+
+    Err(err_msg(
+        "Confidence threshold not high enough for any known license",
+    ))
 }
 
-fn crawl(cache_filename: &Path, directory: &Path, follow_links: bool, glob: Option<&str>) -> Result<(), Error> {
+fn crawl(
+    cache_filename: &Path,
+    directory: &Path,
+    follow_links: bool,
+    glob: Option<&str>,
+) -> Result<(), Error> {
     use ignore::types::TypesBuilder;
     use ignore::WalkBuilder;
 
@@ -249,7 +293,7 @@ fn crawl(cache_filename: &Path, directory: &Path, follow_links: bool, glob: Opti
             println!("{}", path.display());
 
             if let Ok(mut reader) = File::open(path) {
-                identify_file(&store, &mut reader, false);
+                identify_file(&store, &mut reader, false, false);
             }
         });
 
@@ -281,8 +325,8 @@ fn cache_load_spdx(
 fn diff_result(license: &TextData, other: &TextData) {
     use difference::Changeset;
 
-    let license_texts = &license.text().expect("license texts is Some");
-    let other_texts = &other.text().expect("other texts is Some");
+    let license_texts = &license.lines().expect("license texts is Some").join("\n");
+    let other_texts = &other.lines().expect("other texts is Some").join("\n");
 
     let processed = Changeset::new(license_texts, other_texts, " ");
     println!(
