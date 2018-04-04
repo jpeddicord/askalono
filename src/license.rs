@@ -185,7 +185,7 @@ mod tests {
         let license = TextData::from(license_text).without_text();
         let sample = TextData::from(sample_text);
 
-        let optimized = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         assert_eq!((0, 3), optimized.lines_view);
@@ -193,7 +193,7 @@ mod tests {
         // add more to the string, try again (avoid int trunc screwups)
         let sample_text = format!("{}\none more line", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let optimized = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         assert_eq!((0, 3), optimized.lines_view);
@@ -201,7 +201,7 @@ mod tests {
         // add to the beginning too
         let sample_text = format!("some content\nat\n\nthe beginning\n{}", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let optimized = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         assert_eq!((4, 7), optimized.lines_view);

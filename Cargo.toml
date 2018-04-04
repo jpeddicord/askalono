@@ -24,7 +24,6 @@ unicode-normalization = "0.1.5"
 
 # spdx deps
 serde_json = { version = "1.0.11", optional = true }
-walkdir = { version = "2.1.4", optional = true }
 
 [workspace]
 members = ["cli"]
@@ -35,4 +34,4 @@ path = "src/lib.rs"
 
 [features]
 default = ["spdx"]
-spdx = ["serde_json", "walkdir"]
+spdx = ["serde_json"]

@@ -12,12 +12,11 @@
 // permissions and limitations under the License.
 
 use std::ffi::OsStr;
-use std::fs::{metadata, File};
+use std::fs::{read_dir, File};
 use std::io::prelude::*;
 use std::path::Path;
 
 use failure::Error;
-use walkdir::WalkDir;
 
 use store::base::{LicenseEntry, Store};
 use license::TextData;
@@ -26,13 +25,14 @@ impl Store {
     pub fn load_spdx(&mut self, dir: &Path, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 
-        metadata(dir)?;
-        for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-            let path = entry.path();
-            if !path.is_file() || path.extension().unwrap_or_else(|| OsStr::new("")) != "json" {
-                continue;
-            }
+        let mut paths: Vec<_> = read_dir(dir)?
+            .filter_map(|e| e.ok())
+            .map(|e| e.path())
+            .filter(|p| p.is_file() && p.extension().unwrap_or_else(|| OsStr::new("")) == "json")
+            .collect();
+        paths.sort();
 
+        for path in paths {
             let mut f = File::open(path)?;
             let mut data = String::new();
             f.read_to_string(&mut data)?;

@@ -30,8 +30,6 @@ extern crate unicode_normalization;
 
 #[cfg(feature = "spdx")]
 extern crate serde_json as json;
-#[cfg(feature = "spdx")]
-extern crate walkdir;
 
 mod ngram;
 mod preproc;
