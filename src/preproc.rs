@@ -19,14 +19,13 @@ use unicode_normalization::UnicodeNormalization;
 type PreprocFn = Fn(&str) -> String;
 
 /// A list of preprocessors that normalize text without removing anything
-/// substantial. Shouldn't remove entire lines for the sake of preserving
-/// line number information.
+/// substantial. These operate on one line at a time.
 pub const PREPROC_NORMALIZE: [&PreprocFn; 5] = [
     &normalize_unicode,
-    &normalize_junk,
+    &remove_junk,
     &normalize_horizontal_whitespace,
     &normalize_punctuation,
-    &trim_lines,
+    &trim_line,
 ];
 
 /// A list of preprocessors that more aggressively normalize/mangle text
@@ -40,44 +39,39 @@ pub const PREPROC_AGGRESSIVE: [&PreprocFn; 5] = [
     &collapse_whitespace,
 ];
 
-pub fn apply_normalizers(text: &str) -> String {
-    let mut out = text.to_owned();
-    for p in &PREPROC_NORMALIZE {
-        out = p(&out);
+pub fn apply_normalizers(text: &str) -> Vec<String> {
+    let mut lines = Vec::new();
+    for line in text.split('\n') {
+        let mut out = line.to_owned();
+        for preproc in &PREPROC_NORMALIZE {
+            out = preproc(&out);
+        }
+        lines.push(out);
     }
-    debug!("Normalized to:\n{}\n---", out);
-    out
+    debug!("Normalized to:\n{:?}\n---", lines);
+    lines
 }
 
 pub fn apply_aggressive(text: &str) -> String {
     let mut out = text.to_owned();
-    for p in &PREPROC_AGGRESSIVE {
-        out = p(&out);
+    for preproc in &PREPROC_AGGRESSIVE {
+        out = preproc(&out);
     }
     debug!("Aggressively normalized to:\n{}\n---", out);
     out
 }
 
+// Line-by-line normalizers
+
 fn normalize_unicode(input: &str) -> String {
     input.nfc().collect::<String>()
 }
 
-fn normalize_junk(input: &str) -> String {
+fn remove_junk(input: &str) -> String {
     lazy_static! {
         static ref RX: Regex = Regex::new(r"[^\w\s\pP]+").unwrap();
     }
     RX.replace_all(input, "").into()
-}
-
-fn normalize_vertical_whitespace(input: &str) -> String {
-    lazy_static! {
-        static ref RX_MISC: Regex = Regex::new(r"[\r\n\v\f]").unwrap();
-        static ref RX_NUM: Regex = Regex::new(r"\n{3,}").unwrap();
-    }
-    let out = Cow::Borrowed(input);
-    let out = RX_MISC.replace_all(&out, "\n");
-    let out = RX_NUM.replace_all(&out, "\n\n");
-    out.into()
 }
 
 fn normalize_horizontal_whitespace(input: &str) -> String {
@@ -107,12 +101,21 @@ fn normalize_punctuation(input: &str) -> String {
     out.into()
 }
 
-fn trim_lines(input: &str) -> String {
-    let mut out = Vec::new();
-    for line in input.split('\n') {
-        out.push(line.trim());
+fn trim_line(input: &str) -> String {
+    input.trim().into()
+}
+
+// Aggressive preprocessors
+
+fn normalize_vertical_whitespace(input: &str) -> String {
+    lazy_static! {
+        static ref RX_MISC: Regex = Regex::new(r"[\r\n\v\f]").unwrap();
+        static ref RX_NUM: Regex = Regex::new(r"\n{3,}").unwrap();
     }
-    out.join("\n")
+    let out = Cow::Borrowed(input);
+    let out = RX_MISC.replace_all(&out, "\n");
+    let out = RX_NUM.replace_all(&out, "\n\n");
+    out.into()
 }
 
 fn remove_punctuation(input: &str) -> String {
@@ -177,7 +180,7 @@ mod tests {
         let text_lines = text.lines().count();
 
         let normalized = apply_normalizers(text);
-        let normalized_lines = normalized.lines().count();
+        let normalized_lines = normalized.len();
 
         assert_eq!(
             text_lines, normalized_lines,
