@@ -25,12 +25,15 @@ impl Store {
     pub fn load_spdx(&mut self, dir: &Path, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 
+        // locate all json files in the directory
         let mut paths: Vec<_> = read_dir(dir)?
             .filter_map(|e| e.ok())
             .map(|e| e.path())
             .filter(|p| p.is_file() && p.extension().unwrap_or_else(|| OsStr::new("")) == "json")
             .collect();
-        paths.sort();
+
+        // sort without extensions; otherwise dashes and dots muck it up
+        paths.sort_by(|a, b| a.file_stem().unwrap().cmp(b.file_stem().unwrap()));
 
         for path in paths {
             let mut f = File::open(path)?;
@@ -61,6 +64,20 @@ impl Store {
                 false => TextData::new(text),
                 true => TextData::new(text).without_text(),
             };
+
+            // check if an identical license is already present
+            let mut already_existed = false;
+            self.licenses.iter_mut().for_each(|(key, ref mut value)| {
+                if value.original.eq_data(&content) {
+                    value.aliases.push(name.to_string());
+                    info!("{} already stored; added as an alias for {}", name, key);
+                    already_existed = true;
+                }
+            });
+
+            if already_existed {
+                continue;
+            }
 
             let license = self.licenses
                 .entry(name.to_owned())

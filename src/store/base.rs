@@ -18,6 +18,7 @@ use license::TextData;
 #[derive(Serialize, Deserialize)]
 pub(crate) struct LicenseEntry {
     pub original: TextData,
+    pub aliases: Vec<String>,
     pub headers: Vec<TextData>,
     pub alternates: Vec<TextData>,
 }
@@ -31,6 +32,7 @@ impl LicenseEntry {
     pub fn new(original: TextData) -> LicenseEntry {
         LicenseEntry {
             original,
+            aliases: Vec::new(),
             alternates: Vec::new(),
             headers: Vec::new(),
         }

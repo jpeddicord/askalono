@@ -219,6 +219,11 @@ where
     if matched.score > MIN_SCORE {
         println!("License: {} ({})", matched.name, matched.license_type);
         println!("Score: {}", matched.score);
+
+        if matched.aliases.len() > 0 {
+            println!("Aliases: {}", matched.aliases.join(", "));
+        }
+
         return Ok(());
     }
 

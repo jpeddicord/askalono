@@ -28,7 +28,7 @@ use rmps::Serializer;
 
 use store::base::Store;
 
-const CACHE_VERSION: &[u8] = b"askalono-02";
+const CACHE_VERSION: &[u8] = b"askalono-03";
 
 impl Store {
     pub fn from_cache<R>(readable: R) -> Result<Store, Error>

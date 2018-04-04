@@ -19,7 +19,7 @@ use failure::Error;
 use ngram::NgramSet;
 use preproc::{apply_aggressive, apply_normalizers};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum LicenseType {
     Original,
     Header,
@@ -104,6 +104,10 @@ impl TextData {
 
     pub fn match_score(&self, other: &TextData) -> f32 {
         self.match_data.dice(&other.match_data)
+    }
+
+    pub(crate) fn eq_data(&self, other: &Self) -> bool {
+        self.match_data.eq(&other.match_data)
     }
 
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {

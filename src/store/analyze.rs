@@ -25,19 +25,29 @@ use license::LicenseType;
 pub struct Match<'a> {
     pub score: f32,
     pub name: String,
+    pub aliases: Vec<String>,
     pub license_type: LicenseType,
     pub data: &'a TextData,
 }
 
-impl<'a> PartialOrd for Match<'a> {
-    fn partial_cmp(&self, other: &Match) -> Option<Ordering> {
+/// A lighter version of Match to be used during analysis.
+/// Reduces the need for cloning a bunch of fields.
+struct PartialMatch<'a> {
+    pub name: &'a str,
+    pub score: f32,
+    pub license_type: LicenseType,
+    pub data: &'a TextData,
+}
+
+impl<'a> PartialOrd for PartialMatch<'a> {
+    fn partial_cmp(&self, other: &PartialMatch) -> Option<Ordering> {
         self.score.partial_cmp(&other.score)
     }
 }
 
-impl<'a> PartialEq for Match<'a> {
-    fn eq(&self, other: &Match) -> bool {
-        self.score.eq(&other.score) && self.name.eq(&other.name)
+impl<'a> PartialEq for PartialMatch<'a> {
+    fn eq(&self, other: &PartialMatch) -> bool {
+        self.score.eq(&other.score) && self.name == other.name && self.license_type == other.license_type
     }
 }
 
@@ -53,39 +63,47 @@ impl<'a> fmt::Debug for Match<'a> {
 
 impl Store {
     pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
-        let mut res: Vec<Match> = self.licenses
+        let mut res: Vec<PartialMatch> = self.licenses
             .par_iter()
-            .fold(Vec::new, |mut a: Vec<Match>, (name, data)| {
-                a.push(Match {
+            .fold(Vec::new, |mut a: Vec<PartialMatch>, (name, data)| {
+                a.push(PartialMatch {
                     score: data.original.match_score(&text),
-                    name: name.clone(),
+                    name,
                     license_type: LicenseType::Original,
                     data: &data.original,
                 });
                 data.alternates.iter().for_each(|alt| {
-                    a.push(Match {
+                    a.push(PartialMatch {
                         score: alt.match_score(&text),
-                        name: name.clone(),
+                        name,
                         license_type: LicenseType::Alternate,
                         data: alt,
                     })
                 });
                 data.headers.iter().for_each(|head| {
-                    a.push(Match {
+                    a.push(PartialMatch {
                         score: head.match_score(&text),
-                        name: name.clone(),
+                        name,
                         license_type: LicenseType::Header,
                         data: head,
                     })
                 });
                 a
             })
-            .reduce(Vec::new, |mut a: Vec<Match>, b: Vec<Match>| {
+            .reduce(Vec::new, |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
                 a.extend(b);
                 a
             });
         res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
-        Ok(res[0].clone())
+        let m = &res[0];
+        let license = self.licenses.get(m.name).unwrap();
+        Ok(Match {
+            score: m.score,
+            name: m.name.to_string(),
+            license_type: m.license_type.clone(),
+            aliases: license.aliases.clone(),
+            data: m.data,
+        })
     }
 }
