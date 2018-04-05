@@ -11,6 +11,8 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+#![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
+
 extern crate askalono;
 extern crate difference;
 extern crate env_logger;

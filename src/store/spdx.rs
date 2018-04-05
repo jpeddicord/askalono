@@ -43,11 +43,11 @@ impl Store {
 
             let name = val["licenseId"]
                 .as_str()
-                .ok_or(format_err!("missing licenseId"))?;
+                .ok_or_else(|| format_err!("missing licenseId"))?;
 
             let deprecated = val["isDeprecatedLicenseId"]
                 .as_bool()
-                .ok_or(format_err!("missing isDeprecatedLicenseId"))?;
+                .ok_or_else(|| format_err!("missing isDeprecatedLicenseId"))?;
             if deprecated {
                 debug!("Skipping {} (deprecated)", name);
                 continue;
@@ -55,7 +55,7 @@ impl Store {
 
             let text = val["licenseText"]
                 .as_str()
-                .ok_or(format_err!("missing licenseText"))?;
+                .ok_or_else(|| format_err!("missing licenseText"))?;
             let header = val["standardLicenseHeader"].as_str();
 
             info!("Processing {}", name);

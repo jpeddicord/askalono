@@ -54,14 +54,14 @@ impl fmt::Display for IdResult {
                 "License: {} ({})\nScore: {:.3}\n",
                 license.name, license.kind, self.score
             )?;
-            if license.aliases.len() > 0 {
+            if !license.aliases.is_empty() {
                 write!(f, "Aliases: {}\n", license.aliases.join(", "))?;
             }
         } else {
             write!(f, "License: Unknown\nScore: {:.3}\n", self.score)?;
         }
 
-        if self.containing.len() == 0 {
+        if self.containing.is_empty() {
             return Ok(());
         }
         write!(f, "Containing:\n")?;
@@ -72,7 +72,7 @@ impl fmt::Display for IdResult {
                 "  License: {} ({})\n  Score: {:.3}\n  Lines: {} - {}\n",
                 res.license.name, res.license.kind, res.score, res.line_range.0, res.line_range.1
             )?;
-            if res.license.aliases.len() > 0 {
+            if !res.license.aliases.is_empty() {
                 write!(f, "  Aliases: {}\n", res.license.aliases.join(", "))?;
             }
         }
@@ -93,7 +93,7 @@ pub fn identify(
     let store = load_store(cache_filename)?;
     info!(
         "Cache loaded in {} ms",
-        cache_inst.elapsed().subsec_nanos() as f32 / 1000_000.0
+        cache_inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
     );
 
     if !batch {
@@ -161,7 +161,7 @@ where
     info!(
         "{:?} in {} ms",
         matched,
-        inst.elapsed().subsec_nanos() as f32 / 1000_000.0
+        inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
     );
 
     if want_diff {
@@ -187,13 +187,13 @@ where
     // try again, optimizing for the current best match
     if optimize {
         let inst = Instant::now();
-        let (opt, score) = text_data.optimize_bounds(&matched.data);
+        let (opt, score) = text_data.optimize_bounds(matched.data);
         let (lower, upper) = opt.lines_view();
 
         info!(
             "Optimized: {:?} in {} ms",
             matched,
-            inst.elapsed().subsec_nanos() as f32 / 1000_000.0
+            inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
         );
 
         if want_diff {

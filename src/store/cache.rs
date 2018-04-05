@@ -40,9 +40,9 @@ impl Store {
         let dec = GzDecoder::new(readable);
         {
             let extra = dec.header()
-                .ok_or(format_err!("cache gzip header invalid"))?
+                .ok_or_else(|| format_err!("cache gzip header invalid"))?
                 .extra()
-                .ok_or(format_err!("cache gzip extra header missing"))?;
+                .ok_or_else(|| format_err!("cache gzip extra header missing"))?;
             if extra != CACHE_VERSION {
                 bail!("cache version mismatch");
             }

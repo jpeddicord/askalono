@@ -29,7 +29,7 @@ impl<'a> NgramSet {
     pub fn new(n: u8) -> NgramSet {
         NgramSet {
             map: HashMap::new(),
-            n: n,
+            n,
             size: 0,
         }
     }

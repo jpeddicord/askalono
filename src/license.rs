@@ -81,9 +81,9 @@ impl TextData {
     }
 
     pub fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
-        let view = match &self.lines_normalized {
-            &Some(ref lines) => &lines[start..end],
-            &None => return Err(format_err!("TextData does not have original text")),
+        let view = match self.lines_normalized {
+            Some(ref lines) => &lines[start..end],
+            None => return Err(format_err!("TextData does not have original text")),
         };
         let view_joined = view.join("\n");
         let processed = apply_aggressive(&view_joined);

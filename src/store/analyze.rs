@@ -68,14 +68,14 @@ impl Store {
             .par_iter()
             .fold(Vec::new, |mut a: Vec<PartialMatch>, (name, data)| {
                 a.push(PartialMatch {
-                    score: data.original.match_score(&text),
+                    score: data.original.match_score(text),
                     name,
                     license_type: LicenseType::Original,
                     data: &data.original,
                 });
                 data.alternates.iter().for_each(|alt| {
                     a.push(PartialMatch {
-                        score: alt.match_score(&text),
+                        score: alt.match_score(text),
                         name,
                         license_type: LicenseType::Alternate,
                         data: alt,
@@ -83,7 +83,7 @@ impl Store {
                 });
                 data.headers.iter().for_each(|head| {
                     a.push(PartialMatch {
-                        score: head.match_score(&text),
+                        score: head.match_score(text),
                         name,
                         license_type: LicenseType::Header,
                         data: head,
@@ -101,7 +101,7 @@ impl Store {
         res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
         let m = &res[0];
-        let license = self.licenses.get(m.name).unwrap();
+        let license = &self.licenses[m.name];
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),

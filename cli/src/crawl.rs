@@ -51,9 +51,9 @@ pub fn crawl(
                 None
             }
         })
-        .filter(|e| match e {
-            &Ok(ref entry) => !entry.metadata().unwrap().is_dir(),
-            &Err(_) => false,
+        .filter(|e| match *e {
+            Ok(ref entry) => !entry.metadata().unwrap().is_dir(),
+            Err(_) => false,
         })
         .for_each(|e| {
             let entry = e.unwrap();
