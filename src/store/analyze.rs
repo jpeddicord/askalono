@@ -77,6 +77,11 @@ impl<'a> fmt::Debug for Match<'a> {
 }
 
 impl Store {
+    /// Compare the given `TextData` against all licenses in the `Store`.
+    ///
+    /// This parallelizes the search as much as it can to find the best match.
+    /// Once a match is obtained, it can be optimized further; see methods on
+    /// `TextData` for more information.
     pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
         let mut res: Vec<PartialMatch> = self.licenses
             .par_iter()

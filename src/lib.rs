@@ -11,6 +11,11 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+//! askalono is a crate that is Quite Good at detecting licenses from text.
+//!
+//! To get started, have a look at the `Store` struct, or one of the examples
+//! in the `examples` directory.
+
 #![warn(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool, useless_format))]
 

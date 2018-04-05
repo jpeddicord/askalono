@@ -91,6 +91,15 @@ pub struct TextData {
 }
 
 impl TextData {
+    /// Create a new TextData structure from a string.
+    ///
+    /// The given text will be normalized, then smashed down into n-grams for
+    /// matching. By default, the normalized text is stored inside the
+    /// structure for future diagnostics. This is necessary for optimizing a
+    /// match and for diffing against other texts. If you don't want this extra
+    /// data, you can call `without_text` throw it out. Generally, as a user of
+    /// this library you want to keep the text data, but askalono will throw it
+    /// away in its own `Store` as it's not needed.
     pub fn new(text: &str) -> TextData {
         let normalized = apply_normalizers(text);
         let normalized_joined = normalized.join("\n");
@@ -109,6 +118,12 @@ impl TextData {
     // is lacking stored text; perhaps there's another way to indicate that?
     // maybe an impl on an enum variant if/when that's available:
     // https://github.com/rust-lang/rfcs/pull/1450
+
+    /// Consume this `TextData`, returning one without normalized/processed
+    /// text stored.
+    ///
+    /// Unless you know you don't want the text, you probably don't want to use
+    /// this. Other methods on `TextData` require that text is present.
     pub fn without_text(self) -> Self {
         TextData {
             match_data: self.match_data,
@@ -118,11 +133,29 @@ impl TextData {
         }
     }
 
+    /// Get the bounds of the active line view.
+    ///
+    /// This represents the "active" region of lines that matches are generated
+    /// from. The bounds are a 0-indexed `(start, end)` tuple, with inclusive
+    /// indices (line numbers). See `optimize_bounds`.
+    ///
+    /// This is largely for informational purposes; other methods in
+    /// `TextView`, such as `lines` and `match_score`, will already account for
+    /// the line range. However, it's useful to call it after running
+    /// `optimize_bounds` to discover where the input text was discovered.
     pub fn lines_view(&self) -> (usize, usize) {
         self.lines_view
     }
 
-    pub fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
+    /// Clone this `TextView`, creating a copy with the given view.
+    ///
+    /// This will re-generate match data for the given view. It's used in
+    /// `optimize_bounds` to shrink/expand the view of the text to discover
+    /// bounds.
+    ///
+    /// Other methods on `TextView` respect this boundary, so it's not needed
+    /// outside this struct.
+    fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
         let view = match self.lines_normalized {
             Some(ref lines) => &lines[start..end],
             None => return Err(format_err!("TextData does not have original text")),
@@ -137,6 +170,9 @@ impl TextData {
         })
     }
 
+    /// Get a slice of the normalized lines in this `TextData`.
+    ///
+    /// If the text was discarded with `without_text`, this returns `None`.
     pub fn lines(&self) -> Option<&[String]> {
         match self.lines_normalized {
             Some(ref lines) => Some(&lines[self.lines_view.0..self.lines_view.1]),
@@ -144,6 +180,9 @@ impl TextData {
         }
     }
 
+    /// Compare this `TextData` with another, returning a similarity score.
+    ///
+    /// This is what's used during analysis to rank licenses.
     pub fn match_score(&self, other: &TextData) -> f32 {
         self.match_data.dice(&other.match_data)
     }
@@ -152,6 +191,17 @@ impl TextData {
         self.match_data.eq(&other.match_data)
     }
 
+    /// Attempt to optimize a known match to locate possible line ranges.
+    ///
+    /// Returns a new `TextData` struct and a score. The returned struct is a
+    /// clone of `self`, with its view set to the best match against `other`.
+    ///
+    /// Note that this won't be 100% optimal if there are blank lines
+    /// surrounding the actual match, since successive blank lines in a range
+    /// will likely have the same score.
+    ///
+    /// You should check the value of `lines_view` on the returned struct to
+    /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         // optimize the ending bounds of the text match
         let (end_optimized, _) = self.search_optimize(
