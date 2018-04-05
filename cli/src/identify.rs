@@ -11,6 +11,7 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+use std::fmt;
 use std::fs::File;
 use std::io::stdin;
 use std::io::prelude::*;
@@ -19,10 +20,66 @@ use std::time::Instant;
 
 use failure::{err_msg, Error};
 
-use askalono::{Store, TextData};
+use askalono::{LicenseType, Store, TextData};
 use super::util::*;
 
 const MIN_SCORE: f32 = 0.8;
+
+#[derive(Debug)]
+pub struct IdResult {
+    score: f32,
+    license: Option<IdLicense>,
+    containing: Vec<ContainedResult>,
+}
+
+#[derive(Debug)]
+pub struct IdLicense {
+    name: String,
+    kind: LicenseType,
+    aliases: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct ContainedResult {
+    score: f32,
+    license: IdLicense,
+    line_range: (usize, usize),
+}
+
+impl fmt::Display for IdResult {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(ref license) = self.license {
+            write!(
+                f,
+                "License: {} ({})\nScore: {:.3}\n",
+                license.name, license.kind, self.score
+            )?;
+            if license.aliases.len() > 0 {
+                write!(f, "Aliases: {}\n", license.aliases.join(", "))?;
+            }
+        } else {
+            write!(f, "License: Unknown\nScore: {:.3}\n", self.score)?;
+        }
+
+        if self.containing.len() == 0 {
+            return Ok(());
+        }
+        write!(f, "Containing:\n")?;
+
+        for res in &self.containing {
+            write!(
+                f,
+                "  License: {} ({})\n  Score: {:.3}\n  Lines: {} - {}\n",
+                res.license.name, res.license.kind, res.score, res.line_range.0, res.line_range.1
+            )?;
+            if res.license.aliases.len() > 0 {
+                write!(f, "  Aliases: {}\n", res.license.aliases.join(", "))?;
+            }
+        }
+
+        Ok(())
+    }
+}
 
 pub fn identify(
     cache_filename: &Path,
@@ -47,7 +104,13 @@ pub fn identify(
         } else {
             Box::new(File::open(filename)?)
         };
-        return identify_file(&store, &mut file, optimize, want_diff);
+        return match identify_file(&store, &mut file, optimize, want_diff) {
+            Ok(res) => {
+                print!("{}", res);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        };
     }
 
     // batch mode: read stdin line by line until eof
@@ -66,9 +129,14 @@ pub fn identify(
                 continue;
             }
         };
-        identify_file(&store, &mut file, optimize, want_diff).unwrap_or_else(|err| {
-            eprintln!("Error: {}", err);
-        });
+        match identify_file(&store, &mut file, optimize, want_diff) {
+            Ok(res) => {
+                print!("{}", res);
+            }
+            Err(err) => {
+                eprintln!("Error: {}", err);
+            }
+        };
     }
 
     Ok(())
@@ -79,7 +147,7 @@ pub fn identify_file<R>(
     file: &mut R,
     optimize: bool,
     want_diff: bool,
-) -> Result<(), Error>
+) -> Result<IdResult, Error>
 where
     R: Read + Sized,
 {
@@ -100,18 +168,21 @@ where
         diff_result(&text_data, matched.data);
     }
 
+    let mut output = IdResult {
+        score: matched.score,
+        license: None,
+        containing: Vec::new(),
+    };
+
     if matched.score > MIN_SCORE {
-        println!("License: {} ({})", matched.name, matched.license_type);
-        println!("Score: {:.3}", matched.score);
+        output.license = Some(IdLicense {
+            name: matched.name,
+            kind: matched.license_type,
+            aliases: matched.aliases,
+        });
 
-        if matched.aliases.len() > 0 {
-            println!("Aliases: {}", matched.aliases.join(", "));
-        }
-
-        return Ok(());
+        return Ok(output);
     }
-
-    println!("License: Unknown");
 
     // try again, optimizing for the current best match
     if optimize {
@@ -130,15 +201,16 @@ where
         }
 
         if score > MIN_SCORE {
-            println!(
-                "But, there's probably {} ({}) at lines {} - {} with a score of {:.3}",
-                matched.name,
-                matched.license_type,
-                lower + 1,
-                upper,
-                score
-            );
-            return Ok(());
+            output.containing.push(ContainedResult {
+                score,
+                license: IdLicense {
+                    name: matched.name,
+                    kind: matched.license_type,
+                    aliases: matched.aliases,
+                },
+                line_range: (lower + 1, upper), // inclusive range using 1-indexed numbers
+            });
+            return Ok(output);
         }
     }
 

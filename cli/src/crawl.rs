@@ -61,9 +61,14 @@ pub fn crawl(
             println!("{}", path.display());
 
             if let Ok(mut reader) = File::open(path) {
-                identify_file(&store, &mut reader, false, false).unwrap_or_else(|err| {
-                    eprintln!("Error: {}", err);
-                });
+                match identify_file(&store, &mut reader, false, false) {
+                    Ok(res) => {
+                        print!("{}", res);
+                    },
+                    Err(err) => {
+                        eprintln!("Error: {}", err);
+                    },
+                };
             }
         });
 
