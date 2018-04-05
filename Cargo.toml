@@ -1,13 +1,15 @@
 [package]
 name = "askalono"
-version = "0.2.0"
+version = "0.2.0-beta.1"
 description = "a library to detect the contents of license files"
 license = "Apache-2.0"
 repository = "https://github.com/amzn/askalono"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 readme = "README.md"
 exclude = [
-    "/license-list-data/**/*"
+    "/scripts/**/*",
+    "/.github/**/*",
+    "/license-list-data/**/*",
 ]
 
 [dependencies]

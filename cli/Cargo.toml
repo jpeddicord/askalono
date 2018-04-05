@@ -1,17 +1,18 @@
 [package]
 name = "askalono-cli"
-version = "0.1.0"
+version = "0.2.0-beta.1"
 description = "a tool to detect the contents of license files"
 license = "Apache-2.0"
 repository = "https://github.com/amzn/askalono"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 readme = "../README.md"
 exclude = [
-    "/embedded-cache.bin.gz"
+    "/embedded-cache.bin.gz",
+    "/tests/**/*",
 ]
 
 [dependencies]
-askalono = { version = "0.2.0", path = "../" }
+askalono = { version = "0.2.0-beta.1", path = "../" }
 difference = "2.0.0"
 env_logger = "0.5.5"
 failure = "0.1.1"
@@ -21,7 +22,7 @@ rayon = "1.0.1"
 structopt = "0.2.5"
 
 [build-dependencies]
-askalono = { version = "0.2.0", path = "../" }
+askalono = { version = "0.2.0-beta.1", path = "../" }
 
 [[bin]]
 name = "askalono"
