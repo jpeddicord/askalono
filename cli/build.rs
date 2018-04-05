@@ -41,7 +41,7 @@ fn main() {
     let mut store = Store::new();
     store
         .load_spdx(Path::new("../license-list-data/json/details"), false)
-        .unwrap();
+        .expect("Couldn't create a store from SPDX data. Have submodules been initialized?");
     let mut cache = File::create(EMBEDDED_CACHE).unwrap();
     store.to_cache(&mut cache).unwrap();
 }
