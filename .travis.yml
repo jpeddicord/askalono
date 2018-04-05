@@ -20,7 +20,7 @@ script:
 - cargo test --verbose --all
 before_deploy:
 - cargo build --release --all
-- "[[ ${TRAVIS_OS_NAME} = linux ]] && strip target/release/askalono"
+- "[[ ${TRAVIS_OS_NAME} = linux ]] && strip target/release/askalono || true"
 - mv target/release/askalono target/askalono.${TRAVIS_OS_NAME}
 deploy:
   provider: releases
