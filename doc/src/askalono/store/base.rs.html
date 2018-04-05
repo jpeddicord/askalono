@@ -10,10 +10,11 @@
     <title>base.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../main.css" id="themeStyle">
+    <link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle">
     <script src="../../../storage.js"></script>
     
 
@@ -100,6 +101,8 @@
 <span id="44">44</span>
 <span id="45">45</span>
 <span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.</span>
 <span class="comment">//</span>
@@ -121,6 +124,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">LicenseEntry</span> {
     <span class="kw">pub</span> <span class="ident">original</span>: <span class="ident">TextData</span>,
+    <span class="kw">pub</span> <span class="ident">aliases</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TextData</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">alternates</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TextData</span><span class="op">&gt;</span>,
 }
@@ -134,6 +138,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">original</span>: <span class="ident">TextData</span>) <span class="op">-&gt;</span> <span class="ident">LicenseEntry</span> {
         <span class="ident">LicenseEntry</span> {
             <span class="ident">original</span>,
+            <span class="ident">aliases</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
             <span class="ident">alternates</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
             <span class="ident">headers</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
         }
