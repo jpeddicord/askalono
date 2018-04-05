@@ -18,10 +18,24 @@ use std::path::Path;
 
 use failure::Error;
 
-use store::base::{LicenseEntry, Store};
 use license::TextData;
+use store::base::{LicenseEntry, Store};
 
 impl Store {
+    /// Fill the store with SPDX JSON data.
+    ///
+    /// This function is very specific to the format of SPDX's
+    /// `license-list-data` repository. It reads all JSON files in the
+    /// `json/details` directory and creates entries inside the store for
+    /// matching.
+    ///
+    /// This is intended to be used during build of askalono, so it's not
+    /// available unless the `spdx` feature is enabled.
+    ///
+    /// `include_texts`, if true, will keep normalized license text data inside
+    /// the store. This yields a larger store when serialized, but has the
+    /// benefit of allowing you to diff your result against what askalono has
+    /// stored.
     pub fn load_spdx(&mut self, dir: &Path, include_texts: bool) -> Result<(), Error> {
         use json::{from_str, Value};
 

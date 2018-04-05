@@ -1,6 +1,6 @@
 extern crate askalono;
-use std::path::Path;
 use askalono::{Store, TextData};
+use std::path::Path;
 
 // Note: this example is stupid slow because it loads and parses licenses
 // each run instead of persisting to a cache file. Expect runs to take ~20s;

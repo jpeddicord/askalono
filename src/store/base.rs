@@ -23,6 +23,28 @@ pub(crate) struct LicenseEntry {
     pub alternates: Vec<TextData>,
 }
 
+/// A representation of a collection of known licenses.
+///
+/// This struct is generally what you want to start with if you're looking to
+/// match text against a database of licenses. Load a cache from disk using
+/// `from_cache`, then use the `analyze` function to determine what a text most
+/// closely matches.
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// # // FIXME: this should not be ignored, but there's a bug in nightly:
+/// # // https://github.com/rust-lang/rust/issues/48890
+/// # use std::fs::File;
+/// # use std::error::Error;
+/// use askalono::{Store, TextData};
+///
+/// # fn main() -> Result<(), Box<Error>> {
+/// let store = Store::from_cache(File::open("askalono-cache.bin.gz")?)?;
+/// let result = store.analyze(&TextData::from("what's this"))?;
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Default, Serialize, Deserialize)]
 pub struct Store {
     pub(super) licenses: HashMap<String, LicenseEntry>,
@@ -40,6 +62,10 @@ impl LicenseEntry {
 }
 
 impl Store {
+    /// Create a new `Store`.
+    ///
+    /// More often, you probably want to use `from_cache` instead of creating
+    /// an empty store.
     pub fn new() -> Store {
         Store {
             licenses: HashMap::new(),

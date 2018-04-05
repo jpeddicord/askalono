@@ -11,6 +11,7 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+#![warn(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool, useless_format))]
 
 #[macro_use]
@@ -31,10 +32,10 @@ extern crate unicode_normalization;
 #[cfg(feature = "spdx")]
 extern crate serde_json as json;
 
+mod license;
 mod ngram;
 mod preproc;
 mod store;
-mod license;
 
-pub use store::{Match, Store};
 pub use license::{LicenseType, TextData};
+pub use store::{Match, Store};

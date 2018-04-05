@@ -1,13 +1,17 @@
 extern crate askalono;
 
+use askalono::{Store, TextData};
 use std::fs::File;
 use std::io::Read;
-use askalono::{Store, TextData};
 
 macro_rules! license_path {
     ($name:expr) => {
-        format!("{}/../license-list-data/text/{}.txt", env!("CARGO_MANIFEST_DIR"), $name)
-    }
+        format!(
+            "{}/../license-list-data/text/{}.txt",
+            env!("CARGO_MANIFEST_DIR"),
+            $name
+        )
+    };
 }
 
 macro_rules! assert_license {

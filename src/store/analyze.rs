@@ -17,16 +17,30 @@ use std::fmt;
 use failure::Error;
 use rayon::prelude::*;
 
-use store::base::Store;
-use license::TextData;
 use license::LicenseType;
+use license::TextData;
+use store::base::Store;
 
+/// Information about text that was compared against licenses in the store.
+///
+/// This only contains information about the overall match; to uncover more
+/// data you can run methods like `optimize_bounds` on `TextData`.
+///
+/// Its lifetime is tied to the lifetime of the `Store` it was generated from.
 #[derive(Clone)]
 pub struct Match<'a> {
+    /// Confidence score of the match, ranging from 0 to 1.
     pub score: f32,
+    /// The name of the closest matching license in the `Store`. This will
+    /// always be something that exists in the store, regardless of the score.
     pub name: String,
+    /// Alternate names for the matched license.
     pub aliases: Vec<String>,
+    /// The type of the license that matched. Useful to know if the match was
+    /// the complete text, a header, or something else.
     pub license_type: LicenseType,
+    /// A reference to the license data that matched inside the `Store`. May be
+    /// useful for diagnostic purposes or to further optimize the result.
     pub data: &'a TextData,
 }
 

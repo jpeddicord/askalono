@@ -16,8 +16,8 @@ use std::path::Path;
 
 use failure::Error;
 
-use askalono::Store;
 use super::commands::*;
+use askalono::Store;
 
 pub fn cache(cache_filename: &Path, subcommand: CacheSubcommand) -> Result<(), Error> {
     // TODO

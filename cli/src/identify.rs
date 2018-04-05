@@ -13,15 +13,15 @@
 
 use std::fmt;
 use std::fs::File;
-use std::io::stdin;
 use std::io::prelude::*;
+use std::io::stdin;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use failure::{err_msg, Error};
 
-use askalono::{LicenseType, Store, TextData};
 use super::util::*;
+use askalono::{LicenseType, Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
 

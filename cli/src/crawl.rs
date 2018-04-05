@@ -16,8 +16,8 @@ use std::path::Path;
 
 use failure::Error;
 
-use super::util::*;
 use super::identify::identify_file;
+use super::util::*;
 
 pub fn crawl(
     cache_filename: &Path,
@@ -25,8 +25,8 @@ pub fn crawl(
     follow_links: bool,
     glob: Option<&str>,
 ) -> Result<(), Error> {
-    use ignore::types::TypesBuilder;
     use ignore::WalkBuilder;
+    use ignore::types::TypesBuilder;
 
     let store = load_store(cache_filename)?;
 

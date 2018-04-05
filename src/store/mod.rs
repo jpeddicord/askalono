@@ -11,12 +11,12 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-mod base;
 mod analyze;
+mod base;
 mod cache;
 
 #[cfg(feature = "spdx")]
 mod spdx;
 
-pub use self::base::Store;
 pub use self::analyze::Match;
+pub use self::base::Store;

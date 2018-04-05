@@ -19,10 +19,16 @@ use failure::Error;
 use ngram::NgramSet;
 use preproc::{apply_aggressive, apply_normalizers};
 
+/// The type of a license entry (typically in a `Store`).
 #[derive(Clone, PartialEq, Debug)]
 pub enum LicenseType {
+    /// The canonical text of the license.
     Original,
+    /// A license header. There may be more than one in a `Store`.
     Header,
+    /// An alternate form of a license. This is intended to be used for
+    /// alternate _formats_ of a license, not for variants where the text has
+    /// different meaning. Not currently used in askalono's SPDX dataset.
     Alternate,
 }
 
@@ -40,6 +46,42 @@ impl fmt::Display for LicenseType {
     }
 }
 
+/// A structure representing compiled text/matching data.
+///
+/// This is the key structure used to compare two texts against one another. It
+/// handles pre-processing the text to n-grams, scoring, and optimizing the
+/// result to try to identify specific details about a match.
+///
+/// # Examples
+///
+/// Basic scoring of two texts:
+///
+/// ```
+/// use askalono::TextData;
+///
+/// let license = TextData::from("My First License");
+/// let sample = TextData::from(
+///   "copyright 20xx me irl\n\n //  my   first license"
+/// );
+/// assert_eq!(sample.match_score(&license), 1.0);
+/// ```
+///
+/// The above example is a perfect match, as identifiable copyright statements
+/// are stripped out during pre-processing.
+///
+/// Building on that, TextData is able to tell you _where_ in the text a
+/// license is located:
+///
+/// ```
+/// # use askalono::TextData;
+/// # let license = TextData::from("My First License");
+/// let sample = TextData::from(
+///   "copyright 20xx me irl\n// My First License\nfn hello() {\n ..."
+/// );
+/// let (optimized, score) = sample.optimize_bounds(&license);
+/// assert_eq!((1, 2), optimized.lines_view());
+/// assert!(score > 0.99f32, "license within text matches");
+/// ```
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TextData {
     match_data: NgramSet,
@@ -140,10 +182,9 @@ impl TextData {
         fn search(score: &mut FnMut(usize) -> f32, left: usize, right: usize) -> (usize, f32) {
             if right - left <= 3 {
                 // find the index of the highest score in the remaining items
-                let highest = (left .. right + 1) // inclusive
+                return (left .. right + 1) // inclusive
                   .map(|x| (x, score(x)))
-                  .fold((0usize, 0f32), |acc, x| if x.1 > acc.1 { x } else { acc });
-                return highest;
+                  .fold((0usize, 0f32), |acc, x| if x.1 >= acc.1 { x } else { acc });
             }
 
             let low = (left * 2 + right) / 3;
@@ -185,7 +226,7 @@ mod tests {
     #[test]
     fn test_optimize_bounds() {
         let license_text = "this is a license text\nor it pretends to be one\nit's just a test";
-        let sample_text = "this is a license text\nor it pretends to be one\nit's just a test\n\n\nhere is some\ncode\nhello();\n\n//a comment too";
+        let sample_text = "this is a license text\nor it pretends to be one\nit's just a test\nwords\n\nhere is some\ncode\nhello();\n\n//a comment too";
         let license = TextData::from(license_text).without_text();
         let sample = TextData::from(sample_text);
 
@@ -208,6 +249,12 @@ mod tests {
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
-        assert_eq!((4, 7), optimized.lines_view);
+        // end bounds at 7 and 8 have the same score, since they're empty lines (not
+        // counted). askalono is not smart enough to trim this as close as it
+        // can.
+        assert!(
+            (4, 7) == optimized.lines_view || (4, 8) == optimized.lines_view,
+            "bounds are (4, 7) or (4, 8)"
+        );
     }
 }

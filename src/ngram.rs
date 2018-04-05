@@ -13,8 +13,8 @@
 
 use std::cmp::min;
 use std::collections::HashMap;
-use std::collections::hash_map::Iter;
 use std::collections::VecDeque;
+use std::collections::hash_map::Iter;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct NgramSet {
