@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["LicenseType",""]],"struct":[["Match",""],["Store",""],["TextData",""]]});
+initSidebarItems({"enum":[["LicenseType","The type of a license entry (typically in a `Store`)."]],"struct":[["Match","Information about text that was compared against licenses in the store."],["Store","A representation of a collection of known licenses."],["TextData","A structure representing compiled text/matching data."]]});

@@ -246,6 +246,12 @@
 <span id="189">189</span>
 <span id="190">190</span>
 <span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.</span>
 <span class="comment">//</span>
@@ -280,12 +286,13 @@
 <span class="doccomment">/// A list of preprocessors that more aggressively normalize/mangle text</span>
 <span class="doccomment">/// to make for friendlier matching. May remove statements and lines, and</span>
 <span class="doccomment">/// more heavily normalize punctuation.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREPROC_AGGRESSIVE</span>: [<span class="kw-2">&amp;</span><span class="ident">PreprocFn</span>; <span class="number">5</span>] <span class="op">=</span> [
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREPROC_AGGRESSIVE</span>: [<span class="kw-2">&amp;</span><span class="ident">PreprocFn</span>; <span class="number">6</span>] <span class="op">=</span> [
     <span class="kw-2">&amp;</span><span class="ident">normalize_vertical_whitespace</span>,
     <span class="kw-2">&amp;</span><span class="ident">remove_punctuation</span>,
     <span class="kw-2">&amp;</span><span class="ident">lowercaseify</span>,
     <span class="kw-2">&amp;</span><span class="ident">remove_copyright_statements</span>,
     <span class="kw-2">&amp;</span><span class="ident">collapse_whitespace</span>,
+    <span class="kw-2">&amp;</span><span class="ident">final_trim</span>,
 ];
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply_normalizers</span>(<span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -380,7 +387,8 @@
 
 <span class="kw">fn</span> <span class="ident">remove_copyright_statements</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
     <span class="macro">lazy_static</span><span class="macro">!</span> {
-        <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;(?imx)
+        <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(
+            <span class="string">r&quot;(?imx)
             (
                 # either a new paragraph, or the beginning of the text + empty lines
                 (\n\n|\A\n*)
@@ -393,7 +401,8 @@
                 # or any lines that really look like a copyright statement
                 ^copyright (\s+(c|\d+))+ .*?$
             )
-        &quot;</span>).<span class="ident">unwrap</span>();
+        &quot;</span>
+        ).<span class="ident">unwrap</span>();
     }
 
     <span class="ident">RX</span>.<span class="ident">replace_all</span>(<span class="ident">input</span>, <span class="string">&quot;\n\n&quot;</span>).<span class="ident">into</span>()
@@ -404,6 +413,10 @@
         <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;\s+&quot;</span>).<span class="ident">unwrap</span>();
     }
     <span class="ident">RX</span>.<span class="ident">replace_all</span>(<span class="ident">input</span>, <span class="string">&quot; &quot;</span>).<span class="ident">into</span>()
+}
+
+<span class="kw">fn</span> <span class="ident">final_trim</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+    <span class="ident">input</span>.<span class="ident">trim</span>().<span class="ident">into</span>()
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -436,7 +449,6 @@
             <span class="string">&quot;normalizers shouldnt change line counts&quot;</span>
         );
     }
-
 }
 </pre>
 </section>

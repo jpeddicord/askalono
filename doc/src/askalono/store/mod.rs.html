@@ -91,15 +91,15 @@
 <span class="comment">// express or implied. See the License for the specific language governing</span>
 <span class="comment">// permissions and limitations under the License.</span>
 
-<span class="kw">mod</span> <span class="ident">base</span>;
 <span class="kw">mod</span> <span class="ident">analyze</span>;
+<span class="kw">mod</span> <span class="ident">base</span>;
 <span class="kw">mod</span> <span class="ident">cache</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;spdx&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">spdx</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">base</span>::<span class="ident">Store</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">analyze</span>::<span class="ident">Match</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">base</span>::<span class="ident">Store</span>;
 </pre>
 </section>
     <section id='search' class="content hidden"></section>

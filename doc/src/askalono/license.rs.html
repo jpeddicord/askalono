@@ -268,6 +268,103 @@
 <span id="211">211</span>
 <span id="212">212</span>
 <span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.</span>
 <span class="comment">//</span>
@@ -290,10 +387,16 @@
 <span class="kw">use</span> <span class="ident">ngram</span>::<span class="ident">NgramSet</span>;
 <span class="kw">use</span> <span class="ident">preproc</span>::{<span class="ident">apply_aggressive</span>, <span class="ident">apply_normalizers</span>};
 
+<span class="doccomment">/// The type of a license entry (typically in a `Store`).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LicenseType</span> {
+    <span class="doccomment">/// The canonical text of the license.</span>
     <span class="ident">Original</span>,
+    <span class="doccomment">/// A license header. There may be more than one in a `Store`.</span>
     <span class="ident">Header</span>,
+    <span class="doccomment">/// An alternate form of a license. This is intended to be used for</span>
+    <span class="doccomment">/// alternate _formats_ of a license, not for variants where the text has</span>
+    <span class="doccomment">/// different meaning. Not currently used in askalono&#39;s SPDX dataset.</span>
     <span class="ident">Alternate</span>,
 }
 
@@ -311,6 +414,42 @@
     }
 }
 
+<span class="doccomment">/// A structure representing compiled text/matching data.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is the key structure used to compare two texts against one another. It</span>
+<span class="doccomment">/// handles pre-processing the text to n-grams, scoring, and optimizing the</span>
+<span class="doccomment">/// result to try to identify specific details about a match.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Basic scoring of two texts:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use askalono::TextData;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let license = TextData::from(&quot;My First License&quot;);</span>
+<span class="doccomment">/// let sample = TextData::from(</span>
+<span class="doccomment">///   &quot;copyright 20xx me irl\n\n //  my   first license&quot;</span>
+<span class="doccomment">/// );</span>
+<span class="doccomment">/// assert_eq!(sample.match_score(&amp;license), 1.0);</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The above example is a perfect match, as identifiable copyright statements</span>
+<span class="doccomment">/// are stripped out during pre-processing.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Building on that, TextData is able to tell you _where_ in the text a</span>
+<span class="doccomment">/// license is located:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use askalono::TextData;</span>
+<span class="doccomment">/// # let license = TextData::from(&quot;My First License&quot;);</span>
+<span class="doccomment">/// let sample = TextData::from(</span>
+<span class="doccomment">///   &quot;copyright 20xx me irl\n// My First License\nfn hello() {\n ...&quot;</span>
+<span class="doccomment">/// );</span>
+<span class="doccomment">/// let (optimized, score) = sample.optimize_bounds(&amp;license);</span>
+<span class="doccomment">/// assert_eq!((1, 2), optimized.lines_view());</span>
+<span class="doccomment">/// assert!(score &gt; 0.99f32, &quot;license within text matches&quot;);</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TextData</span> {
     <span class="ident">match_data</span>: <span class="ident">NgramSet</span>,
@@ -320,6 +459,15 @@
 }
 
 <span class="kw">impl</span> <span class="ident">TextData</span> {
+    <span class="doccomment">/// Create a new TextData structure from a string.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The given text will be normalized, then smashed down into n-grams for</span>
+    <span class="doccomment">/// matching. By default, the normalized text is stored inside the</span>
+    <span class="doccomment">/// structure for future diagnostics. This is necessary for optimizing a</span>
+    <span class="doccomment">/// match and for diffing against other texts. If you don&#39;t want this extra</span>
+    <span class="doccomment">/// data, you can call `without_text` throw it out. Generally, as a user of</span>
+    <span class="doccomment">/// this library you want to keep the text data, but askalono will throw it</span>
+    <span class="doccomment">/// away in its own `Store` as it&#39;s not needed.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">TextData</span> {
         <span class="kw">let</span> <span class="ident">normalized</span> <span class="op">=</span> <span class="ident">apply_normalizers</span>(<span class="ident">text</span>);
         <span class="kw">let</span> <span class="ident">normalized_joined</span> <span class="op">=</span> <span class="ident">normalized</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
@@ -338,6 +486,12 @@
     <span class="comment">// is lacking stored text; perhaps there&#39;s another way to indicate that?</span>
     <span class="comment">// maybe an impl on an enum variant if/when that&#39;s available:</span>
     <span class="comment">// https://github.com/rust-lang/rfcs/pull/1450</span>
+
+    <span class="doccomment">/// Consume this `TextData`, returning one without normalized/processed</span>
+    <span class="doccomment">/// text stored.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Unless you know you don&#39;t want the text, you probably don&#39;t want to use</span>
+    <span class="doccomment">/// this. Other methods on `TextData` require that text is present.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">without_text</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">TextData</span> {
             <span class="ident">match_data</span>: <span class="self">self</span>.<span class="ident">match_data</span>,
@@ -347,14 +501,32 @@
         }
     }
 
+    <span class="doccomment">/// Get the bounds of the active line view.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This represents the &quot;active&quot; region of lines that matches are generated</span>
+    <span class="doccomment">/// from. The bounds are a 0-indexed `(start, end)` tuple, with inclusive</span>
+    <span class="doccomment">/// indices (line numbers). See `optimize_bounds`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is largely for informational purposes; other methods in</span>
+    <span class="doccomment">/// `TextView`, such as `lines` and `match_score`, will already account for</span>
+    <span class="doccomment">/// the line range. However, it&#39;s useful to call it after running</span>
+    <span class="doccomment">/// `optimize_bounds` to discover where the input text was discovered.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lines_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="ident">usize</span>) {
         <span class="self">self</span>.<span class="ident">lines_view</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">end</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">view</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">lines_normalized</span> {
-            <span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">lines</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">lines</span>[<span class="ident">start</span>..<span class="ident">end</span>],
-            <span class="kw-2">&amp;</span><span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format_err</span><span class="macro">!</span>(<span class="string">&quot;TextData does not have original text&quot;</span>)),
+    <span class="doccomment">/// Clone this `TextView`, creating a copy with the given view.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This will re-generate match data for the given view. It&#39;s used in</span>
+    <span class="doccomment">/// `optimize_bounds` to shrink/expand the view of the text to discover</span>
+    <span class="doccomment">/// bounds.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Other methods on `TextView` respect this boundary, so it&#39;s not needed</span>
+    <span class="doccomment">/// outside this struct.</span>
+    <span class="kw">fn</span> <span class="ident">with_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">end</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">view</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">lines_normalized</span> {
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">lines</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">lines</span>[<span class="ident">start</span>..<span class="ident">end</span>],
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format_err</span><span class="macro">!</span>(<span class="string">&quot;TextData does not have original text&quot;</span>)),
         };
         <span class="kw">let</span> <span class="ident">view_joined</span> <span class="op">=</span> <span class="ident">view</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
         <span class="kw">let</span> <span class="ident">processed</span> <span class="op">=</span> <span class="ident">apply_aggressive</span>(<span class="kw-2">&amp;</span><span class="ident">view_joined</span>);
@@ -366,6 +538,9 @@
         })
     }
 
+    <span class="doccomment">/// Get a slice of the normalized lines in this `TextData`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the text was discarded with `without_text`, this returns `None`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lines</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">String</span>]<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">lines_normalized</span> {
             <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">lines</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">lines</span>[<span class="self">self</span>.<span class="ident">lines_view</span>.<span class="number">0</span>..<span class="self">self</span>.<span class="ident">lines_view</span>.<span class="number">1</span>]),
@@ -373,6 +548,9 @@
         }
     }
 
+    <span class="doccomment">/// Compare this `TextData` with another, returning a similarity score.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is what&#39;s used during analysis to rank licenses.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">match_score</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">TextData</span>) <span class="op">-&gt;</span> <span class="ident">f32</span> {
         <span class="self">self</span>.<span class="ident">match_data</span>.<span class="ident">dice</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">match_data</span>)
     }
@@ -381,6 +559,17 @@
         <span class="self">self</span>.<span class="ident">match_data</span>.<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">match_data</span>)
     }
 
+    <span class="doccomment">/// Attempt to optimize a known match to locate possible line ranges.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns a new `TextData` struct and a score. The returned struct is a</span>
+    <span class="doccomment">/// clone of `self`, with its view set to the best match against `other`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note that this won&#39;t be 100% optimal if there are blank lines</span>
+    <span class="doccomment">/// surrounding the actual match, since successive blank lines in a range</span>
+    <span class="doccomment">/// will likely have the same score.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// You should check the value of `lines_view` on the returned struct to</span>
+    <span class="doccomment">/// find the line ranges.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">optimize_bounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">TextData</span>) <span class="op">-&gt;</span> (<span class="self">Self</span>, <span class="ident">f32</span>) {
         <span class="comment">// optimize the ending bounds of the text match</span>
         <span class="kw">let</span> (<span class="ident">end_optimized</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">search_optimize</span>(
@@ -411,10 +600,9 @@
         <span class="kw">fn</span> <span class="ident">search</span>(<span class="ident">score</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FnMut</span>(<span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">f32</span>, <span class="ident">left</span>: <span class="ident">usize</span>, <span class="ident">right</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="ident">f32</span>) {
             <span class="kw">if</span> <span class="ident">right</span> <span class="op">-</span> <span class="ident">left</span> <span class="op">&lt;=</span> <span class="number">3</span> {
                 <span class="comment">// find the index of the highest score in the remaining items</span>
-                <span class="kw">let</span> <span class="ident">highest</span> <span class="op">=</span> (<span class="ident">left</span> .. <span class="ident">right</span> <span class="op">+</span> <span class="number">1</span>) <span class="comment">// inclusive</span>
+                <span class="kw">return</span> (<span class="ident">left</span> .. <span class="ident">right</span> <span class="op">+</span> <span class="number">1</span>) <span class="comment">// inclusive</span>
                   .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="ident">x</span>, <span class="ident">score</span>(<span class="ident">x</span>)))
-                  .<span class="ident">fold</span>((<span class="number">0usize</span>, <span class="number">0f32</span>), <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">x</span>.<span class="number">1</span> <span class="op">&gt;</span> <span class="ident">acc</span>.<span class="number">1</span> { <span class="ident">x</span> } <span class="kw">else</span> { <span class="ident">acc</span> });
-                <span class="kw">return</span> <span class="ident">highest</span>;
+                  .<span class="ident">fold</span>((<span class="number">0usize</span>, <span class="number">0f32</span>), <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">x</span>.<span class="number">1</span> <span class="op">&gt;=</span> <span class="ident">acc</span>.<span class="number">1</span> { <span class="ident">x</span> } <span class="kw">else</span> { <span class="ident">acc</span> });
             }
 
             <span class="kw">let</span> <span class="ident">low</span> <span class="op">=</span> (<span class="ident">left</span> <span class="op">*</span> <span class="number">2</span> <span class="op">+</span> <span class="ident">right</span>) <span class="op">/</span> <span class="number">3</span>;
@@ -456,7 +644,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_optimize_bounds</span>() {
         <span class="kw">let</span> <span class="ident">license_text</span> <span class="op">=</span> <span class="string">&quot;this is a license text\nor it pretends to be one\nit&#39;s just a test&quot;</span>;
-        <span class="kw">let</span> <span class="ident">sample_text</span> <span class="op">=</span> <span class="string">&quot;this is a license text\nor it pretends to be one\nit&#39;s just a test\n\n\nhere is some\ncode\nhello();\n\n//a comment too&quot;</span>;
+        <span class="kw">let</span> <span class="ident">sample_text</span> <span class="op">=</span> <span class="string">&quot;this is a license text\nor it pretends to be one\nit&#39;s just a test\nwords\n\nhere is some\ncode\nhello();\n\n//a comment too&quot;</span>;
         <span class="kw">let</span> <span class="ident">license</span> <span class="op">=</span> <span class="ident">TextData</span>::<span class="ident">from</span>(<span class="ident">license_text</span>).<span class="ident">without_text</span>();
         <span class="kw">let</span> <span class="ident">sample</span> <span class="op">=</span> <span class="ident">TextData</span>::<span class="ident">from</span>(<span class="ident">sample_text</span>);
 
@@ -479,7 +667,13 @@
         <span class="kw">let</span> (<span class="ident">optimized</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">sample</span>.<span class="ident">optimize_bounds</span>(<span class="kw-2">&amp;</span><span class="ident">license</span>);
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">optimized</span>.<span class="ident">lines_view</span>);
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">optimized</span>.<span class="ident">lines_normalized</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>((<span class="number">4</span>, <span class="number">7</span>), <span class="ident">optimized</span>.<span class="ident">lines_view</span>);
+        <span class="comment">// end bounds at 7 and 8 have the same score, since they&#39;re empty lines (not</span>
+        <span class="comment">// counted). askalono is not smart enough to trim this as close as it</span>
+        <span class="comment">// can.</span>
+        <span class="macro">assert</span><span class="macro">!</span>(
+            (<span class="number">4</span>, <span class="number">7</span>) <span class="op">==</span> <span class="ident">optimized</span>.<span class="ident">lines_view</span> <span class="op">||</span> (<span class="number">4</span>, <span class="number">8</span>) <span class="op">==</span> <span class="ident">optimized</span>.<span class="ident">lines_view</span>,
+            <span class="string">&quot;bounds are (4, 7) or (4, 8)&quot;</span>
+        );
     }
 }
 </pre>

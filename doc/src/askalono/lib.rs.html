@@ -95,6 +95,12 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.</span>
 <span class="comment">//</span>
@@ -109,7 +115,13 @@
 <span class="comment">// express or implied. See the License for the specific language governing</span>
 <span class="comment">// permissions and limitations under the License.</span>
 
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+<span class="doccomment">//! askalono is a crate that is Quite Good at detecting licenses from text.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! To get started, have a look at the `Store` struct, or one of the examples</span>
+<span class="doccomment">//! in the `examples` directory.</span>
+
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cargo-clippy&quot;</span>, <span class="ident">allow</span>(<span class="ident">match_bool</span>, <span class="ident">useless_format</span>))]</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">failure</span>;
@@ -129,13 +141,13 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;spdx&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span> <span class="kw">as</span> <span class="ident">json</span>;
 
+<span class="kw">mod</span> <span class="ident">license</span>;
 <span class="kw">mod</span> <span class="ident">ngram</span>;
 <span class="kw">mod</span> <span class="ident">preproc</span>;
 <span class="kw">mod</span> <span class="ident">store</span>;
-<span class="kw">mod</span> <span class="ident">license</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">store</span>::{<span class="ident">Match</span>, <span class="ident">Store</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">license</span>::{<span class="ident">LicenseType</span>, <span class="ident">TextData</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">store</span>::{<span class="ident">Match</span>, <span class="ident">Store</span>};
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
