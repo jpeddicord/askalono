@@ -218,7 +218,7 @@ where
 
     if matched.score > MIN_SCORE {
         println!("License: {} ({})", matched.name, matched.license_type);
-        println!("Score: {}", matched.score);
+        println!("Score: {:.3}", matched.score);
 
         if matched.aliases.len() > 0 {
             println!("Aliases: {}", matched.aliases.join(", "));
@@ -231,8 +231,15 @@ where
 
     // try again, optimizing for the current best match
     if optimize {
+        let inst = Instant::now();
         let (opt, score) = text_data.optimize_bounds(&matched.data);
         let (lower, upper) = opt.lines_view();
+
+        info!(
+            "Optimized: {:?} in {} ms",
+            matched,
+            inst.elapsed().subsec_nanos() as f32 / 1000_000.0
+        );
 
         if want_diff {
             diff_result(&opt, matched.data);
@@ -240,7 +247,7 @@ where
 
         if score > MIN_SCORE {
             println!(
-                "But, there's probably {} ({}) at lines {} - {} with a score of {}",
+                "But, there's probably {} ({}) at lines {} - {} with a score of {:.3}",
                 matched.name,
                 matched.license_type,
                 lower + 1,
@@ -298,7 +305,9 @@ fn crawl(
             println!("{}", path.display());
 
             if let Ok(mut reader) = File::open(path) {
-                identify_file(&store, &mut reader, false, false);
+                identify_file(&store, &mut reader, false, false).unwrap_or_else(|err| {
+                    eprintln!("Error: {}", err);
+                });
             }
         });
 

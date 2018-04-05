@@ -47,7 +47,8 @@ impl<'a> PartialOrd for PartialMatch<'a> {
 
 impl<'a> PartialEq for PartialMatch<'a> {
     fn eq(&self, other: &PartialMatch) -> bool {
-        self.score.eq(&other.score) && self.name == other.name && self.license_type == other.license_type
+        self.score.eq(&other.score) && self.name == other.name
+            && self.license_type == other.license_type
     }
 }
 
@@ -90,10 +91,13 @@ impl Store {
                 });
                 a
             })
-            .reduce(Vec::new, |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
-                a.extend(b);
-                a
-            });
+            .reduce(
+                Vec::new,
+                |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
+                    a.extend(b);
+                    a
+                },
+            );
         res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
         let m = &res[0];
