@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rev=$(git rev-parse --short HEAD)
+cargo doc --no-deps
+git clone . -b gh-pages gh-pages
+cp -rv target/doc/. gh-pages/doc
+cd gh-pages
+git add doc
+git commit -m "Documentation update from master commit $rev"
+git push
