@@ -26,7 +26,7 @@ pub fn load_store(cache_filename: &Path) -> Result<Store, Error> {
     let store = Store::from_cache(CACHE_DATA)?;
 
     #[cfg(not(feature = "embedded-cache"))]
-    let store = Store::from_cache_file(cache_filename)?;
+    let store = Store::from_cache_file(cache_filename)?; //FIXME: whoops, this doesn't build.
 
     Ok(store)
 }

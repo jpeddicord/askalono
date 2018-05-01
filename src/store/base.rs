@@ -32,9 +32,7 @@ pub(crate) struct LicenseEntry {
 ///
 /// # Examples
 ///
-/// ```rust,ignore
-/// # // FIXME: this should not be ignored, but there's a bug in nightly:
-/// # // https://github.com/rust-lang/rust/issues/48890
+/// ```rust,should_panic
 /// # use std::fs::File;
 /// # use std::error::Error;
 /// use askalono::{Store, TextData};
@@ -70,5 +68,13 @@ impl Store {
         Store {
             licenses: HashMap::new(),
         }
+    }
+
+    /// Get the number of licenses in the store.
+    ///
+    /// This only counts licenses by name -- headers, aliases, and alternates
+    /// aren't included in the count.
+    pub fn len(&self) -> usize {
+        self.licenses.len()
     }
 }

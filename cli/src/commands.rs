@@ -26,11 +26,15 @@ pub struct Opt {
 pub enum Subcommand {
     #[structopt(name = "identify", alias = "id")]
     Identify {
-        #[structopt(name = "FILE", help = "file to identify", required_unless = "batch",
-                    parse(from_os_str))]
+        #[structopt(
+            name = "FILE", help = "file to identify", required_unless = "batch", parse(from_os_str)
+        )]
         filename: Option<PathBuf>,
-        #[structopt(long = "optimize", short = "o",
-                    help = "try to find the location of a license within the file")]
+        #[structopt(
+            long = "optimize",
+            short = "o",
+            help = "try to find the location of a license within the file"
+        )]
         optimize: bool,
         #[structopt(long = "diff", help = "print a colored diff of match (debugging feature)")]
         diff: bool,
@@ -45,8 +49,9 @@ pub enum Subcommand {
         directory: PathBuf,
         #[structopt(long = "follow", help = "follow symlinks")]
         follow_links: bool,
-        #[structopt(long = "glob",
-                    help = "glob of files to check (defaults to license-like files)")]
+        #[structopt(
+            long = "glob", help = "glob of files to check (defaults to license-like files)"
+        )]
         glob: Option<String>,
     },
     #[structopt(name = "cache")]

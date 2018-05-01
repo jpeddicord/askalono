@@ -25,8 +25,8 @@ pub fn crawl(
     follow_links: bool,
     glob: Option<&str>,
 ) -> Result<(), Error> {
-    use ignore::WalkBuilder;
     use ignore::types::TypesBuilder;
+    use ignore::WalkBuilder;
 
     let store = load_store(cache_filename)?;
 
