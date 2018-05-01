@@ -31,7 +31,7 @@ pub fn load_store() -> Store {
 
     let mut store = Store::new();
     store
-        .load_spdx(Path::new(SPDX_JSON), false)
+        .load_spdx(Path::new(SPDX_JSON), true)
         .expect("Couldn't create a store from SPDX data (needed for tests). Have submodules been initialized?");
     let mut cache = File::create(TEST_CACHE).unwrap();
     store.to_cache(&mut cache).unwrap();

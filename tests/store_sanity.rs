@@ -46,7 +46,7 @@ fn self_licenses() {
 
         assert_eq!(license, &matched.name);
         assert_eq!(
-            matched.score, 1.0f32,
+            matched.score, 1f32,
             "license {} must have confidence 1 against itself, it was {}",
             license, matched.score
         );
@@ -60,5 +60,5 @@ fn empty_match() {
     let text = TextData::from("");
     let matched = store.analyze(&text).unwrap();
 
-    assert_eq!(0.0f32, matched.score);
+    assert_eq!(0f32, matched.score);
 }
