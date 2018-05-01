@@ -117,7 +117,9 @@ impl Store {
                     a
                 },
             );
-        res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+        res.par_sort_unstable_by(|a, b| {
+            //println!("{} {:?} {} {:?}", a.name, a.score, b.name, b.score);
+            b.partial_cmp(a).unwrap()});
 
         let m = &res[0];
         let license = &self.licenses[m.name];

@@ -274,7 +274,7 @@ mod tests {
     // cargo test -- --nocapture
 
     #[test]
-    fn test_optimize_bounds() {
+    fn optimize_bounds() {
         let license_text = "this is a license text\nor it pretends to be one\nit's just a test";
         let sample_text = "this is a license text\nor it pretends to be one\nit's just a test\nwords\n\nhere is some\ncode\nhello();\n\n//a comment too";
         let license = TextData::from(license_text).without_text();
@@ -306,5 +306,29 @@ mod tests {
             (4, 7) == optimized.lines_view || (4, 8) == optimized.lines_view,
             "bounds are (4, 7) or (4, 8)"
         );
+    }
+
+    // ensure we don't choke on small TextData matches
+    #[test]
+    fn match_small() {
+        let a = TextData::from("a b");
+        let b = TextData::from("a\nlong\nlicense\nfile\n\n\n\n\nabcdefg");
+
+        let x = a.match_score(&b);
+        let y = b.match_score(&a);
+
+        assert_eq!(x, y);
+    }
+
+    // don't choke on empty TextData either
+    #[test]
+    fn match_empty() {
+        let a = TextData::from("");
+        let b = TextData::from("a\nlong\nlicense\nfile\n\n\n\n\nabcdefg");
+
+        let x = a.match_score(&b);
+        let y = b.match_score(&a);
+
+        assert_eq!(x, y);
     }
 }

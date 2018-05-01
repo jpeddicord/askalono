@@ -21,13 +21,13 @@ use std::io::prelude::*;
 use askalono::TextData;
 
 #[test]
-fn test_store_loads() {
+fn store_loads() {
     let store = common::load_store();
     assert!(store.len() > 0, "store should have licenses");
 }
 
 #[test]
-fn test_self_licenses() {
+fn self_licenses() {
     let store = common::load_store();
     for license in &[
         "MIT",
@@ -51,4 +51,14 @@ fn test_self_licenses() {
             license, matched.score
         );
     }
+}
+
+// this is primarily checking that we don't panic on empty text
+#[test]
+fn empty_match() {
+    let store = common::load_store();
+    let text = TextData::from("");
+    let matched = store.analyze(&text).unwrap();
+
+    assert_eq!(0.0f32, matched.score);
 }

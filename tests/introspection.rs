@@ -25,7 +25,7 @@ use askalono::TextData;
 // as having an Apache 2.0 header, and then tries to see where it is.
 
 #[test]
-fn test_self_apache_header() {
+fn self_apache_header() {
     let store = common::load_store();
     let mut f = File::open(file!()).unwrap();
     let mut text = String::new();

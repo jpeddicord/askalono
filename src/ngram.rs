@@ -77,7 +77,15 @@ impl<'a> NgramSet {
     }
 
     pub fn dice(&self, other: &NgramSet) -> f32 {
+        // no sense comparing sets of different sizes
         if other.n != self.n {
+            return 0f32;
+        }
+
+        // there's obviously no match if either are empty strings;
+        // if we don't check here we could end up with NaN below
+        // when both are empty
+        if self.is_empty() || other.is_empty() {
             return 0f32;
         }
 
@@ -116,5 +124,35 @@ mod tests {
         let set = NgramSet::new(2);
         assert_eq!(set.size, 0);
         assert_eq!(set.n, 2);
+    }
+
+    #[test]
+    fn no_nan() {
+        let a = NgramSet::from_str("", 2);
+        let b = NgramSet::from_str("", 2);
+
+        let score = a.dice(&b);
+
+        assert!(!score.is_nan());
+    }
+
+    #[test]
+    fn same_size() {
+        let a = NgramSet::from_str("", 2);
+        let b = NgramSet::from_str("", 3);
+
+        let score = a.dice(&b);
+
+        assert_eq!(0f32, score);
+    }
+
+    #[test]
+    fn identical() {
+        let a = NgramSet::from_str("one two three apple banana", 2);
+        let b = NgramSet::from_str("one two three apple banana", 2);
+
+        let score = a.dice(&b);
+
+        assert_eq!(1f32, score);
     }
 }
