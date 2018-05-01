@@ -32,14 +32,20 @@ pub fn load_store(cache_filename: &Path) -> Result<Store, Error> {
 }
 
 pub fn diff_result(license: &TextData, other: &TextData) {
-    use difference::Changeset;
+    #[cfg(feature = "diagnostics")]
+    {
+        use difference::Changeset;
 
-    let license_texts = &license.lines().expect("license texts is Some").join("\n");
-    let other_texts = &other.lines().expect("other texts is Some").join("\n");
+        let license_texts = &license.text_processed().expect("license texts is stored");
+        let other_texts = &other.text_processed().expect("other texts is stored");
 
-    let processed = Changeset::new(license_texts, other_texts, " ");
-    println!(
-        "{}\n\n---\n\n{}\n\n---\n\n{}",
-        &license_texts, &other_texts, processed
-    );
+        let processed = Changeset::new(license_texts, other_texts, " ");
+        println!(
+            "{}\n\n---\n\n{}\n\n---\n\n{}",
+            &license_texts, &other_texts, processed
+        );
+    }
+
+    #[cfg(not(feature = "diagnostics"))]
+    println!("askalono wasn't compiled with diagnostics enabled. diff not available.")
 }

@@ -36,7 +36,8 @@ pub enum Subcommand {
             help = "try to find the location of a license within the file"
         )]
         optimize: bool,
-        #[structopt(long = "diff", help = "print a colored diff of match (debugging feature)")]
+        #[structopt(raw(hidden = "true"))]
+        #[structopt(long = "diff")]
         diff: bool,
         // #[structopt(long = "output", short = "o", help = "output type")]
         // output: Option<OutputType>, // "json"

@@ -14,7 +14,6 @@
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 
 extern crate askalono;
-extern crate difference;
 extern crate env_logger;
 extern crate failure;
 extern crate ignore;
@@ -23,6 +22,9 @@ extern crate log;
 extern crate rayon;
 #[macro_use]
 extern crate structopt;
+
+#[cfg(feature = "diagnostics")]
+extern crate difference;
 
 mod cache;
 mod commands;

@@ -180,6 +180,10 @@ impl TextData {
         }
     }
 
+    pub fn text_processed(&self) -> Option<&str> {
+        self.text_processed.as_ref().map(String::as_ref)
+    }
+
     /// Compare this `TextData` with another, returning a similarity score.
     ///
     /// This is what's used during analysis to rank licenses.

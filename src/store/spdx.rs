@@ -75,8 +75,8 @@ impl Store {
             info!("Processing {}", name);
 
             let content = match include_texts {
-                false => TextData::new(text),
-                true => TextData::new(text).without_text(),
+                true => TextData::new(text),
+                false => TextData::new(text).without_text(),
             };
 
             // check if an identical license is already present

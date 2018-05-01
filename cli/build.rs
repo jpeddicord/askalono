@@ -38,9 +38,11 @@ fn main() {
         return;
     }
 
+    let store_texts = env::var("CARGO_FEATURE_DIAGNOSTICS").is_ok();
+
     let mut store = Store::new();
     store
-        .load_spdx(Path::new("../license-list-data/json/details"), false)
+        .load_spdx(Path::new("../license-list-data/json/details"), store_texts)
         .expect("Couldn't create a store from SPDX data. Have submodules been initialized?");
     let mut cache = File::create(EMBEDDED_CACHE).unwrap();
     store.to_cache(&mut cache).unwrap();
