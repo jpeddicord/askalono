@@ -180,6 +180,7 @@ impl TextData {
         }
     }
 
+    #[doc(hidden)]
     pub fn text_processed(&self) -> Option<&str> {
         self.text_processed.as_ref().map(String::as_ref)
     }
