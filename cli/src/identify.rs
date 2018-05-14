@@ -12,7 +12,7 @@
 // permissions and limitations under the License.
 
 use std::fmt;
-use std::fs::File;
+use std::fs::read_to_string;
 use std::io::prelude::*;
 use std::io::stdin;
 use std::path::{Path, PathBuf};
@@ -99,18 +99,17 @@ pub fn identify(
     if !batch {
         let filename = filename.expect("no filename provided");
         let stdin_indicator: PathBuf = "-".into();
-        let mut file: Box<Read> = if filename == stdin_indicator {
-            Box::new(stdin())
+        let content = if filename == stdin_indicator {
+            let mut buf = String::new();
+            stdin().read_to_string(&mut buf)?;
+            buf
         } else {
-            Box::new(File::open(filename)?)
+            read_to_string(filename)?
         };
-        return match identify_file(&store, &mut file, optimize, want_diff) {
-            Ok(res) => {
-                print!("{}", res);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        };
+        return identify_data(&store, &content.into(), optimize, want_diff).map(|res| {
+            print!("{}", res);
+            ()
+        });
     }
 
     // batch mode: read stdin line by line until eof
@@ -122,14 +121,15 @@ pub fn identify(
         }
 
         let filename: PathBuf = buf.trim().into();
-        let mut file = match File::open(filename) {
-            Ok(f) => f,
+        let content = match read_to_string(filename) {
+            Ok(c) => c,
             Err(e) => {
                 eprintln!("Input error: {}", e);
                 continue;
             }
         };
-        match identify_file(&store, &mut file, optimize, want_diff) {
+
+        match identify_data(&store, &content.into(), optimize, want_diff) {
             Ok(res) => {
                 print!("{}", res);
             }
@@ -142,19 +142,12 @@ pub fn identify(
     Ok(())
 }
 
-pub fn identify_file<R>(
+pub fn identify_data(
     store: &Store,
-    file: &mut R,
+    text_data: &TextData,
     optimize: bool,
     want_diff: bool,
-) -> Result<IdResult, Error>
-where
-    R: Read + Sized,
-{
-    let mut text = String::new();
-    file.read_to_string(&mut text)?;
-    let text_data: TextData = text.into();
-
+) -> Result<IdResult, Error> {
     let inst = Instant::now();
     let matched = store.analyze(&text_data)?;
 

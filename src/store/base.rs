@@ -37,12 +37,11 @@ pub(crate) struct LicenseEntry {
 /// # use std::error::Error;
 /// use askalono::{Store, TextData};
 ///
-/// # fn _main() -> Result<(), Box<Error>> {
+/// # fn main() -> Result<(), Box<Error>> {
 /// let store = Store::from_cache(File::open("askalono-cache.bin.gz")?)?;
 /// let result = store.analyze(&TextData::from("what's this"))?;
 /// # Ok(())
 /// # }
-/// # _main().unwrap();
 /// ```
 #[derive(Default, Serialize, Deserialize)]
 pub struct Store {

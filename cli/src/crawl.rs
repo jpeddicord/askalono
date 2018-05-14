@@ -11,12 +11,14 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-use std::fs::File;
+use std::fs::read_to_string;
 use std::path::Path;
 
 use failure::Error;
 
-use super::identify::identify_file;
+use askalono::TextData;
+
+use super::identify::identify_data;
 use super::util::*;
 
 pub fn crawl(
@@ -60,8 +62,9 @@ pub fn crawl(
             let path = entry.path();
             println!("{}", path.display());
 
-            if let Ok(mut reader) = File::open(path) {
-                match identify_file(&store, &mut reader, false, false) {
+            if let Ok(content) = read_to_string(path) {
+                let data = TextData::new(&content);
+                match identify_data(&store, &data, false, false) {
                     Ok(res) => {
                         print!("{}", res);
                     },
