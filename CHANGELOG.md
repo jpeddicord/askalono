@@ -25,11 +25,11 @@ Nothing yet. Planned: a requirement on Rust 1.26.
 - Duplicate SPDX entries are now stored as aliases.
 - SPDX definitions have been updated.
 
-## Removed
+### Removed
 
 - The "diff" option is now only available if compiled with the "diagnostics" feature (off by default). This was intended for debugging and had no practical use in the binary.
 
-## Fixed
+### Fixed
 
 - Resolved a potential panic for short/empty license files (a divide-by-zero was involved).
 
