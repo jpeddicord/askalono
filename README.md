@@ -4,7 +4,6 @@ askalono is a library and command-line tool to help detect license texts. It's d
 
 [![releases](https://img.shields.io/github/release-date-pre/amzn/askalono.svg)](https://github.com/amzn/askalono/releases)
 [![askalono crate](https://img.shields.io/crates/v/askalono.svg)](https://crates.io/crates/askalono)
-[![Gitter chat](https://img.shields.io/gitter/room/amzn/askalono.svg)](https://gitter.im/amzn/askalono)
 
 ## Notice
 
@@ -20,7 +19,7 @@ This software is in the early stages of its lifecycle. While its goals are to be
 
 **NOTE:** This is not currently `cargo install`-able from crates.io, but when it is you'll find it under `askalono-cli`.
 
-Pre-built binaries are available on the [Releases section](https://github.com/amzn/askalono/releases) on GitHub.
+Pre-built binaries are available on the [Releases section](https://github.com/amzn/askalono/releases) on GitHub. Rust developers may also grab a copy by running `cargo install askalono-cli`.
 
 Basic usage:
 
@@ -30,11 +29,9 @@ where `<filename>` is a file (not folder) containing license text to analyze. In
 
 ### As a library
 
-**Note:** This API is still unstable (and relatively undocumented). Semantic versioning will be respected, but anticipate significant changes throughout development.
-
 At the moment, `Store` and `LicenseContent` are exposed for usage. These have a relatively sane API, if unergonmic. Expect improvements in usage and documentation here.
 
-The best way to get an idea of how to use askalono as a library in its early state is to look at the [example](./examples/basic.rs).
+The best way to get an idea of how to use askalono as a library in its early state is to look at the [example](./examples/basic.rs). As of 0.2.0, decent documentation is available via docs.rs, and if the maintainer remembers to, they will add a link here once that's generated. (hint hint)
 
 ## Details
 
@@ -61,9 +58,9 @@ It means "shallot" in Esperanto. You could try to derive a hidden meaning from i
 
 ### How is this different from other solutions?
 
-There are several other excellent projects in this space, including [licensee](https://github.com/benbalter/licensee) and [LiD](https://source.codeaurora.org/external/qostg/lid/). These projects attempt to get a larger picture of a project's licensing, and can look at other sources of metadata to try to find answers. Both of these inspired the creation of askalono, first as a curiosity, then as a serious project.
+There are several other excellent projects in this space, including [licensee](https://github.com/benbalter/licensee), [LiD](https://source.codeaurora.org/external/qostg/lid/), and [ScanCode](https://github.com/nexB/scancode-toolkit). These projects attempt to get a larger picture of a project's licensing, and can look at other sources of metadata to try to find answers. Both of these inspired the creation of askalono, first as a curiosity, then as a serious project.
 
-askalono focuses on the problem of matching text itself -- it's often the piece that is difficult to optimize for speed and accuracy. askalono could be seen as a piece of plumbing in a larger system.
+askalono focuses on the problem of matching text itself -- it's often the piece that is difficult to optimize for speed and accuracy. askalono could be seen as a piece of plumbing in a larger system. The askalono command line application includes other goodies, such as a directory crawler, but these are largely for quick once-off use before diving in with more systematic solutions. (If you're looking for such a solution, take a look at the projects I just mentioned!)
 
 ### Where do the licenses come from?
 

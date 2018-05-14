@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+Nothing yet. Planned: a requirement on Rust 1.26.
+
+## [0.2.0] - 2018-05-13
+
 ### Added
 
 - Full documentation for the public API.
@@ -19,6 +23,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Many performance improvements. `analyze` is now able to run in 3-5 ms on commodity hardware!
 - Text storage and normalization improvements.
 - Duplicate SPDX entries are now stored as aliases.
+- SPDX definitions have been updated.
+
+## Removed
+
+- The "diff" option is now only available if compiled with the "diagnostics" feature (off by default). This was intended for debugging and had no practical use in the binary.
+
+## Fixed
+
+- Resolved a potential panic for short/empty license files (a divide-by-zero was involved).
 
 ## [0.1.0] - 2018-01-31
 

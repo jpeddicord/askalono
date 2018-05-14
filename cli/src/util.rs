@@ -34,6 +34,7 @@ pub fn load_store(cache_filename: &Path) -> Result<Store, Error> {
     Ok(store)
 }
 
+#[allow(unused_variables)]
 pub fn diff_result(license: &TextData, other: &TextData) {
     #[cfg(feature = "diagnostics")]
     {
