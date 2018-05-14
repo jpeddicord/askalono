@@ -4,6 +4,7 @@ askalono is a library and command-line tool to help detect license texts. It's d
 
 [![releases](https://img.shields.io/github/release-date-pre/amzn/askalono.svg)](https://github.com/amzn/askalono/releases)
 [![askalono crate](https://img.shields.io/crates/v/askalono.svg)](https://crates.io/crates/askalono)
+[![documentation](https://docs.rs/askalono/badge.svg)](https://docs.rs/askalono)
 
 ## Notice
 
@@ -25,11 +26,19 @@ Basic usage:
 
 where `<filename>` is a file (not folder) containing license text to analyze. In many projects, this file is called `LICENSE` or `COPYING`. askalono will analyze the text and output what it thinks it is.
 
+If askalono can't identify a file, it may simply be a license it just doesn't know. But, if it's actually source code with a file header (or footer, or anything in between) it may be able to dig deeper. To try this, pass the `--optimize` flag:
+
+    askalono id --optimize <filename>
+
+If you'd like to discover license files within a directory tree, askalono offers a `crawl` action:
+
+    askalono crawl <directory>
+
 ### As a library
 
-At the moment, `Store` and `LicenseContent` are exposed for usage. These have a relatively sane API, if unergonmic. Expect improvements in usage and documentation here.
+At the moment, `Store` and `LicenseContent` are exposed for usage.
 
-The best way to get an idea of how to use askalono as a library in its early state is to look at the [example](./examples/basic.rs). As of 0.2.0, decent documentation is available via docs.rs, and if the maintainer remembers to, they will add a link here once that's generated. (hint hint)
+The best way to get an idea of how to use askalono as a library in its early state is to look at the [example](./examples/basic.rs). Some examples are also available in the [documentation](https://docs.rs/askalono).
 
 ## Details
 
