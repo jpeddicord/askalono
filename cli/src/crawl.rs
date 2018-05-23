@@ -53,7 +53,7 @@ pub fn crawl(
                 None
             }
         })
-        .filter(|e| match *e {
+        .filter(|e| match e {
             Ok(ref entry) => !entry.metadata().unwrap().is_dir(),
             Err(_) => false,
         })

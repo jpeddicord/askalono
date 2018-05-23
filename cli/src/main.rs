@@ -21,6 +21,8 @@ extern crate ignore;
 extern crate log;
 extern crate rayon;
 #[macro_use]
+extern crate serde_derive;
+#[macro_use]
 extern crate structopt;
 
 #[cfg(feature = "diagnostics")]
@@ -29,6 +31,7 @@ extern crate difference;
 mod cache;
 mod commands;
 mod crawl;
+mod formats;
 mod identify;
 mod util;
 

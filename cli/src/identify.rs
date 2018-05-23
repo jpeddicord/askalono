@@ -11,7 +11,6 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-use std::fmt;
 use std::fs::read_to_string;
 use std::io::prelude::*;
 use std::io::stdin;
@@ -21,65 +20,10 @@ use std::time::Instant;
 use failure::{err_msg, Error};
 
 use super::util::*;
-use askalono::{LicenseType, Store, TextData};
+use super::formats::*;
+use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
-
-#[derive(Debug)]
-pub struct IdResult {
-    score: f32,
-    license: Option<IdLicense>,
-    containing: Vec<ContainedResult>,
-}
-
-#[derive(Debug)]
-pub struct IdLicense {
-    name: String,
-    kind: LicenseType,
-    aliases: Vec<String>,
-}
-
-#[derive(Debug)]
-pub struct ContainedResult {
-    score: f32,
-    license: IdLicense,
-    line_range: (usize, usize),
-}
-
-impl fmt::Display for IdResult {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some(ref license) = self.license {
-            write!(
-                f,
-                "License: {} ({})\nScore: {:.3}\n",
-                license.name, license.kind, self.score
-            )?;
-            if !license.aliases.is_empty() {
-                write!(f, "Aliases: {}\n", license.aliases.join(", "))?;
-            }
-        } else {
-            write!(f, "License: Unknown\nScore: {:.3}\n", self.score)?;
-        }
-
-        if self.containing.is_empty() {
-            return Ok(());
-        }
-        write!(f, "Containing:\n")?;
-
-        for res in &self.containing {
-            write!(
-                f,
-                "  License: {} ({})\n  Score: {:.3}\n  Lines: {} - {}\n",
-                res.license.name, res.license.kind, res.score, res.line_range.0, res.line_range.1
-            )?;
-            if !res.license.aliases.is_empty() {
-                write!(f, "  Aliases: {}\n", res.license.aliases.join(", "))?;
-            }
-        }
-
-        Ok(())
-    }
-}
 
 pub fn identify(
     cache_filename: &Path,
