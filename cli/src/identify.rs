@@ -128,8 +128,8 @@ pub fn identify_data(
         let (lower, upper) = opt.lines_view();
 
         info!(
-            "Optimized: {:?} in {} ms",
-            matched,
+            "Optimized to {} lines ({}, {}) in {} ms",
+            score, lower, upper,
             inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
         );
 
