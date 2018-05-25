@@ -13,11 +13,22 @@
 
 use std::path::PathBuf;
 
+arg_enum! {
+    #[allow(non_camel_case_types)]
+    pub enum OutputFormat {
+        text,
+        json
+    }
+}
+
 #[derive(StructOpt)]
 #[structopt(name = "askalono")]
 pub struct Opt {
     #[structopt(long = "cache", short = "c", parse(from_os_str))]
     pub cache: Option<PathBuf>,
+    #[structopt(long = "format", help = "output type: text (default), json")]
+    #[structopt(raw(possible_values = "&OutputFormat::variants()"))]
+    pub format: Option<OutputFormat>,
     #[structopt(subcommand)]
     pub subcommand: Subcommand,
 }
@@ -39,8 +50,6 @@ pub enum Subcommand {
         #[structopt(raw(hidden = "true"))]
         #[structopt(long = "diff")]
         diff: bool,
-        // #[structopt(long = "output", short = "o", help = "output type")]
-        // output: Option<OutputType>, // "json"
         #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
         batch: bool,
     },

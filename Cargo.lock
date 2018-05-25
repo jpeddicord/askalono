@@ -44,6 +44,7 @@ name = "askalono-cli"
 version = "0.2.0"
 dependencies = [
  "askalono 0.2.0",
+ "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "difference 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",

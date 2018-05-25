@@ -20,7 +20,8 @@ use ngram::NgramSet;
 use preproc::{apply_aggressive, apply_normalizers};
 
 /// The type of a license entry (typically in a `Store`).
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum LicenseType {
     /// The canonical text of the license.
     Original,

@@ -15,14 +15,18 @@ use std::fs::read_to_string;
 use std::path::Path;
 
 use failure::Error;
+use ignore::Error as IgnoreError;
 
 use askalono::TextData;
 
+use super::commands::*;
+use super::formats::*;
 use super::identify::identify_data;
 use super::util::*;
 
 pub fn crawl(
     cache_filename: &Path,
+    output_format: OutputFormat,
     directory: &Path,
     follow_links: bool,
     glob: Option<&str>,
@@ -45,34 +49,34 @@ pub fn crawl(
     WalkBuilder::new(directory)
         .types(matcher)
         .follow_links(follow_links)
-        .build() // TODO: build_parallel? see if it's faster overall, or if it just chokes the ID threads
-        .filter_map(|e| match e.is_ok() {
-            true => Some(e),
-            false => {
-                eprintln!("{}", e.unwrap_err());
+        .build()
+        .filter_map(|entry| match entry {
+            Ok(entry) => Some(entry),
+            Err(error) => {
+                if let IgnoreError::WithPath{path, err} = error {
+                    FileResult::from_error(&path.to_string_lossy(), err).print_as(&output_format, true);
+                } else {
+                    FileResult::from_error("", error).print_as(&output_format, false);
+                }
                 None
             }
         })
-        .filter(|e| match e {
-            Ok(ref entry) => !entry.metadata().unwrap().is_dir(),
-            Err(_) => false,
-        })
-        .for_each(|e| {
-            let entry = e.unwrap();
+        .filter(|entry| !entry.metadata().unwrap().is_dir())
+        .for_each(|entry| {
             let path = entry.path();
-            println!("{}", path.display());
+            let path_lossy = path.to_string_lossy();
 
-            if let Ok(content) = read_to_string(path) {
-                let data = TextData::new(&content);
-                match identify_data(&store, &data, false, false) {
-                    Ok(res) => {
-                        print!("{}", res);
-                    },
-                    Err(err) => {
-                        eprintln!("Error: {}", err);
-                    },
-                };
-            }
+            match read_to_string(path) {
+                Ok(content) => {
+                    let data = TextData::new(&content);
+                    let idres = identify_data(&store, &data, false, false);
+                    let fileres = FileResult::from_identification_result(&path_lossy, &idres);
+                    fileres.print_as(&output_format, true);
+                },
+                Err(err) => {
+                    FileResult::from_error(&path_lossy, err).print_as(&output_format, true);
+                }
+            };
         });
 
     Ok(())

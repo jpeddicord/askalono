@@ -14,6 +14,8 @@
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 
 extern crate askalono;
+#[macro_use]
+extern crate clap;
 extern crate env_logger;
 extern crate failure;
 extern crate ignore;
@@ -22,6 +24,7 @@ extern crate log;
 extern crate rayon;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
 #[macro_use]
 extern crate structopt;
 
@@ -52,26 +55,28 @@ fn main() {
         .cache
         .unwrap_or_else(|| "./askalono-cache.bin.gz".into());
 
-    if let Err(e) = match options.subcommand {
+    let output_format = options.format.unwrap_or(OutputFormat::text);
+
+    if let Err(_) = match options.subcommand {
         Subcommand::Identify {
             filename,
             optimize,
             diff,
             batch,
-        } => identify::identify(&cache_file, filename, optimize, diff, batch),
+        } => identify::identify(&cache_file, output_format, filename, optimize, diff, batch),
         Subcommand::Crawl {
             directory,
             follow_links,
             glob,
         } => crawl::crawl(
             &cache_file,
+            output_format,
             &directory,
             follow_links,
             glob.as_ref().map(String::as_str),
         ),
         Subcommand::Cache { subcommand } => cache::cache(&cache_file, subcommand),
     } {
-        eprintln!("{}", e);
         exit(1);
     }
 }
