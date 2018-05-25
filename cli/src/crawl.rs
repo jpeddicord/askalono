@@ -26,7 +26,7 @@ use super::util::*;
 
 pub fn crawl(
     cache_filename: &Path,
-    output_format: OutputFormat,
+    output_format: &OutputFormat,
     directory: &Path,
     follow_links: bool,
     glob: Option<&str>,

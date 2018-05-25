@@ -28,7 +28,7 @@ const MIN_SCORE: f32 = 0.8;
 
 pub fn identify(
     cache_filename: &Path,
-    output_format: OutputFormat,
+    output_format: &OutputFormat,
     filename: Option<PathBuf>,
     optimize: bool,
     want_diff: bool,

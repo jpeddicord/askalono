@@ -57,26 +57,27 @@ fn main() {
 
     let output_format = options.format.unwrap_or(OutputFormat::text);
 
-    if let Err(_) = match options.subcommand {
+    let res = match options.subcommand {
         Subcommand::Identify {
             filename,
             optimize,
             diff,
             batch,
-        } => identify::identify(&cache_file, output_format, filename, optimize, diff, batch),
+        } => identify::identify(&cache_file, &output_format, filename, optimize, diff, batch),
         Subcommand::Crawl {
             directory,
             follow_links,
             glob,
         } => crawl::crawl(
             &cache_file,
-            output_format,
+            &output_format,
             &directory,
             follow_links,
             glob.as_ref().map(String::as_str),
         ),
         Subcommand::Cache { subcommand } => cache::cache(&cache_file, subcommand),
-    } {
+    };
+    if res.is_err() {
         exit(1);
     }
 }

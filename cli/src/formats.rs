@@ -118,7 +118,7 @@ impl fmt::Display for Identification {
                 license.name, license.kind, self.score
             )?;
             if !license.aliases.is_empty() {
-                write!(f, "Aliases: {}\n", license.aliases.join(", "))?;
+                write!(f, "\nAliases: {}", license.aliases.join(", "))?;
             }
         } else {
             write!(f, "License: Unknown\nScore: {:.3}", self.score)?;

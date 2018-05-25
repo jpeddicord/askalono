@@ -77,4 +77,9 @@ impl Store {
     pub fn len(&self) -> usize {
         self.licenses.len()
     }
+
+    /// Check if the store is empty.
+    pub fn is_empty(&self) -> bool {
+        self.licenses.is_empty()
+    }
 }
