@@ -11,8 +11,8 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-use std::fmt::Display;
 use std::fmt;
+use std::fmt::Display;
 
 use failure::Error;
 
@@ -29,7 +29,7 @@ pub enum FileResult<'a> {
     Err {
         path: &'a str,
         error: String,
-    }
+    },
 }
 
 #[derive(Serialize, Debug)]
@@ -54,16 +54,16 @@ pub struct ContainedResult {
 }
 
 impl<'a> FileResult<'a> {
-    pub fn from_identification_result(path: &'a str, result: &'a Result<Identification, Error>) -> FileResult<'a> {
+    pub fn from_identification_result(
+        path: &'a str,
+        result: &'a Result<Identification, Error>,
+    ) -> FileResult<'a> {
         match result {
-            Ok(id) => FileResult::Ok{
-                path,
-                result: &id,
-            },
-            Err(e) => FileResult::Err{
+            Ok(id) => FileResult::Ok { path, result: &id },
+            Err(e) => FileResult::Err {
                 path,
                 error: format!("{}", e),
-            }
+            },
         }
     }
 
@@ -78,15 +78,9 @@ impl<'a> FileResult<'a> {
         match output_format {
             // with the default text format, follow the unixy conventions of
             // printing successes to stdout and errors to stderr
-            OutputFormat::text => {
-                match self {
-                    FileResult::Ok{..} => {
-                        println!("{}", self.as_text(show_path))
-                    },
-                    FileResult::Err{..} => {
-                        eprintln!("{}", self.as_text(show_path))
-                    }
-                }
+            OutputFormat::text => match self {
+                FileResult::Ok { .. } => println!("{}", self.as_text(show_path)),
+                FileResult::Err { .. } => eprintln!("{}", self.as_text(show_path)),
             },
             // for json format, print everything to stdout to ease
             // parsing consistency
@@ -96,12 +90,12 @@ impl<'a> FileResult<'a> {
 
     fn as_text(&self, show_path: bool) -> String {
         match self {
-            FileResult::Ok{path, result} => if show_path {
+            FileResult::Ok { path, result } => if show_path {
                 format!("{}\n{}", path, result)
             } else {
                 format!("{}", result)
             },
-            FileResult::Err{path, error} => if show_path {
+            FileResult::Err { path, error } => if show_path {
                 format!("{}\nError: {}", path, error)
             } else {
                 format!("Error: {}", error)
@@ -149,4 +143,3 @@ impl fmt::Display for Identification {
         Ok(())
     }
 }
-

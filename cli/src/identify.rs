@@ -20,8 +20,8 @@ use std::time::Instant;
 use failure::{err_msg, Error};
 
 use super::commands::*;
-use super::util::*;
 use super::formats::*;
+use super::util::*;
 use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
@@ -58,10 +58,7 @@ pub fn identify(
         let file_lossy = filename.to_string_lossy();
         // NLL plz
         {
-            let fileres = FileResult::from_identification_result(
-                &file_lossy,
-                &idres,
-            );
+            let fileres = FileResult::from_identification_result(&file_lossy, &idres);
             fileres.print_as(&output_format, false);
         }
 
@@ -82,7 +79,7 @@ pub fn identify(
         let content = match read_to_string(filename) {
             Ok(c) => c,
             Err(e) => {
-                let fileres = FileResult::Err{
+                let fileres = FileResult::Err {
                     path: &buf,
                     error: format!("Input error: {}", e),
                 };
@@ -92,10 +89,7 @@ pub fn identify(
         };
 
         let idres = identify_data(&store, &content.into(), optimize, want_diff);
-        let fileres = FileResult::from_identification_result(
-            &buf,
-            &idres,
-        );
+        let fileres = FileResult::from_identification_result(&buf, &idres);
         fileres.print_as(&output_format, false);
     }
 
@@ -145,7 +139,9 @@ pub fn identify_data(
 
         info!(
             "Optimized to {} lines ({}, {}) in {} ms",
-            score, lower, upper,
+            score,
+            lower,
+            upper,
             inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
         );
 

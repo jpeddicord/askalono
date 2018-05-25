@@ -53,8 +53,9 @@ pub fn crawl(
         .filter_map(|entry| match entry {
             Ok(entry) => Some(entry),
             Err(error) => {
-                if let IgnoreError::WithPath{path, err} = error {
-                    FileResult::from_error(&path.to_string_lossy(), err).print_as(&output_format, true);
+                if let IgnoreError::WithPath { path, err } = error {
+                    FileResult::from_error(&path.to_string_lossy(), err)
+                        .print_as(&output_format, true);
                 } else {
                     FileResult::from_error("", error).print_as(&output_format, false);
                 }
@@ -72,7 +73,7 @@ pub fn crawl(
                     let idres = identify_data(&store, &data, false, false);
                     let fileres = FileResult::from_identification_result(&path_lossy, &idres);
                     fileres.print_as(&output_format, true);
-                },
+                }
                 Err(err) => {
                     FileResult::from_error(&path_lossy, err).print_as(&output_format, true);
                 }
