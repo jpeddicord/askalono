@@ -15,7 +15,10 @@ install:
 - rustc -Vv
 - cargo -V
 build_script:
+- git config core.symlinks true
+- ps: rm -r datasets
 - git submodule update --init --recursive
+- git reset --hard
 - cargo build --verbose --release --all
 test_script:
 - cargo test --verbose --all
