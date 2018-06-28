@@ -138,7 +138,7 @@ impl TextData {
     ///
     /// This represents the "active" region of lines that matches are generated
     /// from. The bounds are a 0-indexed `(start, end)` tuple, with inclusive
-    /// indices (line numbers). See `optimize_bounds`.
+    /// start and exclusive end indicies. See `optimize_bounds`.
     ///
     /// This is largely for informational purposes; other methods in
     /// `TextView`, such as `lines` and `match_score`, will already account for
@@ -167,6 +167,32 @@ impl TextData {
             match_data: NgramSet::from_str(&processed, 2),
             lines_view: (start, end),
             lines_normalized: self.lines_normalized.clone(),
+            text_processed: Some(processed),
+        })
+    }
+
+    /// "Erase" the current lines in view and restore the view to its original
+    /// bounds.
+    ///
+    /// For example, consider a file with two licenses in it. One was identified
+    /// (and located) with `optimize_bounds`. Now you want to find the other:
+    /// white-out the matched lines, and re-run the overall search to find a
+    /// new high score.
+    pub fn white_out(&self) -> Result<Self, Error> {
+        // XXX: unwrap
+        let new_normalized: Vec<String> = self.lines_normalized.as_ref().unwrap().iter().enumerate().map(|(i, line)| {
+            if i >= self.lines_view.0 && i < self.lines_view.1 {
+                "".to_string()
+            } else {
+                line.clone()
+            }
+        }).collect();
+
+        let processed = apply_aggressive(&new_normalized.join("\n"));
+        Ok(TextData {
+            match_data: NgramSet::from_str(&processed, 2),
+            lines_view: (0, new_normalized.len()),
+            lines_normalized: Some(new_normalized),
             text_processed: Some(processed),
         })
     }
@@ -336,5 +362,18 @@ mod tests {
         let y = b.match_score(&a);
 
         assert_eq!(x, y);
+    }
+
+    #[test]
+    fn view_and_white_out() {
+        let a = TextData::from("aaa\nbbb\nccc\nddd");
+        assert_eq!(Some("aaa bbb ccc ddd"), a.text_processed());
+
+        let b = a.with_view(1, 3).expect("with_view must be ok");
+        assert_eq!(2, b.lines().unwrap().len());
+        assert_eq!(Some("bbb ccc"), b.text_processed());
+
+        let c = b.white_out().expect("white_out must be ok");
+        assert_eq!(Some("aaa ddd"), c.text_processed());
     }
 }
