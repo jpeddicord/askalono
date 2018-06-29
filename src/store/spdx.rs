@@ -93,7 +93,8 @@ impl Store {
                 continue;
             }
 
-            let license = self.licenses
+            let license = self
+                .licenses
                 .entry(name.to_owned())
                 .or_insert_with(|| LicenseEntry::new(content));
 

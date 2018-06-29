@@ -45,7 +45,8 @@ fn run(args: &[&str]) -> Output {
 fn run_json(args: &[&str]) -> Value {
     let cat = [&["--format=json"], args].concat();
     let out = run(&cat);
-    serde_json::from_str(from_utf8(&out.stdout).expect("output was not utf8")).expect("output was not valid json")
+    serde_json::from_str(from_utf8(&out.stdout).expect("output was not utf8"))
+        .expect("output was not valid json")
 }
 
 #[test]
@@ -58,9 +59,25 @@ fn cli_sanity() {
 fn output_json() {
     let json = run_json(&["id", "../LICENSE"]);
     assert_eq!("../LICENSE", json["path"]);
-    assert!(json["result"]["score"].as_f64().expect("score must be a number") > 0.90f64);
+    assert!(
+        json["result"]["score"]
+            .as_f64()
+            .expect("score must be a number") > 0.90f64
+    );
     assert_eq!("Apache-2.0", json["result"]["license"]["name"]);
     assert_eq!("original", json["result"]["license"]["kind"]);
-    assert_eq!(0, json["result"]["license"]["aliases"].as_array().expect("aliases must be an array").len());
-    assert_eq!(0, json["result"]["containing"].as_array().expect("containing must be an array").len());
+    assert_eq!(
+        0,
+        json["result"]["license"]["aliases"]
+            .as_array()
+            .expect("aliases must be an array")
+            .len()
+    );
+    assert_eq!(
+        0,
+        json["result"]["containing"]
+            .as_array()
+            .expect("containing must be an array")
+            .len()
+    );
 }

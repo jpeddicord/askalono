@@ -46,7 +46,8 @@ impl Store {
 
         let dec = GzDecoder::new(readable);
         {
-            let extra = dec.header()
+            let extra = dec
+                .header()
                 .ok_or_else(|| format_err!("cache gzip header invalid"))?
                 .extra()
                 .ok_or_else(|| format_err!("cache gzip extra header missing"))?;

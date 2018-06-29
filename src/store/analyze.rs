@@ -61,7 +61,8 @@ impl<'a> PartialOrd for PartialMatch<'a> {
 
 impl<'a> PartialEq for PartialMatch<'a> {
     fn eq(&self, other: &PartialMatch) -> bool {
-        self.score.eq(&other.score) && self.name == other.name
+        self.score.eq(&other.score)
+            && self.name == other.name
             && self.license_type == other.license_type
     }
 }
@@ -83,7 +84,8 @@ impl Store {
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
     pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
-        let mut res: Vec<PartialMatch> = self.licenses
+        let mut res: Vec<PartialMatch> = self
+            .licenses
             .par_iter()
             .fold(Vec::new, |mut a: Vec<PartialMatch>, (name, data)| {
                 a.push(PartialMatch {

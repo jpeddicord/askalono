@@ -61,9 +61,7 @@ impl fmt::Display for LicenseType {
 /// use askalono::TextData;
 ///
 /// let license = TextData::from("My First License");
-/// let sample = TextData::from(
-///   "copyright 20xx me irl\n\n //  my   first license"
-/// );
+/// let sample = TextData::from("copyright 20xx me irl\n\n //  my   first license");
 /// assert_eq!(sample.match_score(&license), 1.0);
 /// ```
 ///
@@ -76,9 +74,7 @@ impl fmt::Display for LicenseType {
 /// ```
 /// # use askalono::TextData;
 /// # let license = TextData::from("My First License");
-/// let sample = TextData::from(
-///   "copyright 20xx me irl\n// My First License\nfn hello() {\n ..."
-/// );
+/// let sample = TextData::from("copyright 20xx me irl\n// My First License\nfn hello() {\n ...");
 /// let (optimized, score) = sample.optimize_bounds(&license);
 /// assert_eq!((1, 2), optimized.lines_view());
 /// assert!(score > 0.99f32, "license within text matches");
@@ -179,14 +175,24 @@ impl TextData {
     /// white-out the matched lines, and re-run the overall search to find a
     /// new high score.
     pub fn white_out(&self) -> Result<Self, Error> {
-        // XXX: unwrap
-        let new_normalized: Vec<String> = self.lines_normalized.as_ref().unwrap().iter().enumerate().map(|(i, line)| {
-            if i >= self.lines_view.0 && i < self.lines_view.1 {
-                "".to_string()
-            } else {
-                line.clone()
-            }
-        }).collect();
+        // note that we're not using the view here...
+        let lines = self
+            .lines_normalized
+            .as_ref()
+            .ok_or(format_err!("TextData does not have original text"))?;
+
+        // ...because it's used here to exclude lines
+        let new_normalized: Vec<String> = lines
+            .iter()
+            .enumerate()
+            .map(|(i, line)| {
+                if i >= self.lines_view.0 && i < self.lines_view.1 {
+                    "".to_string()
+                } else {
+                    line.clone()
+                }
+            })
+            .collect();
 
         let processed = apply_aggressive(&new_normalized.join("\n"));
         Ok(TextData {
