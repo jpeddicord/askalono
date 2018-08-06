@@ -19,8 +19,7 @@ fn main() {
                 "/license-list-data/json/details"
             )),
             false,
-        )
-        .unwrap();
+        ).unwrap();
 
     // load input text
     println!("Parsing input text");

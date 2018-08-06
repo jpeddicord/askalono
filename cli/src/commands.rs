@@ -38,7 +38,10 @@ pub enum Subcommand {
     #[structopt(name = "identify", alias = "id")]
     Identify {
         #[structopt(
-            name = "FILE", help = "file to identify", required_unless = "batch", parse(from_os_str)
+            name = "FILE",
+            help = "file to identify",
+            required_unless = "batch",
+            parse(from_os_str)
         )]
         filename: Option<PathBuf>,
         #[structopt(
@@ -50,17 +53,26 @@ pub enum Subcommand {
         #[structopt(raw(hidden = "true"))]
         #[structopt(long = "diff")]
         diff: bool,
-        #[structopt(long = "batch", short = "b", help = "read in filenames on stdin")]
+        #[structopt(
+            long = "batch",
+            short = "b",
+            help = "read in filenames on stdin"
+        )]
         batch: bool,
     },
     #[structopt(name = "crawl")]
     Crawl {
-        #[structopt(name = "DIR", help = "directory to crawl", parse(from_os_str))]
+        #[structopt(
+            name = "DIR",
+            help = "directory to crawl",
+            parse(from_os_str)
+        )]
         directory: PathBuf,
         #[structopt(long = "follow", help = "follow symlinks")]
         follow_links: bool,
         #[structopt(
-            long = "glob", help = "glob of files to check (defaults to license-like files)"
+            long = "glob",
+            help = "glob of files to check (defaults to license-like files)"
         )]
         glob: Option<String>,
     },
@@ -75,9 +87,16 @@ pub enum Subcommand {
 pub enum CacheSubcommand {
     #[structopt(name = "load-spdx")]
     LoadSpdx {
-        #[structopt(name = "DIR", help = "JSON details directory", parse(from_os_str))]
+        #[structopt(
+            name = "DIR",
+            help = "JSON details directory",
+            parse(from_os_str)
+        )]
         dir: PathBuf,
-        #[structopt(long = "store", help = "store texts in cache along with match data")]
+        #[structopt(
+            long = "store",
+            help = "store texts in cache along with match data"
+        )]
         store_texts: bool,
     },
 }

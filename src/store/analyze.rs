@@ -84,18 +84,31 @@ impl Store {
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
     pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            self.analyze_single_thread(text)
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.analyze_parallel(text)
+        }
+    }
+
+    #[allow(unused)]
+    fn analyze_parallel(&self, text: &TextData) -> Result<Match, Error> {
         let mut res: Vec<PartialMatch> = self
             .licenses
             .par_iter()
-            .fold(Vec::new, |mut a: Vec<PartialMatch>, (name, data)| {
-                a.push(PartialMatch {
+            .fold(Vec::new, |mut acc: Vec<PartialMatch>, (name, data)| {
+                acc.push(PartialMatch {
                     score: data.original.match_score(text),
                     name,
                     license_type: LicenseType::Original,
                     data: &data.original,
                 });
                 data.alternates.iter().for_each(|alt| {
-                    a.push(PartialMatch {
+                    acc.push(PartialMatch {
                         score: alt.match_score(text),
                         name,
                         license_type: LicenseType::Alternate,
@@ -103,16 +116,15 @@ impl Store {
                     })
                 });
                 data.headers.iter().for_each(|head| {
-                    a.push(PartialMatch {
+                    acc.push(PartialMatch {
                         score: head.match_score(text),
                         name,
                         license_type: LicenseType::Header,
                         data: head,
                     })
                 });
-                a
-            })
-            .reduce(
+                acc
+            }).reduce(
                 Vec::new,
                 |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
                     a.extend(b);
@@ -120,6 +132,53 @@ impl Store {
                 },
             );
         res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+
+        let m = &res[0];
+        let license = &self.licenses[m.name];
+        Ok(Match {
+            score: m.score,
+            name: m.name.to_string(),
+            license_type: m.license_type.clone(),
+            aliases: license.aliases.clone(),
+            data: m.data,
+        })
+    }
+
+    #[allow(unused)]
+    fn analyze_single_thread(&self, text: &TextData) -> Result<Match, Error> {
+        // TODO: this duplicates a lot of code from analyze_parallel (the closure is
+        // almost identical). see if there's a way to factor out the closure;
+        // ran into referencing issues when giving that a quick stab myself
+        let mut res: Vec<PartialMatch> = self
+            .licenses
+            .iter()
+            // XXX optimize: len of licenses isn't strictly correct, but it'll do for now
+            .fold(Vec::with_capacity(self.licenses.len()), |mut acc: Vec<PartialMatch>, (name, data)| {
+                acc.push(PartialMatch {
+                    score: data.original.match_score(text),
+                    name,
+                    license_type: LicenseType::Original,
+                    data: &data.original,
+                });
+                data.alternates.iter().for_each(|alt| {
+                    acc.push(PartialMatch {
+                        score: alt.match_score(text),
+                        name,
+                        license_type: LicenseType::Alternate,
+                        data: alt,
+                    })
+                });
+                data.headers.iter().for_each(|head| {
+                    acc.push(PartialMatch {
+                        score: head.match_score(text),
+                        name,
+                        license_type: LicenseType::Header,
+                        data: head,
+                    })
+                });
+                acc
+            });
+        res.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
         let m = &res[0];
         let license = &self.licenses[m.name];

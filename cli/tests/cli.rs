@@ -62,7 +62,8 @@ fn output_json() {
     assert!(
         json["result"]["score"]
             .as_f64()
-            .expect("score must be a number") > 0.90f64
+            .expect("score must be a number")
+            > 0.90f64
     );
     assert_eq!("Apache-2.0", json["result"]["license"]["name"]);
     assert_eq!("original", json["result"]["license"]["kind"]);
