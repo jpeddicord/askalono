@@ -41,6 +41,7 @@ mod license;
 mod ngram;
 mod preproc;
 mod store;
+mod strategy;
 
 pub use license::{LicenseType, TextData};
 pub use store::{Match, Store};
