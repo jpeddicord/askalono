@@ -6,3 +6,8 @@ build:
 
 serve:
     npm run serve
+
+package: build
+    rm -rf dist
+    webpack
+    cp index.html dist

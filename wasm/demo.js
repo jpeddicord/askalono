@@ -80,7 +80,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `;
 
+console.log('im here!');
+
 wasm.then(({ AskalonoStore }) => {
+  console.log('im wasm!');
   const store = new AskalonoStore();
   store.add_license('MIT', mit);
   store.add_license('BSD-2-Clause', bsd2clause);
