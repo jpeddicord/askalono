@@ -15,7 +15,6 @@ use std::cmp::Ordering;
 use std::fmt;
 
 use failure::Error;
-use rayon::prelude::*;
 
 use license::LicenseType;
 use license::TextData;
@@ -96,7 +95,9 @@ impl Store {
     }
 
     #[allow(unused)]
+    #[cfg(not(target_arch = "wasm32"))]
     fn analyze_parallel(&self, text: &TextData) -> Result<Match, Error> {
+        use rayon::prelude::*;
         let mut res: Vec<PartialMatch> = self
             .licenses
             .par_iter()

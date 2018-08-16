@@ -11,6 +11,9 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+// XXX: this should work soon
+#![cfg(not(target_arch = "wasm32"))]
+
 use failure::Error;
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};

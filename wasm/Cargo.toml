@@ -1,0 +1,17 @@
+[package]
+name = "askalono-wasm"
+version = "0.1.0"
+license = "Apache-2.0"
+authors = ["Jacob Peddicord <peddicor@amazon.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+askalono = { version = "*", path = "../" }
+wasm-bindgen = "0.2.15"
+
+[profile.release]
+debug = false
+lto = true
+opt-level = "z"

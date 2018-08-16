@@ -21,12 +21,10 @@
 
 #[macro_use]
 extern crate failure;
-extern crate flate2;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
-extern crate rayon;
 extern crate regex;
 extern crate rmp_serde as rmps;
 extern crate serde;
@@ -36,6 +34,11 @@ extern crate unicode_normalization;
 
 #[cfg(feature = "spdx")]
 extern crate serde_json as json;
+
+#[cfg(not(target_arch = "wasm32"))]
+extern crate flate2;
+#[cfg(not(target_arch = "wasm32"))]
+extern crate rayon;
 
 mod license;
 mod ngram;

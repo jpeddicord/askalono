@@ -13,7 +13,10 @@
 
 use std::collections::HashMap;
 
+use failure::Error;
+
 use license::TextData;
+use license::LicenseType;
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct LicenseEntry {
@@ -81,5 +84,24 @@ impl Store {
     /// Check if the store is empty.
     pub fn is_empty(&self) -> bool {
         self.licenses.is_empty()
+    }
+
+    pub fn add_license(&mut self, name: String, data: TextData) {
+        let entry = LicenseEntry::new(data);
+        self.licenses.insert(name, entry);
+    }
+
+    pub fn add_variant(&mut self, name: &str, variant: LicenseType, data: TextData) -> Result<(), Error> {
+        let entry = self.licenses.get_mut(name).ok_or(format_err!("license {} not present in store", name))?;
+        match variant {
+            LicenseType::Alternate => {
+                entry.alternates.push(data);
+            },
+            LicenseType::Header => {
+                entry.headers.push(data);
+            },
+            _ => { return Err(format_err!("variant type not applicable for add_variant")); }
+        };
+        Ok(())
     }
 }
