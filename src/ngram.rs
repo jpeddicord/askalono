@@ -16,7 +16,7 @@ use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct NgramSet {
     map: HashMap<String, u32>,
     // once Rust supports it, it'd be nice to make this

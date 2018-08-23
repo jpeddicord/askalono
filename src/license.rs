@@ -79,7 +79,7 @@ impl fmt::Display for LicenseType {
 /// assert_eq!((1, 2), optimized.lines_view());
 /// assert!(score > 0.99f32, "license within text matches");
 /// ```
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TextData {
     match_data: NgramSet,
     lines_view: (usize, usize),
