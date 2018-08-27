@@ -48,3 +48,4 @@ mod strategy;
 
 pub use license::{LicenseType, TextData};
 pub use store::{Match, Store};
+pub use strategy::{ScanStrategy, ScanResult};

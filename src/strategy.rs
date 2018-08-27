@@ -19,7 +19,6 @@ use std::borrow::Cow;
 
 use failure::Error;
 
-use store::Match;
 use store::Store;
 use license::TextData;
 use license::LicenseType;
@@ -46,11 +45,10 @@ pub struct ContainedResult {
 
 pub struct ScanStrategy<'a> {
     store: &'a Store,
-    // fast_finish: f32
     confidence_threshold: f32,
+    shallow_limit: f32,
     optimize: bool,
-    find_all: bool,
-    //find_all_threshold: f32,
+    max_passes: u16,
 }
 
 impl<'a> ScanStrategy<'a> {
@@ -59,9 +57,9 @@ impl<'a> ScanStrategy<'a> {
         Self {
             store,
             confidence_threshold: 0.8,
+            shallow_limit: 0.99,
             optimize: false,
-            find_all: false,
-            //find_all_threshold: 0.1234, // ??? not yet determined a good value
+            max_passes: 10
         }
     }
 
@@ -70,60 +68,77 @@ impl<'a> ScanStrategy<'a> {
         self
     }
 
+    pub fn shallow_limit(mut self, shallow_limit: f32) -> Self {
+        self.shallow_limit = shallow_limit;
+        self
+    }
+
     pub fn optimize(mut self, optimize: bool) -> Self {
         self.optimize = optimize;
+        self
+    }
+
+    pub fn max_passes(mut self, max_passes: u16) -> Self {
+        self.max_passes = max_passes;
         self
     }
 
 
     pub fn scan(&self, text: &TextData) -> Result<ScanResult, Error> {
         let mut analysis = self.store.analyze(text)?;
+        let score = analysis.score;
+        let mut license = None;
         let mut containing = Vec::new();
 
-        // if we're only doing shallow analysis, bail out here
-        if analysis.score > 0.98 { // TODO
-            return Ok(ScanResult {
-                score: analysis.score,
-                license: Some(IdentifiedLicense {
-                    name: analysis.name,
-                    kind: analysis.license_type
-                }),
-                containing,
+        // meets confidence threshold? record that
+        if analysis.score > self.confidence_threshold {
+            license = Some(IdentifiedLicense {
+                name: analysis.name.clone(),
+                kind: analysis.license_type,
             });
-        }
 
-        // repeatedly try to dig deeper
-        // this loop effectively iterates once for each license it finds
-        let mut current_text: Cow<TextData> = Cow::Borrowed(text);
-        loop {
-            let (optimized, optimized_score) = current_text.optimize_bounds(analysis.data);
-
-            // stop if we didn't find anything acceptable
-            if optimized_score < 0.6 { // TODO
-                break
+            // above the shallow limit -> exit
+            if analysis.score > self.shallow_limit {
+                return Ok(ScanResult {
+                    score,
+                    license,
+                    containing,
+                });
             }
-
-            // otherwise, save it
-            containing.push(ContainedResult {
-                score: optimized_score,
-                license: IdentifiedLicense {
-                    name: analysis.name,
-                    kind: analysis.license_type
-                },
-                line_range: optimized.lines_view(),
-            });
-
-            // and white-out + reanalyze for next iteration
-            current_text = Cow::Owned(optimized.white_out().expect("optimized must have text"));
-            analysis = self.store.analyze(&current_text)?;
-
         }
 
+        if self.optimize {
+            // repeatedly try to dig deeper
+            // this loop effectively iterates once for each license it finds
+            let mut current_text: Cow<TextData> = Cow::Borrowed(text);
+            for _n in 0..self.max_passes {
+                let (optimized, optimized_score) = current_text.optimize_bounds(analysis.data);
+
+                // stop if we didn't find anything acceptable
+                if optimized_score < self.confidence_threshold {
+                    break
+                }
+
+                // otherwise, save it
+                containing.push(ContainedResult {
+                    score: optimized_score,
+                    license: IdentifiedLicense {
+                        name: analysis.name,
+                        kind: analysis.license_type
+                    },
+                    line_range: optimized.lines_view(),
+                });
+
+                // and white-out + reanalyze for next iteration
+                current_text = Cow::Owned(optimized.white_out().expect("optimized must have text"));
+                analysis = self.store.analyze(&current_text)?;
+            }
+        }
 
         Ok(ScanResult {
-            score: 0.0f32,
-            license: None,
-            containing: Vec::new(),
+            score,
+            license,
+            containing,
         })
     }
 }
@@ -132,10 +147,33 @@ impl<'a> ScanStrategy<'a> {
 mod tests {
     use super::*;
 
-    // FIXME: bad
     #[test]
-    fn test_builder_works() {
+    fn can_construct() {
         let store = Store::new();
+        ScanStrategy::new(&store);
         ScanStrategy::new(&store).confidence_threshold(0.5);
+        ScanStrategy::new(&store).shallow_limit(0.99).optimize(true).max_passes(100);
+    }
+
+    #[test]
+    fn shallow_scan() {
+        let store = create_dummy_store();
+        let test_data = TextData::new("lorem ipsum\naaaaa bbbbb\nccccc\nhello");
+
+        let strategy = ScanStrategy::new(&store).confidence_threshold(0.5).shallow_limit(0.0);
+        let result = strategy.scan(&test_data).unwrap();
+        assert!(result.score > 0.5, format!("score must meet threshold; was {}", result.score));
+        assert_eq!(result.license.expect("result has a license").name, "license-1");
+
+        let strategy = ScanStrategy::new(&store).confidence_threshold(0.8).shallow_limit(0.0);
+        let result = strategy.scan(&test_data).unwrap();
+        assert!(result.license.is_none(), "result license is None");
+    }
+
+    fn create_dummy_store() -> Store {
+        let mut store = Store::new();
+        store.add_license("license-1".into(), "aaaaa\nbbbbb\nccccc".into());
+        store.add_license("license-2".into(), "1234 5678 1234\n0000\n1010101010\n\n8888".into());
+        store
     }
 }
