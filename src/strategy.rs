@@ -14,14 +14,13 @@
 #![doc(hidden)]
 /// This module is experimental. Its API should not be considered stable
 /// in any form.
-
 use std::borrow::Cow;
 
 use failure::Error;
 
-use store::Store;
-use license::TextData;
 use license::LicenseType;
+use license::TextData;
+use store::Store;
 
 #[derive(Serialize, Debug)]
 pub struct IdentifiedLicense {
@@ -43,6 +42,29 @@ pub struct ContainedResult {
     pub line_range: (usize, usize),
 }
 
+/// A `ScanStrategy` can be used as a high-level wrapped over a `Store`'s
+/// analysis logic.
+///
+/// A strategy configured here can be run repeatedly to scan a document for
+/// multiple licenses, or to automatically optimize to locate texts within a
+/// larger text.
+///
+/// # Examples
+///
+/// ```rust,should_panic
+/// # use std::error::Error;
+/// use askalono::{ScanStrategy, Store};
+///
+/// # fn main() -> Result<(), Box<Error>> {
+/// let store = Store::new();
+/// // [...]
+/// let strategy = ScanStrategy::new(&store)
+///     .confidence_threshold(0.9)
+///     .optimize(true);
+/// let results = strategy.scan(&"my text to scan".into())?;
+/// # Ok(())
+/// # }
+/// ```
 pub struct ScanStrategy<'a> {
     store: &'a Store,
     confidence_threshold: f32,
@@ -52,14 +74,13 @@ pub struct ScanStrategy<'a> {
 }
 
 impl<'a> ScanStrategy<'a> {
-
     pub fn new(store: &'a Store) -> ScanStrategy<'a> {
         Self {
             store,
             confidence_threshold: 0.8,
             shallow_limit: 0.99,
             optimize: false,
-            max_passes: 10
+            max_passes: 10,
         }
     }
 
@@ -82,7 +103,6 @@ impl<'a> ScanStrategy<'a> {
         self.max_passes = max_passes;
         self
     }
-
 
     pub fn scan(&self, text: &TextData) -> Result<ScanResult, Error> {
         let mut analysis = self.store.analyze(text)?;
@@ -116,7 +136,7 @@ impl<'a> ScanStrategy<'a> {
 
                 // stop if we didn't find anything acceptable
                 if optimized_score < self.confidence_threshold {
-                    break
+                    break;
                 }
 
                 // otherwise, save it
@@ -124,7 +144,7 @@ impl<'a> ScanStrategy<'a> {
                     score: optimized_score,
                     license: IdentifiedLicense {
                         name: analysis.name,
-                        kind: analysis.license_type
+                        kind: analysis.license_type,
                     },
                     line_range: optimized.lines_view(),
                 });
@@ -152,7 +172,10 @@ mod tests {
         let store = Store::new();
         ScanStrategy::new(&store);
         ScanStrategy::new(&store).confidence_threshold(0.5);
-        ScanStrategy::new(&store).shallow_limit(0.99).optimize(true).max_passes(100);
+        ScanStrategy::new(&store)
+            .shallow_limit(0.99)
+            .optimize(true)
+            .max_passes(100);
     }
 
     #[test]
@@ -160,20 +183,101 @@ mod tests {
         let store = create_dummy_store();
         let test_data = TextData::new("lorem ipsum\naaaaa bbbbb\nccccc\nhello");
 
-        let strategy = ScanStrategy::new(&store).confidence_threshold(0.5).shallow_limit(0.0);
+        // the above text should have a result with a confidence minimum of 0.5
+        let strategy = ScanStrategy::new(&store)
+            .confidence_threshold(0.5)
+            .shallow_limit(0.0);
         let result = strategy.scan(&test_data).unwrap();
-        assert!(result.score > 0.5, format!("score must meet threshold; was {}", result.score));
-        assert_eq!(result.license.expect("result has a license").name, "license-1");
+        assert!(
+            result.score > 0.5,
+            format!("score must meet threshold; was {}", result.score)
+        );
+        assert_eq!(
+            result.license.expect("result has a license").name,
+            "license-1"
+        );
 
-        let strategy = ScanStrategy::new(&store).confidence_threshold(0.8).shallow_limit(0.0);
+        // but it won't pass with a threshold of 0.8
+        let strategy = ScanStrategy::new(&store)
+            .confidence_threshold(0.8)
+            .shallow_limit(0.0);
         let result = strategy.scan(&test_data).unwrap();
         assert!(result.license.is_none(), "result license is None");
+    }
+
+    #[test]
+    fn single_optimize() {
+        let store = create_dummy_store();
+        // this TextData matches license-2 with an overall score of ~0.46 and optimized
+        // score of ~0.57
+        let test_data =
+            TextData::new("lorem\nipsum abc def ghi jkl\n1234 5678 1234\n0000\n1010101010\n\n8888 9999\nwhatsit hello\narst neio qwfp colemak is the best keyboard layout");
+
+        // check that we can spot the gibberish license in the sea of other gibberish
+        let strategy = ScanStrategy::new(&store)
+            .confidence_threshold(0.5)
+            .optimize(true)
+            .shallow_limit(1.0);
+        let result = strategy.scan(&test_data).unwrap();
+        assert!(result.license.is_none(), "result license is None");
+        assert_eq!(result.containing.len(), 1);
+        let contained = &result.containing[0];
+        assert_eq!(contained.license.name, "license-2");
+        assert!(
+            contained.score > 0.5,
+            "contained score is greater than threshold"
+        );
+    }
+
+    #[test]
+    fn find_multiple_licenses() {
+        let store = create_dummy_store();
+        // this TextData matches license-2 with an overall score of ~0.46 and optimized
+        // score of ~0.57
+        let test_data =
+            TextData::new("lorem\nipsum abc def ghi jkl\n1234 5678 1234\n0000\n1010101010\n\n8888 9999\nwhatsit hello\narst neio qwfp colemak is the best keyboard layout\naaaaa\nbbbbb\nccccc");
+
+        // check that we can spot the gibberish license in the sea of other gibberish
+        let strategy = ScanStrategy::new(&store)
+            .confidence_threshold(0.5)
+            .optimize(true)
+            .shallow_limit(1.0);
+        let result = strategy.scan(&test_data).unwrap();
+        assert!(result.license.is_none(), "result license is None");
+        assert_eq!(result.containing.len(), 2);
+
+        // inspect the array and ensure we got both licenses
+        let mut found1 = 0;
+        let mut found2 = 0;
+        for (_, ref contained) in result.containing.iter().enumerate() {
+            match contained.license.name.as_ref() {
+                "license-1" => {
+                    assert!(contained.score > 0.5, "license-1 score meets threshold");
+                    found1 += 1;
+                }
+                "license-2" => {
+                    assert!(contained.score > 0.5, "license-2 score meets threshold");
+                    found2 += 1;
+                }
+                _ => {
+                    panic!("somehow got an unknown license name");
+                }
+            }
+        }
+
+        assert!(
+            found1 == 1 && found2 == 1,
+            "found both licenses exactly once"
+        );
     }
 
     fn create_dummy_store() -> Store {
         let mut store = Store::new();
         store.add_license("license-1".into(), "aaaaa\nbbbbb\nccccc".into());
-        store.add_license("license-2".into(), "1234 5678 1234\n0000\n1010101010\n\n8888".into());
+        store.add_license(
+            "license-2".into(),
+            "1234 5678 1234\n0000\n1010101010\n\n8888 9999".into(),
+        );
         store
     }
 }
