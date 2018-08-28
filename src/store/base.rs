@@ -85,7 +85,8 @@ impl Store {
         self.licenses.insert(name, entry);
     }
 
-    /// Add a variant (a header or alternate formatting) of a given license to the store.
+    /// Add a variant (a header or alternate formatting) of a given license to
+    /// the store.
     ///
     /// The license must already exist. This function cannot be used to replace
     /// the original/canonical text of the license.

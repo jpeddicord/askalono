@@ -260,8 +260,8 @@ impl TextData {
             if right - left <= 3 {
                 // find the index of the highest score in the remaining items
                 return (left..=right)
-                  .map(|x| (x, score(x)))
-                  .fold((0usize, 0f32), |acc, x| if x.1 >= acc.1 { x } else { acc });
+                    .map(|x| (x, score(x)))
+                    .fold((0usize, 0f32), |acc, x| if x.1 >= acc.1 { x } else { acc });
             }
 
             let low = (left * 2 + right) / 3;

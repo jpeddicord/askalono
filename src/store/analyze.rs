@@ -27,7 +27,9 @@ pub struct Match<'a> {
     pub aliases: Vec<String>, // TODO: drop this in favor of store lookups
     /// The type of the license that matched. Useful to know if the match was
     /// the complete text, a header, or something else.
-    pub license_type: LicenseType, // TODO: just use IdentifiedLicense everywhere? or maybe not, since that's a strategy-specific abstraction and it's not naturally kept together in the store
+    pub license_type: LicenseType, /* TODO: just use IdentifiedLicense everywhere? or maybe
+                                    * not, since that's a strategy-specific abstraction and
+                                    * it's not naturally kept together in the store */
     /// A reference to the license data that matched inside the `Store`. May be
     /// useful for diagnostic purposes or to further optimize the result.
     pub data: &'a TextData,

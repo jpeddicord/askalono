@@ -14,7 +14,6 @@
 /// necessary at all! I think computing the dice coefficient & optimizing (as
 /// ScanStrategy does) should still work fine, but I wonder
 /// if I'm missing something real-world. Backup plans.
-
 use std::borrow::Cow;
 
 use failure::Error;
