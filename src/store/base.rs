@@ -15,8 +15,8 @@ use std::collections::HashMap;
 
 use failure::Error;
 
-use license::TextData;
 use license::LicenseType;
+use license::TextData;
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct LicenseEntry {
@@ -86,21 +86,39 @@ impl Store {
         self.licenses.is_empty()
     }
 
+    /// Add a single license to the store.
+    ///
+    /// If the license with the given name already existed, it and all of its
+    /// variants will be replaced.
     pub fn add_license(&mut self, name: String, data: TextData) {
         let entry = LicenseEntry::new(data);
         self.licenses.insert(name, entry);
     }
 
-    pub fn add_variant(&mut self, name: &str, variant: LicenseType, data: TextData) -> Result<(), Error> {
-        let entry = self.licenses.get_mut(name).ok_or(format_err!("license {} not present in store", name))?;
+    /// Add a variant (a header or alternate formatting) of a given license to the store.
+    ///
+    /// The license must already exist. This function cannot be used to replace
+    /// the original/canonical text of the license.
+    pub fn add_variant(
+        &mut self,
+        name: &str,
+        variant: LicenseType,
+        data: TextData,
+    ) -> Result<(), Error> {
+        let entry = self
+            .licenses
+            .get_mut(name)
+            .ok_or(format_err!("license {} not present in store", name))?;
         match variant {
             LicenseType::Alternate => {
                 entry.alternates.push(data);
-            },
+            }
             LicenseType::Header => {
                 entry.headers.push(data);
-            },
-            _ => { return Err(format_err!("variant type not applicable for add_variant")); }
+            }
+            _ => {
+                return Err(format_err!("variant type not applicable for add_variant"));
+            }
         };
         Ok(())
     }
