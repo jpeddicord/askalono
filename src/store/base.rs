@@ -98,7 +98,7 @@ impl Store {
         let entry = self
             .licenses
             .get_mut(name)
-            .ok_or(format_err!("license {} not present in store", name))?;
+            .ok_or_else(|| format_err!("license {} not present in store", name))?;
         match variant {
             LicenseType::Alternate => {
                 entry.alternates.push(data);

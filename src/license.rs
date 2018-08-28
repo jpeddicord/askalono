@@ -169,7 +169,7 @@ impl TextData {
         let lines = self
             .lines_normalized
             .as_ref()
-            .ok_or(format_err!("TextData does not have original text"))?;
+            .ok_or_else(|| format_err!("TextData does not have original text"))?;
 
         // ...because it's used here to exclude lines
         let new_normalized: Vec<String> = lines
@@ -259,7 +259,7 @@ impl TextData {
         fn search(score: &mut FnMut(usize) -> f32, left: usize, right: usize) -> (usize, f32) {
             if right - left <= 3 {
                 // find the index of the highest score in the remaining items
-                return (left .. right + 1) // inclusive
+                return (left..=right)
                   .map(|x| (x, score(x)))
                   .fold((0usize, 0f32), |acc, x| if x.1 >= acc.1 { x } else { acc });
             }
@@ -283,7 +283,7 @@ impl TextData {
 
 impl<'a> From<&'a str> for TextData {
     fn from(text: &'a str) -> Self {
-        TextData::new(text)
+        Self::new(text)
     }
 }
 

@@ -129,7 +129,7 @@ impl Store {
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),
-            license_type: m.license_type.clone(),
+            license_type: m.license_type,
             aliases: license.aliases.clone(),
             data: m.data,
         })
@@ -176,7 +176,7 @@ impl Store {
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),
-            license_type: m.license_type.clone(),
+            license_type: m.license_type,
             aliases: license.aliases.clone(),
             data: m.data,
         })
