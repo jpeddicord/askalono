@@ -11,9 +11,20 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-#![doc(hidden)]
-/// This module is experimental. Its API should not be considered stable
-/// in any form.
+/// TODO: Investigate top-down scanning strategy for things like attribution
+/// docuements: - Take the entire text and shrink the view down to (0,
+/// chunk_size) where   chunk_size is a sane value to increment by. Perhaps 10
+/// lines? - Attempt to identify.
+/// - White out identified texts (this may not work if the license got chopped
+///   off -- figure out how to deal with that)
+/// - Grow the region.
+/// - Repeat from identification step above.
+///
+/// This may require extra integration work in TextData. This also may not be
+/// necessary at all! I think computing the dice coefficient & optimizing (as
+/// ScanStrategy does) should still work fine, but I wonder
+/// if I'm missing something real-world. Backup plans.
+
 use std::borrow::Cow;
 
 use failure::Error;
@@ -22,23 +33,40 @@ use license::LicenseType;
 use license::TextData;
 use store::Store;
 
+/// A struct describing a license that was identified, as well as its type.
 #[derive(Serialize, Debug)]
 pub struct IdentifiedLicense {
+    /// The identifier of the license.
     pub name: String,
+    /// The type of the license that was matched.
     pub kind: LicenseType,
 }
 
+/// Information about scanned content.
+///
+/// Produced by `ScanStrategy.scan`.
 #[derive(Serialize, Debug)]
 pub struct ScanResult {
+    /// The confidence of the match from 0.0 to 1.0.
     pub score: f32,
+    /// The identified license of the overall text, or None if nothing met the
+    /// confidence threshold.
     pub license: Option<IdentifiedLicense>,
+    /// Any licenses discovered inside the text, if `optimize` was enabled.
     pub containing: Vec<ContainedResult>,
 }
 
+/// A struct describing a single license identified within a larger text.
 #[derive(Serialize, Debug)]
 pub struct ContainedResult {
+    /// The confidence of the match within the line range from 0.0 to 1.0.
     pub score: f32,
+    /// The license identified in this portion of the text.
     pub license: IdentifiedLicense,
+    /// A 0-indexed (inclusive, exclusive) range of line numbers identifying
+    /// where in the overall text a license was identified.
+    ///
+    /// See `TextData.lines_view()` for more information.
     pub line_range: (usize, usize),
 }
 
@@ -74,36 +102,74 @@ pub struct ScanStrategy<'a> {
 }
 
 impl<'a> ScanStrategy<'a> {
+    /// Construct a new scanning strategy tied to the given `Store`.
+    ///
+    /// By default, the strategy has conservative defaults and won't perform
+    /// any deeper investigaton into the contents of files.
     pub fn new(store: &'a Store) -> ScanStrategy<'a> {
         Self {
             store,
-            confidence_threshold: 0.8,
+            confidence_threshold: 0.9,
             shallow_limit: 0.99,
             optimize: false,
             max_passes: 10,
         }
     }
 
+    /// Set the confidence threshold for this strategy.
+    ///
+    /// The overall license match must meet this number in order to be
+    /// reported. Additionally, if contained licenses are reported in the scan
+    /// (when `optimize` is enabled), they'll also need to meet this bar.
+    ///
+    /// Set this to 1.0 for only exact matches, and 0.0 to report even the
+    /// weakest match.
     pub fn confidence_threshold(mut self, confidence_threshold: f32) -> Self {
         self.confidence_threshold = confidence_threshold;
         self
     }
 
+    /// Set a fast-exit parameter that allows the strategy to skip the rest of
+    /// a scan for strong matches.
+    ///
+    /// This should be set higher than the confidence threshold; ideally close
+    /// to 1.0. If the overall match score is above this limit, the scanner
+    /// will return early and not bother performing deeper checks.
+    ///
+    /// This is really only useful in conjunction with `optimize`. A value of
+    /// 0.0 will fast-return on any match meeting the confidence threshold,
+    /// while a value of 1.0 will only stop on a perfect match.
     pub fn shallow_limit(mut self, shallow_limit: f32) -> Self {
         self.shallow_limit = shallow_limit;
         self
     }
 
+    /// Indicate whether a deeper scan should be performed.
+    ///
+    /// This is ignored if the shallow limit is met. It's not enabled by
+    /// default, however, so if you want deeper results you should set
+    /// `shallow_limit` fairly high and enable this.
     pub fn optimize(mut self, optimize: bool) -> Self {
         self.optimize = optimize;
         self
     }
 
+    /// The maximum number of identifications to perform before exiting a scan
+    /// of a single text.
+    ///
+    /// This is largely to prevent misconfigurations and infinite loop
+    /// scenarios, but if you have a document with a large number of licenses
+    /// then you may want to tune this to a value above the number of licenses
+    /// you expect to be identified.
     pub fn max_passes(mut self, max_passes: u16) -> Self {
         self.max_passes = max_passes;
         self
     }
 
+    /// Scan the given text content using this strategy's configured
+    /// preferences.
+    ///
+    /// Returns a `ScanResult` containing all discovered information.
     pub fn scan(&self, text: &TextData) -> Result<ScanResult, Error> {
         let mut analysis = self.store.analyze(text)?;
         let score = analysis.score;
