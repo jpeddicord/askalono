@@ -142,7 +142,9 @@ impl TextData {
     ///
     /// Other methods on `TextView` respect this boundary, so it's not needed
     /// outside this struct.
-    fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
+    ///
+    /// TODO: Make public? It's now used in ScanStrategy
+    pub(crate) fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
         let view = match self.lines_normalized {
             Some(ref lines) => &lines[start..end],
             None => return Err(format_err!("TextData does not have original text")),

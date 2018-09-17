@@ -84,10 +84,18 @@ pub struct ContainedResult {
 /// ```
 pub struct ScanStrategy<'a> {
     store: &'a Store,
+    mode: ScanMode,
     confidence_threshold: f32,
     shallow_limit: f32,
     optimize: bool,
     max_passes: u16,
+    step_size: usize,
+}
+
+pub enum ScanMode {
+    Elimination,
+    TopDown,
+    Smart,
 }
 
 impl<'a> ScanStrategy<'a> {
@@ -98,11 +106,22 @@ impl<'a> ScanStrategy<'a> {
     pub fn new(store: &'a Store) -> ScanStrategy<'a> {
         Self {
             store,
+            mode: ScanMode::Elimination,
             confidence_threshold: 0.9,
             shallow_limit: 0.99,
             optimize: false,
             max_passes: 10,
+            step_size: 5,
         }
+    }
+
+    pub fn mode(mut self, mode: ScanMode) -> Self {
+        self.mode = mode;
+        self
+    }
+    pub fn step_size(mut self, step_size: usize) -> Self {
+        self.step_size = step_size;
+        self
     }
 
     /// Set the confidence threshold for this strategy.
@@ -160,6 +179,14 @@ impl<'a> ScanStrategy<'a> {
     ///
     /// Returns a `ScanResult` containing all discovered information.
     pub fn scan(&self, text: &TextData) -> Result<ScanResult, Error> {
+        match self.mode {
+            ScanMode::Elimination => self.scan_elimination(text),
+            ScanMode::TopDown => self.scan_topdown(text),
+            ScanMode::Smart => unimplemented!(), // TODO... and make this the default
+        }
+    }
+
+    fn scan_elimination(&self, text: &TextData) -> Result<ScanResult, Error> {
         let mut analysis = self.store.analyze(text)?;
         let score = analysis.score;
         let mut license = None;
@@ -213,6 +240,67 @@ impl<'a> ScanStrategy<'a> {
         Ok(ScanResult {
             score,
             license,
+            containing,
+        })
+    }
+
+    fn scan_topdown(&self, text: &TextData) -> Result<ScanResult, Error> {
+        let mut start: usize = 0;
+        let (_, text_end) = text.lines_view();
+        let mut containing = Vec::new();
+
+        while start < text_end - self.step_size {
+            eprintln!("*** ({}, ?)", start);
+            let mut current_score = 0f32;
+            let mut end: usize = start;
+
+            // gradually expand the end by step_size until finding some local maximum
+            // FIXME: this can potentially miss the last $step_size lines of a text.
+            // use min & compare?
+            while end <= text_end - self.step_size {
+                end += self.step_size;
+                eprintln!("  --- ({}, {})", start, end);
+                let view = text.with_view(start, end).expect("view missing text");
+                let analysis = self.store.analyze(&view)?;
+                eprintln!("      maybe {} {} versus current {}", analysis.name, analysis.score, current_score);
+
+                // if the score starts to decline, stop here and optimize for the text
+                if current_score > self.confidence_threshold.powf(2.0) && analysis.score < current_score {
+                    let (optimized, optimized_score) = view.optimize_bounds(analysis.data);
+                    let (_, view_end) = optimized.lines_view();
+                    eprintln!("  +++ found {} at {:?}", analysis.name, optimized.lines_view());
+
+                    if optimized_score < self.confidence_threshold {
+                        continue;
+                    }
+
+                    // TODO if that didn't yield anything, bail out of this inner loop and try for
+                    // more... perhaps set start to somewhere inside the
+                    // current block (with some overlap). or just break. idk.
+
+                    containing.push(ContainedResult {
+                        score: optimized_score,
+                        license: IdentifiedLicense {
+                            name: analysis.name,
+                            kind: analysis.license_type,
+                        },
+                        line_range: optimized.lines_view(),
+                    });
+
+                    // move the overall window to start right at the end of the discovered view
+                    start = view_end;
+                    break;
+                }
+
+                current_score = analysis.score;
+            }
+
+            start += self.step_size; // TODO: this isn't very smart. maybe set near the previous end? or bail entirely?
+        }
+
+        Ok(ScanResult {
+            score: 0.0,
+            license: None,
             containing,
         })
     }
@@ -285,7 +373,7 @@ mod tests {
     }
 
     #[test]
-    fn find_multiple_licenses() {
+    fn find_multiple_licenses_elimination() {
         let store = create_dummy_store();
         // this TextData matches license-2 with an overall score of ~0.46 and optimized
         // score of ~0.57
@@ -294,9 +382,52 @@ mod tests {
 
         // check that we can spot the gibberish license in the sea of other gibberish
         let strategy = ScanStrategy::new(&store)
+            .mode(ScanMode::Elimination)
             .confidence_threshold(0.5)
             .optimize(true)
             .shallow_limit(1.0);
+        let result = strategy.scan(&test_data).unwrap();
+        assert!(result.license.is_none(), "result license is None");
+        assert_eq!(result.containing.len(), 2);
+
+        // inspect the array and ensure we got both licenses
+        let mut found1 = 0;
+        let mut found2 = 0;
+        for (_, ref contained) in result.containing.iter().enumerate() {
+            match contained.license.name.as_ref() {
+                "license-1" => {
+                    assert!(contained.score > 0.5, "license-1 score meets threshold");
+                    found1 += 1;
+                }
+                "license-2" => {
+                    assert!(contained.score > 0.5, "license-2 score meets threshold");
+                    found2 += 1;
+                }
+                _ => {
+                    panic!("somehow got an unknown license name");
+                }
+            }
+        }
+
+        assert!(
+            found1 == 1 && found2 == 1,
+            "found both licenses exactly once"
+        );
+    }
+
+    #[test]
+    fn find_multiple_licenses_topdown() {
+        let store = create_dummy_store();
+        // this TextData matches license-2 with an overall score of ~0.46 and optimized
+        // score of ~0.57
+        let test_data =
+            TextData::new("lorem\nipsum abc def ghi jkl\n1234 5678 1234\n0000\n1010101010\n\n8888 9999\nwhatsit hello\narst neio qwfp colemak is the best keyboard layout\naaaaa\nbbbbb\nccccc");
+
+        // check that we can spot the gibberish license in the sea of other gibberish
+        let strategy = ScanStrategy::new(&store)
+            .mode(ScanMode::TopDown)
+            .confidence_threshold(0.5)
+            .step_size(1);
         let result = strategy.scan(&test_data).unwrap();
         assert!(result.license.is_none(), "result license is None");
         assert_eq!(result.containing.len(), 2);
