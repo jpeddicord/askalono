@@ -225,17 +225,25 @@ impl TextData {
     /// Returns a new `TextData` struct and a score. The returned struct is a
     /// clone of `self`, with its view set to the best match against `other`.
     ///
+    /// This will respect any views set on the TextData (an optimized result
+    /// won't go outside the original view).
+    ///
     /// Note that this won't be 100% optimal if there are blank lines
     /// surrounding the actual match, since successive blank lines in a range
     /// will likely have the same score.
     ///
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
+    ///
+    /// TODO: this should probably return a result and check that self has
+    /// stored text content
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
+        let view = self.lines_view;
+
         // optimize the ending bounds of the text match
         let (end_optimized, _) = self.search_optimize(
-            &|end| self.with_view(0, end).unwrap().match_score(other),
-            &|end| self.with_view(0, end).unwrap(),
+            &|end| self.with_view(view.0, end).unwrap().match_score(other),
+            &|end| self.with_view(view.0, end).unwrap(),
         );
         let new_end = end_optimized.lines_view.1;
 
@@ -335,6 +343,35 @@ mod tests {
             (4, 7) == optimized.lines_view || (4, 8) == optimized.lines_view,
             "bounds are (4, 7) or (4, 8)"
         );
+    }
+
+    // if a view is set on the text data, optimize_bounds must not find text
+    // outside of that range
+    #[test]
+    fn optimize_doesnt_grow_view() {
+        let sample_text = "0\n1\n2\naaa aaa\naaa\naaa\naaa\n7\n8";
+        let license_text = "aaa aaa aaa aaa aaa";
+        let sample = TextData::from(sample_text);
+        let license = TextData::from(license_text).without_text();
+
+        // sanity: the optimized bounds should be at (3, 7)
+        let (optimized, _) = sample.optimize_bounds(&license);
+        assert_eq!((3, 7), optimized.lines_view);
+
+        // this should still work
+        let sample = sample.with_view(3, 7).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
+        assert_eq!((3, 7), optimized.lines_view);
+
+        // but if we shrink the view further, it shouldn't be outside that range
+        let sample = sample.with_view(4, 6).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
+        assert_eq!((4, 6), optimized.lines_view);
+
+        // restoring the view should still be OK too
+        let sample = sample.with_view(0, 9).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
+        assert_eq!((3, 7), optimized.lines_view);
     }
 
     // ensure we don't choke on small TextData matches
