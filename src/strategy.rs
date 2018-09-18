@@ -92,10 +92,18 @@ pub struct ScanStrategy<'a> {
     step_size: usize,
 }
 
+/// Available scanning strategy modes.
 pub enum ScanMode {
+    /// Elimination is a general-purpose strategy that iteratively locates the
+    /// highest license match in a file, then the next, and so on until not
+    /// finding any more strong matches.
     Elimination,
+
+    /// TopDown is a strategy intended for use with attribution documents, or
+    /// text files containing multiple licenses (and not much else). It's more
+    /// accurate than Elimination, but significantly slower.
     TopDown,
-    Smart,
+    // Smart, // TODO
 }
 
 impl<'a> ScanStrategy<'a> {
@@ -117,10 +125,6 @@ impl<'a> ScanStrategy<'a> {
 
     pub fn mode(mut self, mode: ScanMode) -> Self {
         self.mode = mode;
-        self
-    }
-    pub fn step_size(mut self, step_size: usize) -> Self {
-        self.step_size = step_size;
         self
     }
 
@@ -174,6 +178,11 @@ impl<'a> ScanStrategy<'a> {
         self
     }
 
+    pub fn step_size(mut self, step_size: usize) -> Self {
+        self.step_size = step_size;
+        self
+    }
+
     /// Scan the given text content using this strategy's configured
     /// preferences.
     ///
@@ -182,7 +191,7 @@ impl<'a> ScanStrategy<'a> {
         match self.mode {
             ScanMode::Elimination => self.scan_elimination(text),
             ScanMode::TopDown => self.scan_topdown(text),
-            ScanMode::Smart => unimplemented!(), // TODO... and make this the default
+            // ScanMode::Smart => unimplemented!(), // TODO... and make this the default
         }
     }
 
@@ -258,7 +267,7 @@ impl<'a> ScanStrategy<'a> {
                 None => break,
             };
 
-            current_start = contained.line_range.1 + 1; // XXX: possible inf. loop if start == end (?). add 1?
+            current_start = contained.line_range.1 + 1;
             containing.push(contained);
         }
 
@@ -277,7 +286,10 @@ impl<'a> ScanStrategy<'a> {
         let (_, text_end) = text.lines_view();
         let mut found: (usize, usize, Option<Match>) = (0, 0, None);
 
-        trace!("topdown_find_contained_license starting at line {}", starting_at);
+        trace!(
+            "topdown_find_contained_license starting at line {}",
+            starting_at
+        );
 
         // TODO: areas for improvement
         // - use something different from the confidence threshold for the start/end
@@ -298,21 +310,31 @@ impl<'a> ScanStrategy<'a> {
                 // just getting a feel for the data at this point, not yet
                 // optimizing the view.
 
-                // speed: bail out once we've found something reasonable
+                // entering threshold: save the starting location
                 if !hit_threshold && analysis.score >= self.confidence_threshold {
-                    // entering threshold
                     hit_threshold = true;
                     trace!(
                         "hit_threshold at ({}, {}) with score {}",
-                        start, end, analysis.score
+                        start,
+                        end,
+                        analysis.score
                     );
-                } else if hit_threshold && analysis.score < self.confidence_threshold {
-                    trace!(
-                        "exiting threshold at ({}, {}) with score {}",
-                        start, end, analysis.score
-                    );
-                    found = (start, end, Some(analysis));
-                    break 'start;
+                }
+
+                if hit_threshold {
+                    if analysis.score < self.confidence_threshold {
+                        // exiting threshold
+                        trace!(
+                            "exiting threshold at ({}, {}) with score {}",
+                            start,
+                            end,
+                            analysis.score
+                        );
+                        break 'start;
+                    } else {
+                        // maintaining threshold (also true for entering)
+                        found = (start, end, Some(analysis));
+                    }
                 }
             }
         }
@@ -347,82 +369,12 @@ impl<'a> ScanStrategy<'a> {
             line_range: optimized.lines_view(),
         }))
     }
-
-    fn bad_scan_topdown(&self, text: &TextData) -> Result<ScanResult, Error> {
-        let mut start: usize = 0;
-        let (_, text_end) = text.lines_view();
-        let mut containing = Vec::new();
-
-        while start < text_end - self.step_size {
-            eprintln!("*** ({}, ?)", start);
-            let mut current_score = 0f32;
-            let mut end: usize = start;
-
-            // gradually expand the end by step_size until finding some local maximum
-            // FIXME: this can potentially miss the last $step_size lines of a text.
-            // use min & compare?
-            while end <= text_end - self.step_size {
-                end += self.step_size;
-                eprintln!("  --- ({}, {})", start, end);
-                let view = text.with_view(start, end).expect("view missing text");
-                let analysis = self.store.analyze(&view)?;
-                eprintln!(
-                    "      maybe {} {} versus current {}",
-                    analysis.name, analysis.score, current_score
-                );
-
-                // if the score starts to decline, stop here and optimize for the text
-                if current_score > self.confidence_threshold.powf(2.0)
-                    && analysis.score < current_score
-                {
-                    let (optimized, optimized_score) = view.optimize_bounds(analysis.data);
-                    let (_, view_end) = optimized.lines_view();
-                    eprintln!(
-                        "  +++ found {} at {:?}",
-                        analysis.name,
-                        optimized.lines_view()
-                    );
-
-                    if optimized_score < self.confidence_threshold {
-                        continue;
-                    }
-
-                    // TODO if that didn't yield anything, bail out of this inner loop and try for
-                    // more... perhaps set start to somewhere inside the
-                    // current block (with some overlap). or just break. idk.
-
-                    containing.push(ContainedResult {
-                        score: optimized_score,
-                        license: IdentifiedLicense {
-                            name: analysis.name,
-                            kind: analysis.license_type,
-                        },
-                        line_range: optimized.lines_view(),
-                    });
-
-                    // move the overall window to start right at the end of the discovered view
-                    start = view_end;
-                    break;
-                }
-
-                current_score = analysis.score;
-            }
-
-            start += self.step_size; // TODO: this isn't very smart. maybe set near the previous end? or bail
-                                     // entirely?
-        }
-
-        Ok(ScanResult {
-            score: 0.0,
-            license: None,
-            containing,
-        })
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate env_logger;
 
     #[test]
     fn can_construct() {
@@ -502,7 +454,7 @@ mod tests {
             .shallow_limit(1.0);
         let result = strategy.scan(&test_data).unwrap();
         assert!(result.license.is_none(), "result license is None");
-        assert_eq!(result.containing.len(), 2);
+        assert_eq!(2, result.containing.len());
 
         // inspect the array and ensure we got both licenses
         let mut found1 = 0;
@@ -531,6 +483,8 @@ mod tests {
 
     #[test]
     fn find_multiple_licenses_topdown() {
+        env_logger::init();
+
         let store = create_dummy_store();
         // this TextData matches license-2 with an overall score of ~0.46 and optimized
         // score of ~0.57
@@ -544,7 +498,8 @@ mod tests {
             .step_size(1);
         let result = strategy.scan(&test_data).unwrap();
         assert!(result.license.is_none(), "result license is None");
-        assert_eq!(result.containing.len(), 2);
+        println!("{:?}", result);
+        assert_eq!(2, result.containing.len());
 
         // inspect the array and ensure we got both licenses
         let mut found1 = 0;

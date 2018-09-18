@@ -15,21 +15,31 @@ enum Annotation {
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() != 2 {
-      eprintln!("usage: annotate-text cache.bin.gz < input.txt > output.html");
-      std::process::exit(1);
+        eprintln!("usage: annotate-text cache.bin.gz < input.txt > output.html");
+        std::process::exit(1);
     }
 
     let cache = &args[1];
-    let store = Store::from_cache(File::open(cache).expect("couldn't read cache file")).expect("error parsing cache");
+    let store = Store::from_cache(File::open(cache).expect("couldn't read cache file"))
+        .expect("error parsing cache");
 
     let mut buf = String::new();
-    stdin().read_to_string(&mut buf).expect("couldn't read stdin");
-    let strategy = ScanStrategy::new(&store).mode(ScanMode::TopDown).confidence_threshold(0.98);
-    let results = strategy.scan(&TextData::new(&buf)).expect("scan didn't complete successfully");
+    stdin()
+        .read_to_string(&mut buf)
+        .expect("couldn't read stdin");
+    let strategy = ScanStrategy::new(&store)
+        .mode(ScanMode::TopDown)
+        .confidence_threshold(0.80);
+    let results = strategy
+        .scan(&TextData::new(&buf))
+        .expect("scan didn't complete successfully");
 
     let mut annotations = HashMap::with_capacity(results.containing.len() * 2);
     for result in &results.containing {
-        annotations.insert(result.line_range.0, Annotation::Begin(result.license.name.clone()));
+        annotations.insert(
+            result.line_range.0,
+            Annotation::Begin(result.license.name.clone()),
+        );
         annotations.insert(result.line_range.1, Annotation::End);
     }
 
@@ -43,15 +53,17 @@ fn main() {
             let a = annotations.get(&i).unwrap();
             match a {
                 Annotation::Begin(license) => {
-                    print!(r#"<div style="background-color: rgba(50, 50, 255, 0.3)" title="{}">"#, license);
-                },
+                    print!(
+                        r#"<div style="background-color: rgba(50, 50, 255, 0.3)" title="{}">"#,
+                        license
+                    );
+                }
                 Annotation::End => {
                     print!("</div>");
                 }
             }
         }
         println!("{}", line);
-
     }
 
     println!("</pre></body></html>");

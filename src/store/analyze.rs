@@ -146,31 +146,34 @@ impl Store {
             .licenses
             .iter()
             // XXX optimize: len of licenses isn't strictly correct, but it'll do for now
-            .fold(Vec::with_capacity(self.licenses.len()), |mut acc: Vec<PartialMatch>, (name, data)| {
-                acc.push(PartialMatch {
-                    score: data.original.match_score(text),
-                    name,
-                    license_type: LicenseType::Original,
-                    data: &data.original,
-                });
-                data.alternates.iter().for_each(|alt| {
+            .fold(
+                Vec::with_capacity(self.licenses.len()),
+                |mut acc: Vec<PartialMatch>, (name, data)| {
                     acc.push(PartialMatch {
-                        score: alt.match_score(text),
+                        score: data.original.match_score(text),
                         name,
-                        license_type: LicenseType::Alternate,
-                        data: alt,
-                    })
-                });
-                data.headers.iter().for_each(|head| {
-                    acc.push(PartialMatch {
-                        score: head.match_score(text),
-                        name,
-                        license_type: LicenseType::Header,
-                        data: head,
-                    })
-                });
-                acc
-            });
+                        license_type: LicenseType::Original,
+                        data: &data.original,
+                    });
+                    data.alternates.iter().for_each(|alt| {
+                        acc.push(PartialMatch {
+                            score: alt.match_score(text),
+                            name,
+                            license_type: LicenseType::Alternate,
+                            data: alt,
+                        })
+                    });
+                    data.headers.iter().for_each(|head| {
+                        acc.push(PartialMatch {
+                            score: head.match_score(text),
+                            name,
+                            license_type: LicenseType::Header,
+                            data: head,
+                        })
+                    });
+                    acc
+                },
+            );
         res.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
 
         let m = &res[0];
