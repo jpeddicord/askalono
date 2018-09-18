@@ -275,50 +275,64 @@ impl<'a> ScanStrategy<'a> {
         starting_at: usize,
     ) -> Result<Option<ContainedResult>, Error> {
         let (_, text_end) = text.lines_view();
-        let mut start_highest: (f32, usize, Option<Match>) = (0.0, 0, None);
-        let mut end_highest: (f32, usize, Option<Match>) = (0.0, 0, None);
+        let mut found: (usize, usize, Option<Match>) = (0, 0, None);
 
-        eprintln!("topdown_find_contained_license starting at {}", starting_at);
+        trace!("topdown_find_contained_license starting at line {}", starting_at);
 
-        // TODO: consider optimizing this. we can throw out iterations once we've
-        // hit a reasonable local maximum (above the confidence threshold)
+        // TODO: areas for improvement
+        // - use something different from the confidence threshold for the start/end
+        // loops, something more relaxed
+        // - once above the relaxed threshold, change the step interval to
+        // line-by-line to ensure we don't skip over anything
+
+        // speed: only start tracking once conf is met, and bail out after
+        let mut hit_threshold = false;
 
         // move the start of window...
-        for start in (starting_at..text_end).step_by(self.step_size) {
+        'start: for start in (starting_at..text_end).step_by(self.step_size) {
             // ...and also the end of window to find high scores.
-            for end in (start..=text_end).step_by(self.step_size) {
+            'end: for end in (start..=text_end).step_by(self.step_size) {
                 let view = text.with_view(start, end).expect("view missing text");
                 let analysis = self.store.analyze(&view)?;
 
-                // don't worry about optimizing the view yet, we're just getting a
-                // feel for the data
+                // just getting a feel for the data at this point, not yet
+                // optimizing the view.
 
-                // store the highest score using this end value
-                if analysis.score > end_highest.0 {
-                    end_highest = (analysis.score, end, Some(analysis));
+                // speed: bail out once we've found something reasonable
+                if !hit_threshold && analysis.score >= self.confidence_threshold {
+                    // entering threshold
+                    hit_threshold = true;
+                    trace!(
+                        "hit_threshold at ({}, {}) with score {}",
+                        start, end, analysis.score
+                    );
+                } else if hit_threshold && analysis.score < self.confidence_threshold {
+                    trace!(
+                        "exiting threshold at ({}, {}) with score {}",
+                        start, end, analysis.score
+                    );
+                    found = (start, end, Some(analysis));
+                    break 'start;
                 }
-            }
-
-            // take the maximum of the window during this run and use it
-            // to compare with the starting highest value
-            if end_highest.0 > start_highest.0 {
-                start_highest = (end_highest.0, start, end_highest.2.clone());
             }
         }
 
         // at this point we have a *rough* bounds for a match.
         // now we can optimize to find the best one
-        let matched = match start_highest.2 {
+        let matched = match found.2 {
             Some(m) => m,
             None => return Ok(None),
         };
         let check = matched.data;
-        let view = text
-            .with_view(start_highest.1, end_highest.1)
-            .expect("view missing text");
+        let view = text.with_view(found.0, found.1).expect("view missing text");
         let (optimized, optimized_score) = view.optimize_bounds(check);
 
-        eprintln!("  optimized {} {}", optimized_score, matched.name);
+        trace!(
+            "optimized {} {} at ({:?})",
+            optimized_score,
+            matched.name,
+            optimized.lines_view()
+        );
 
         if optimized_score < self.confidence_threshold {
             return Ok(None);

@@ -18,15 +18,13 @@ fn main() {
       eprintln!("usage: annotate-text cache.bin.gz < input.txt > output.html");
       std::process::exit(1);
     }
-    eprintln!("here goes");
 
     let cache = &args[1];
     let store = Store::from_cache(File::open(cache).expect("couldn't read cache file")).expect("error parsing cache");
-    eprintln!("loaded cache");
 
     let mut buf = String::new();
     stdin().read_to_string(&mut buf).expect("couldn't read stdin");
-    let strategy = ScanStrategy::new(&store).mode(ScanMode::TopDown).confidence_threshold(0.5);
+    let strategy = ScanStrategy::new(&store).mode(ScanMode::TopDown).confidence_threshold(0.98);
     let results = strategy.scan(&TextData::new(&buf)).expect("scan didn't complete successfully");
 
     let mut annotations = HashMap::with_capacity(results.containing.len() * 2);
