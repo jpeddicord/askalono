@@ -20,7 +20,7 @@ use failure::Error;
 
 use license::LicenseType;
 use license::TextData;
-use store::Store;
+use store::{Match, Store};
 
 /// A struct describing a license that was identified, as well as its type.
 #[derive(Serialize, Debug)]
@@ -245,6 +245,96 @@ impl<'a> ScanStrategy<'a> {
     }
 
     fn scan_topdown(&self, text: &TextData) -> Result<ScanResult, Error> {
+        let (_, text_end) = text.lines_view();
+        let mut containing = Vec::new();
+
+        // find licenses working down thru the text's lines
+        let mut current_start = 0usize;
+        while current_start < text_end {
+            let result = self.topdown_find_contained_license(text, current_start)?;
+
+            let contained = match result {
+                Some(c) => c,
+                None => break,
+            };
+
+            current_start = contained.line_range.1 + 1; // XXX: possible inf. loop if start == end (?). add 1?
+            containing.push(contained);
+        }
+
+        Ok(ScanResult {
+            score: 0.0,
+            license: None,
+            containing,
+        })
+    }
+
+    fn topdown_find_contained_license(
+        &self,
+        text: &TextData,
+        starting_at: usize,
+    ) -> Result<Option<ContainedResult>, Error> {
+        let (_, text_end) = text.lines_view();
+        let mut start_highest: (f32, usize, Option<Match>) = (0.0, 0, None);
+        let mut end_highest: (f32, usize, Option<Match>) = (0.0, 0, None);
+
+        eprintln!("topdown_find_contained_license starting at {}", starting_at);
+
+        // TODO: consider optimizing this. we can throw out iterations once we've
+        // hit a reasonable local maximum (above the confidence threshold)
+
+        // move the start of window...
+        for start in (starting_at..text_end).step_by(self.step_size) {
+            // ...and also the end of window to find high scores.
+            for end in (start..=text_end).step_by(self.step_size) {
+                let view = text.with_view(start, end).expect("view missing text");
+                let analysis = self.store.analyze(&view)?;
+
+                // don't worry about optimizing the view yet, we're just getting a
+                // feel for the data
+
+                // store the highest score using this end value
+                if analysis.score > end_highest.0 {
+                    end_highest = (analysis.score, end, Some(analysis));
+                }
+            }
+
+            // take the maximum of the window during this run and use it
+            // to compare with the starting highest value
+            if end_highest.0 > start_highest.0 {
+                start_highest = (end_highest.0, start, end_highest.2.clone());
+            }
+        }
+
+        // at this point we have a *rough* bounds for a match.
+        // now we can optimize to find the best one
+        let matched = match start_highest.2 {
+            Some(m) => m,
+            None => return Ok(None),
+        };
+        let check = matched.data;
+        let view = text
+            .with_view(start_highest.1, end_highest.1)
+            .expect("view missing text");
+        let (optimized, optimized_score) = view.optimize_bounds(check);
+
+        eprintln!("  optimized {} {}", optimized_score, matched.name);
+
+        if optimized_score < self.confidence_threshold {
+            return Ok(None);
+        }
+
+        Ok(Some(ContainedResult {
+            score: optimized_score,
+            license: IdentifiedLicense {
+                name: matched.name,
+                kind: matched.license_type,
+            },
+            line_range: optimized.lines_view(),
+        }))
+    }
+
+    fn bad_scan_topdown(&self, text: &TextData) -> Result<ScanResult, Error> {
         let mut start: usize = 0;
         let (_, text_end) = text.lines_view();
         let mut containing = Vec::new();
@@ -262,13 +352,22 @@ impl<'a> ScanStrategy<'a> {
                 eprintln!("  --- ({}, {})", start, end);
                 let view = text.with_view(start, end).expect("view missing text");
                 let analysis = self.store.analyze(&view)?;
-                eprintln!("      maybe {} {} versus current {}", analysis.name, analysis.score, current_score);
+                eprintln!(
+                    "      maybe {} {} versus current {}",
+                    analysis.name, analysis.score, current_score
+                );
 
                 // if the score starts to decline, stop here and optimize for the text
-                if current_score > self.confidence_threshold.powf(2.0) && analysis.score < current_score {
+                if current_score > self.confidence_threshold.powf(2.0)
+                    && analysis.score < current_score
+                {
                     let (optimized, optimized_score) = view.optimize_bounds(analysis.data);
                     let (_, view_end) = optimized.lines_view();
-                    eprintln!("  +++ found {} at {:?}", analysis.name, optimized.lines_view());
+                    eprintln!(
+                        "  +++ found {} at {:?}",
+                        analysis.name,
+                        optimized.lines_view()
+                    );
 
                     if optimized_score < self.confidence_threshold {
                         continue;
@@ -295,7 +394,8 @@ impl<'a> ScanStrategy<'a> {
                 current_score = analysis.score;
             }
 
-            start += self.step_size; // TODO: this isn't very smart. maybe set near the previous end? or bail entirely?
+            start += self.step_size; // TODO: this isn't very smart. maybe set near the previous end? or bail
+                                     // entirely?
         }
 
         Ok(ScanResult {
