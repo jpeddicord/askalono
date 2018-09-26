@@ -1,19 +1,6 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-/// TODO: Investigate top-down scanning strategy for things like attribution
-/// docuements: - Take the entire text and shrink the view down to (0,
-/// chunk_size) where   chunk_size is a sane value to increment by. Perhaps 10
-/// lines? - Attempt to identify.
-/// - White out identified texts (this may not work if the license got chopped
-///   off -- figure out how to deal with that)
-/// - Grow the region.
-/// - Repeat from identification step above.
-///
-/// This may require extra integration work in TextData. This also may not be
-/// necessary at all! I think computing the dice coefficient & optimizing (as
-/// ScanStrategy does) should still work fine, but I wonder
-/// if I'm missing something real-world. Backup plans.
 use std::borrow::Cow;
 
 use failure::Error;
@@ -123,6 +110,10 @@ impl<'a> ScanStrategy<'a> {
         }
     }
 
+    /// Set the scanning mode.
+    ///
+    /// See ScanMode for a description of options. The default mode is
+    /// Elimination, which is a fast, good general-purpose matcher.
     pub fn mode(mut self, mode: ScanMode) -> Self {
         self.mode = mode;
         self
@@ -178,6 +169,10 @@ impl<'a> ScanStrategy<'a> {
         self
     }
 
+    /// Configure the scanning interval (in lines) for TopDown mode.
+    ///
+    /// A smaller step size will be more accurate at a significant cost of
+    /// speed.
     pub fn step_size(mut self, step_size: usize) -> Self {
         self.step_size = step_size;
         self
@@ -303,7 +298,7 @@ impl<'a> ScanStrategy<'a> {
         // move the start of window...
         'start: for start in (starting_at..text_end).step_by(self.step_size) {
             // ...and also the end of window to find high scores.
-            'end: for end in (start..=text_end).step_by(self.step_size) {
+            for end in (start..=text_end).step_by(self.step_size) {
                 let view = text.with_view(start, end).expect("view missing text");
                 let analysis = self.store.analyze(&view)?;
 
