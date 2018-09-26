@@ -62,12 +62,16 @@ impl fmt::Display for LicenseType {
 /// license is located:
 ///
 /// ```
+/// # use std::error::Error;
 /// # use askalono::TextData;
+/// # fn main() -> Result<(), Box<Error>> {
 /// # let license = TextData::from("My First License");
 /// let sample = TextData::from("copyright 20xx me irl\n// My First License\nfn hello() {\n ...");
-/// let (optimized, score) = sample.optimize_bounds(&license);
+/// let (optimized, score) = sample.optimize_bounds(&license)?;
 /// assert_eq!((1, 2), optimized.lines_view());
 /// assert!(score > 0.99f32, "license within text matches");
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TextData {
@@ -142,9 +146,7 @@ impl TextData {
     ///
     /// Other methods on `TextView` respect this boundary, so it's not needed
     /// outside this struct.
-    ///
-    /// TODO: Make public? It's now used in ScanStrategy
-    pub(crate) fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
+    pub fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
         let view = match self.lines_normalized {
             Some(ref lines) => &lines[start..end],
             None => return Err(format_err!("TextData does not have original text")),
@@ -234,10 +236,11 @@ impl TextData {
     ///
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
-    ///
-    /// TODO: this should probably return a result and check that self has
-    /// stored text content
-    pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
+    pub fn optimize_bounds(&self, other: &TextData) -> Result<(Self, f32), Error> {
+        if let None = self.lines_normalized {
+            return Err(format_err!("TextData does not have original text"));
+        };
+
         let view = self.lines_view;
 
         // optimize the ending bounds of the text match
@@ -257,7 +260,7 @@ impl TextData {
             },
             &|start| end_optimized.with_view(start, new_end).unwrap(),
         );
-        (optimized, score)
+        Ok((optimized, score))
     }
 
     fn search_optimize(&self, score: &Fn(usize) -> f32, value: &Fn(usize) -> Self) -> (Self, f32) {
@@ -317,7 +320,7 @@ mod tests {
         let license = TextData::from(license_text).without_text();
         let sample = TextData::from(sample_text);
 
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         assert_eq!((0, 3), optimized.lines_view);
@@ -325,7 +328,7 @@ mod tests {
         // add more to the string, try again (avoid int trunc screwups)
         let sample_text = format!("{}\none more line", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         assert_eq!((0, 3), optimized.lines_view);
@@ -333,7 +336,7 @@ mod tests {
         // add to the beginning too
         let sample_text = format!("some content\nat\n\nthe beginning\n{}", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         println!("{:?}", optimized.lines_view);
         println!("{:?}", optimized.lines_normalized.clone().unwrap());
         // end bounds at 7 and 8 have the same score, since they're empty lines (not
@@ -355,22 +358,22 @@ mod tests {
         let license = TextData::from(license_text).without_text();
 
         // sanity: the optimized bounds should be at (3, 7)
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         assert_eq!((3, 7), optimized.lines_view);
 
         // this should still work
         let sample = sample.with_view(3, 7).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         assert_eq!((3, 7), optimized.lines_view);
 
         // but if we shrink the view further, it shouldn't be outside that range
         let sample = sample.with_view(4, 6).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         assert_eq!((4, 6), optimized.lines_view);
 
         // restoring the view should still be OK too
         let sample = sample.with_view(0, 9).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license);
+        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
         assert_eq!((3, 7), optimized.lines_view);
     }
 

@@ -6,9 +6,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-Planned: a requirement on Rust 1.26.
+TBD. A 1.0 release is likely next, and will include full WebAssembly support.
 
-Many not-yet-documented changes. Coming soon.
+## [0.3.0] - TBD
+
+### Added
+
+- Scanning strategies have been added in `ScanStrategy`. These include some common high-level logic that can be used for diving deeper into askalono's results.
+- `Store` gained methods to add your own licenses to its dataset at runtime. These are `add_license` and `add_variant`.
+- `Store` lets you retrieve and set the list of aliases for a given license.
+- `Store` can also tell you which licenses are present with `licenses`.
+- `TextData`'s `with_view` is now public. It can be used to change the region of lines in a text you're interested in without needing to wholly re-compute data for the underlying string.
+- `TextData` also learned `white_out`, which is the inverse of `with_view`. It erases the active view's lines. This can be useful when a match has been found and you'd like to "hide" it to perform further analysis.
+- The command-line application learned how to output JSON for better machine parsing.
+- EXPERIMENTAL: askalono is WebAssembly-capable. Loading caches is not yet supported due to missing upstream dependencies. This likely to be available in the near future.
+
+### Changed
+
+- `optimize_bounds` now returns a Result. Previously it would have paniced if `self` was missing text.
+
+### Deprecated
+
+- The `aliases` field has been deprecated and will be removed in a future release. Prefer looking up aliases in the store when needed.
 
 ### Fixed
 
@@ -47,5 +66,6 @@ Many not-yet-documented changes. Coming soon.
 - It's fast, though
 
 
+[0.3.0]: https://github.com/amzn/askalono/releases/tag/0.3.0
+[0.2.0]: https://github.com/amzn/askalono/releases/tag/0.2.0
 [0.1.0]: https://github.com/amzn/askalono/releases/tag/0.1.0
-

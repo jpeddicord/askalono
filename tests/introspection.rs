@@ -38,7 +38,7 @@ fn self_apache_header() {
     assert_eq!(askalono::LicenseType::Header, matched.license_type);
 
     // now try to find the bounds of the license header
-    let (optimized, _) = text_data.optimize_bounds(&matched.data);
+    let (optimized, _) = text_data.optimize_bounds(&matched.data).unwrap();
 
     // the license is from (0-indexed) lines 3 thru 12 of this file, excluding
     // that copyright statement on line 1.

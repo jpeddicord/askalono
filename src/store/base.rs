@@ -76,6 +76,11 @@ impl Store {
         self.licenses.is_empty()
     }
 
+    /// Get all licenses by name via iterator.
+    pub fn licenses<'a>(&'a self) -> impl Iterator<Item = &String> + 'a {
+        self.licenses.keys()
+    }
+
     /// Add a single license to the store.
     ///
     /// If the license with the given name already existed, it and all of its
@@ -111,6 +116,25 @@ impl Store {
                 return Err(format_err!("variant type not applicable for add_variant"));
             }
         };
+        Ok(())
+    }
+
+    /// Get the list of aliases for a given license.
+    pub fn aliases(&self, name: &str) -> Result<&Vec<String>, Error> {
+        let entry = self
+            .licenses
+            .get(name)
+            .ok_or_else(|| format_err!("license {} not present in store", name))?;
+        Ok(&entry.aliases)
+    }
+
+    /// Set the list of aliases for a given license.
+    pub fn set_aliases(&mut self, name: &str, aliases: Vec<String>) -> Result<(), Error> {
+        let entry = self
+            .licenses
+            .get_mut(name)
+            .ok_or_else(|| format_err!("license {} not present in store", name))?;
+        entry.aliases = aliases;
         Ok(())
     }
 }

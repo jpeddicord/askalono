@@ -218,7 +218,9 @@ impl<'a> ScanStrategy<'a> {
             // this loop effectively iterates once for each license it finds
             let mut current_text: Cow<TextData> = Cow::Borrowed(text);
             for _n in 0..self.max_passes {
-                let (optimized, optimized_score) = current_text.optimize_bounds(analysis.data);
+                let (optimized, optimized_score) = current_text
+                    .optimize_bounds(analysis.data)
+                    .expect("optimize_bounds failed in elimination loop");
 
                 // stop if we didn't find anything acceptable
                 if optimized_score < self.confidence_threshold {
@@ -342,7 +344,9 @@ impl<'a> ScanStrategy<'a> {
         };
         let check = matched.data;
         let view = text.with_view(found.0, found.1).expect("view missing text");
-        let (optimized, optimized_score) = view.optimize_bounds(check);
+        let (optimized, optimized_score) = view
+            .optimize_bounds(check)
+            .expect("optimize_bounds failed narrowing top-down result");
 
         trace!(
             "optimized {} {} at ({:?})",
