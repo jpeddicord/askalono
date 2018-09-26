@@ -6,7 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-Nothing yet. Planned: a requirement on Rust 1.26.
+Planned: a requirement on Rust 1.26.
+
+Many not-yet-documented changes. Coming soon.
+
+### Fixed
+
+- `optimize_bounds` now respects existing line views/windows on TextData structs.
 
 ## [0.2.0] - 2018-05-13
 

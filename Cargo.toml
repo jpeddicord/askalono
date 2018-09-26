@@ -29,6 +29,9 @@ serde_json = { version = "1.0.11", optional = true }
 flate2 = "1.0.1" # TODO: this should be fine in wasm soon
 rayon = "1.0.1"
 
+[dev-dependencies]
+env_logger = "0.5.5"
+
 [workspace]
 members = ["cli"]
 exclude = ["wasm"]

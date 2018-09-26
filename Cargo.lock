@@ -26,6 +26,7 @@ dependencies = [
 name = "askalono"
 version = "0.2.0"
 dependencies = [
+ "env_logger 0.5.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
