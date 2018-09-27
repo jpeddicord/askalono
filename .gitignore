@@ -1,5 +1,5 @@
-target
-node_modules
 *.bin
 *.bin.gz
+/Cargo.lock
 gh-pages/
+target

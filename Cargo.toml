@@ -32,10 +32,6 @@ rayon = "1.0.1"
 [dev-dependencies]
 env_logger = "0.5.5"
 
-[workspace]
-members = ["cli"]
-exclude = ["wasm"]
-
 [lib]
 name = "askalono"
 path = "src/lib.rs"
