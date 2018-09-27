@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 TBD. A 1.0 release is likely next, and will include full WebAssembly support.
 
-## [0.3.0] - TBD
+## [0.3.0] - 2018-09-27
 
 ### Added
 
