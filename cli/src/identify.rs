@@ -16,6 +16,8 @@ use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
 
+// general TODO: replace a bunch of this logic with ScanStrategy
+
 pub fn identify(
     cache_filename: &Path,
     output_format: &OutputFormat,
@@ -113,9 +115,9 @@ pub fn identify_data(
 
     if matched.score > MIN_SCORE {
         output.license = Some(IdentifiedLicense {
+            aliases: store.aliases(&matched.name).unwrap().clone(),
             name: matched.name,
             kind: matched.license_type,
-            aliases: matched.aliases,
         });
 
         return Ok(output);
@@ -143,9 +145,9 @@ pub fn identify_data(
             output.containing.push(ContainedResult {
                 score,
                 license: IdentifiedLicense {
+                    aliases: store.aliases(&matched.name).unwrap().clone(),
                     name: matched.name,
                     kind: matched.license_type,
-                    aliases: matched.aliases,
                 },
                 line_range: (lower + 1, upper), // inclusive range using 1-indexed numbers
             });
