@@ -19,9 +19,10 @@ build_script:
 - ps: rm -r datasets
 - git submodule update --init --recursive
 - git reset --hard
-- cargo build --verbose --release --all
+- cd cli
+- cargo build --verbose --release
 test_script:
-- cargo test --verbose --all
+- cargo test --verbose
 artifacts:
 - name: askalono.exe
   path: 'target\release\askalono.exe'
