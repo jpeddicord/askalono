@@ -1,16 +1,15 @@
 version: "{branch}-{build}"
 image: Visual Studio 2017
+init:
+- git config --global core.symlinks true
 install:
+- git submodule update --init --recursive
 - curl -sSf -o rustup-init.exe https://win.rustup.rs/
 - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain stable
 - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
 - rustc -Vv
 - cargo -V
 build_script:
-- git config core.symlinks true
-- ps: rm -r datasets
-- git submodule update --init --recursive
-- git reset --hard
 - cd cli
 - cargo build --verbose --release
 test_script:
