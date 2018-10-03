@@ -1,13 +1,5 @@
-# NOTE: This is referenced from AppVeyor via a raw CDN URL.
-# AppVeyor is using a classic git clone instead of a GitHub integration,
-# and for some reason that means it can't read this file out of the repo
-# itself. If you submit build changes to this file, note that AppVeyor will
-# use the copy in "master" if you deploy to a different branch/PR first.
 version: "{branch}-{build}"
 image: Visual Studio 2017
-cache:
-- C:\Users\appveyor\.cargo\registry
-- target
 install:
 - curl -sSf -o rustup-init.exe https://win.rustup.rs/
 - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain stable
@@ -26,12 +18,11 @@ test_script:
 artifacts:
 - name: askalono.exe
   path: 'target\release\askalono.exe'
-# deploy:
-#   provider: GitHub
-#   artifact: askalono.exe
-#   description: ''
-#   auth_token:
-#     secure: 0stjXsDG+1NWcveU3QTxcgqxLX2g/DsOxNIrvpjXJ9766eQNaZJ74iPYHy5NtMvu
-#   on:
-#     branch: master
-#     appveyor_repo_tag: true
+deploy:
+  provider: GitHub
+  artifact: askalono.exe
+  description: ''
+  auth_token:
+    secure: GmC3HJHS4wRFx3drrsEa16+xIxGO6HZLDn+h3CuLLKldUm9VT3WMOj/ZXtva6Soe
+  on:
+    appveyor_repo_tag: true
