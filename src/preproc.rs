@@ -21,7 +21,8 @@ pub const PREPROC_NORMALIZE: [&PreprocFn; 5] = [
 /// A list of preprocessors that more aggressively normalize/mangle text
 /// to make for friendlier matching. May remove statements and lines, and
 /// more heavily normalize punctuation.
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
+    &remove_common_tokens,
     &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
@@ -29,6 +30,65 @@ pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
     &collapse_whitespace,
     &final_trim,
 ];
+
+fn lcs_substr(fstr: &str, sstr: &str) -> String {
+    let mut f_chars = fstr.chars();
+    let mut longest_substr = String::new();
+
+    loop {
+        let mut f = match f_chars.next() {
+            Some(s) => s,
+            None => return longest_substr,
+        };
+
+        let mut substr = String::new();
+        let mut s_chars = sstr.chars();
+
+        loop {
+            match s_chars.next() {
+                Some(s) => {
+                    if f == s {
+                        substr.push(s);
+
+                        f = match f_chars.next() {
+                            Some(f_str) => f_str,
+                            None => return longest_substr,
+                        };
+                    } else {
+                        if substr.len() > longest_substr.len() {
+                            longest_substr = substr.clone();
+                        }
+
+                        substr.clear();
+                    }
+                }
+                None => break,
+            }
+        }
+    }
+}
+
+pub fn remove_common_tokens(text: &str) -> String {
+    let lines: Vec<&str> = text.split("\n").collect();
+    let mut largest_substr = String::new();
+    let mut l_iter = lines.iter();
+
+    loop {
+        let f_line = match l_iter.next() {
+            Some(line) => line,
+            None => break,
+        };
+
+        largest_substr = match l_iter.next() {
+            Some(s_line) => lcs_substr(f_line, s_line),
+            None => break,
+        }
+    }
+
+    let new_text = str::replace(text, largest_substr.as_str(), "");
+
+    new_text.to_string()
+}
 
 pub fn apply_normalizers(text: &str) -> Vec<String> {
     let mut lines = Vec::new();
@@ -157,6 +217,23 @@ fn final_trim(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn greatest_substring_removal() {
+        let text = "%%Copyright: Copyright
+            %%Copyright: All rights reserved.
+            %%Copyright: Redistribution and use in source and binary forms, with or
+            %%Copyright: without modification, are permitted provided that the
+            %%Copyright: following conditions are met:";
+
+        let new_text = remove_common_tokens(text);
+
+        assert_eq!(
+            new_text.contains("%%Copyright"),
+            false,
+            "new text shouldn't contain the common substring"
+        );
+    }
 
     #[test]
     fn normalize_no_line_mangle() {
