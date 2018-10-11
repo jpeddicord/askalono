@@ -31,6 +31,7 @@ pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
     &final_trim,
 ];
 
+/// Finds the largest common substring between two lines of the license file
 fn lcs_substr(fstr: &str, sstr: &str) -> String {
     let mut f_chars = fstr.chars();
     let mut longest_substr = String::new();
@@ -68,6 +69,7 @@ fn lcs_substr(fstr: &str, sstr: &str) -> String {
     }
 }
 
+/// Uses the lcs function to remove the common substrings from a license file
 pub fn remove_common_tokens(text: &str) -> String {
     let lines: Vec<&str> = text.split("\n").collect();
     let mut largest_substr = String::new();
@@ -85,9 +87,11 @@ pub fn remove_common_tokens(text: &str) -> String {
         }
     }
 
-    let new_text = str::replace(text, largest_substr.as_str(), "");
-
-    new_text.to_string()
+    if largest_substr.trim().len() > 3 {
+        str::replace(text, largest_substr.trim(), "").to_string()
+    } else {
+        text.to_string()
+    }
 }
 
 pub fn apply_normalizers(text: &str) -> Vec<String> {
