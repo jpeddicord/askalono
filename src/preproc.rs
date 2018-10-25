@@ -21,7 +21,8 @@ pub const PREPROC_NORMALIZE: [&PreprocFn; 5] = [
 /// A list of preprocessors that more aggressively normalize/mangle text
 /// to make for friendlier matching. May remove statements and lines, and
 /// more heavily normalize punctuation.
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
+    &remove_common_tokens,
     &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
@@ -29,6 +30,91 @@ pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
     &collapse_whitespace,
     &final_trim,
 ];
+
+fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
+    let mut f_chars = fstr.trim().chars();
+    let mut s_chars = sstr.trim().chars();
+    let mut substr = String::new();
+
+    let skip_whitespace = |c| match c {
+        ' ' | '\t' => true,
+        _ => false,
+    };
+
+    loop {
+        let f = match f_chars.next() {
+            Some(f_str) => if skip_whitespace(f_str) {
+                s_chars.next();
+                continue;
+            } else {
+                f_str
+            },
+            None => if substr.len() > 0 {
+                return Some(substr);
+            } else {
+                return None;
+            },
+        };
+
+        match s_chars.next() {
+            Some(s) => {
+                if !skip_whitespace(s) {
+                    if f == s {
+                        substr.push(s);
+                    } else {
+                        if substr.len() > 0 {
+                            return Some(substr);
+                        } else {
+                            return None;
+                        }
+                    }
+                }
+            }
+            None => {
+                if substr.len() > 0 {
+                    return Some(substr);
+                } else {
+                    return None;
+                }
+            }
+        }
+    }
+}
+
+pub fn remove_common_tokens(text: &str) -> String {
+    let lines: Vec<&str> = text.split("\n").collect();
+    let mut largest_substr = String::new();
+    let mut l_iter = lines.iter();
+
+    loop {
+        let f_line = match l_iter.next() {
+            Some(line) => line,
+            None => break,
+        };
+
+        let new_largest_substr = match l_iter.next() {
+            Some(s_line) => match lcs_substr(f_line, s_line) {
+                Some(substr) => substr,
+                None => break,
+            },
+            None => break,
+        };
+
+        if largest_substr.trim().contains(new_largest_substr.as_str()) || largest_substr == "" {
+            largest_substr = new_largest_substr.trim().to_string();
+        }
+    }
+
+    if largest_substr.len() > 3 {
+        lines
+            .iter()
+            .map(|l| l.trim().to_string().split_off(largest_substr.trim().len()))
+            .collect::<Vec<String>>()
+            .join("\n")
+    } else {
+        text.to_string()
+    }
+}
 
 pub fn apply_normalizers(text: &str) -> Vec<String> {
     let mut lines = Vec::new();
@@ -157,6 +243,39 @@ fn final_trim(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn greatest_substring_removal() {
+        let text = "%%Copyright: Copyright
+            %%Copyright: All rights reserved.
+            %%Copyright: Redistribution and use in source and binary forms, with or
+            %%Copyright: without modification, are permitted provided that the
+            %%Copyright: following conditions are met:";
+
+        let new_text = remove_common_tokens(text);
+        println!("{}", new_text);
+
+        assert_eq!(
+            new_text.contains("%%Copyright"),
+            false,
+            "new text shouldn't contain the common substring"
+        );
+
+        let text = "this string should still have\nthis word -> this <- in it even though\nthis is still the most common word";
+        let new_text = remove_common_tokens(text);
+        println!("-- {}", new_text);
+        // the "this" at the start of the line can be discarded...
+        assert!(!new_text.contains("\nthis"));
+        // ...but the "this" in the middle of sentences shouldn't be
+        assert!(new_text.contains("this"));
+
+        let text = "aaaa bbbb cccc dddd
+        eeee ffff aaaa gggg
+        hhhh iiii jjjj";
+        let new_text = remove_common_tokens(text);
+        println!("-- {}", new_text);
+        assert!(new_text.contains("aaaa")); // similar to above test
+    }
 
     #[test]
     fn normalize_no_line_mangle() {
