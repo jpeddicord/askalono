@@ -1,9 +1,6 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// XXX: this should work soon
-#![cfg(not(target_arch = "wasm32"))]
-
 use failure::Error;
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};

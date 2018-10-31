@@ -14,6 +14,7 @@ exclude = [
 
 [dependencies]
 failure = "0.1.1"
+flate2 = { version = "1.0.4", features = ["rust_backend"], default_features = false }
 lazy_static = "1.0.0"
 log = "0.4.1"
 regex = "0.2.10"
@@ -26,7 +27,6 @@ unicode-normalization = "0.1.5"
 serde_json = { version = "1.0.11", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-flate2 = "1.0.1" # TODO: this should be fine in wasm soon
 rayon = "1.0.1"
 
 [dev-dependencies]

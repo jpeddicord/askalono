@@ -1,7 +1,7 @@
 build:
-    cargo build --target wasm32-unknown-unknown --release
+    cargo +nightly build --target wasm32-unknown-unknown --release
     mkdir -p wasm
-    wasm-opt -Oz -o askalono_wasm_optimized.wasm target/wasm32-unknown-unknown/release/askalono_wasm.wasm
+    wasm-opt -Oz -o askalono_wasm_optimized.wasm ../target/wasm32-unknown-unknown/release/askalono_wasm.wasm
     wasm-bindgen askalono_wasm_optimized.wasm --out-dir wasm
 
 serve:
