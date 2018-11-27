@@ -1,5 +1,0 @@
-[build]
-# all Cargo projects in this repo will share a target directory.
-# we're not using a Cargo workspace because shared lock files don't really make
-# sense for this type of project.
-target-dir = "./target"
