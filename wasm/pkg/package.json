@@ -1,0 +1,22 @@
+{
+  "name": "askalono",
+  "version": "0.0.1",
+  "description": "a wasm-packed askalono library to identify licenses",
+  "main": "lib/askalono.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amzn/askalono.git"
+  },
+  "author": "Jacob Peddicord <peddicor@amazon.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/amzn/askalono/issues"
+  },
+  "homepage": "https://github.com/amzn/askalono#readme",
+  "scripts": {
+    "prepack": "[ -f lib/askalono.js ]"
+  },
+  "files": [
+    "lib/**/*"
+  ]
+}

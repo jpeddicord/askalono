@@ -10,7 +10,7 @@ use askalono::Store;
 
 const EMBEDDED_CACHE: &str = "wasm-embedded-cache.bin.gz";
 
-// copied over from the CLI; 
+// copied over from the CLI
 
 fn main() {
     println!(

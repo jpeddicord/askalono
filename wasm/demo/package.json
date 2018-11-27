@@ -2,6 +2,9 @@
   "scripts": {
     "serve": "webpack-dev-server"
   },
+  "dependencies": {
+    "askalono": "^0.0.1"
+  },
   "devDependencies": {
     "webpack": "^4.0.1",
     "webpack-cli": "^2.0.10",

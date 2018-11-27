@@ -8,11 +8,11 @@ authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-askalono = { version = "*", path = "../" }
+askalono = { version = "*", path = "../../" }
 wasm-bindgen = "0.2.15"
 
 [build-dependencies]
-askalono = { version = "*", path = "../" }
+askalono = { version = "*", path = "../../" }
 
 [profile.release]
 debug = false
