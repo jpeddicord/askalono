@@ -43,17 +43,21 @@ fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
 
     loop {
         let f = match f_chars.next() {
-            Some(f_str) => if skip_whitespace(f_str) {
-                s_chars.next();
-                continue;
-            } else {
-                f_str
-            },
-            None => if substr.len() > 0 {
-                return Some(substr);
-            } else {
-                return None;
-            },
+            Some(f_str) => {
+                if skip_whitespace(f_str) {
+                    s_chars.next();
+                    continue;
+                } else {
+                    f_str
+                }
+            }
+            None => {
+                if substr.len() > 0 {
+                    return Some(substr);
+                } else {
+                    return None;
+                }
+            }
         };
 
         match s_chars.next() {
@@ -86,6 +90,10 @@ pub fn remove_common_tokens(text: &str) -> String {
     let mut largest_substr = String::new();
     let mut l_iter = lines.iter();
 
+    // TODO: consider whether this can all be done in one pass
+
+    // pass 1: iterate through the text to find the largest substring
+    // from the start of the line
     loop {
         let f_line = match l_iter.next() {
             Some(line) => line,
@@ -105,10 +113,17 @@ pub fn remove_common_tokens(text: &str) -> String {
         }
     }
 
+    // pass 2: remove that substring
     if largest_substr.len() > 3 {
         lines
             .iter()
-            .map(|l| l.trim().to_string().split_off(largest_substr.trim().len()))
+            .filter(|l| match l.find(&largest_substr) {
+                Some(index) => index == 0,
+                None => false,
+            })
+            .map(|l| {
+                return l.replacen(&largest_substr, "", 1);
+            })
             .collect::<Vec<String>>()
             .join("\n")
     } else {
@@ -223,7 +238,8 @@ fn remove_copyright_statements(input: &str) -> String {
                 ^copyright (\s+(c|\d+))+ .*?$
             )
         "
-        ).unwrap();
+        )
+        .unwrap();
     }
 
     RX.replace_all(input, "\n\n").into()
@@ -246,11 +262,15 @@ mod tests {
 
     #[test]
     fn greatest_substring_removal() {
-        let text = "%%Copyright: Copyright
-            %%Copyright: All rights reserved.
-            %%Copyright: Redistribution and use in source and binary forms, with or
-            %%Copyright: without modification, are permitted provided that the
-            %%Copyright: following conditions are met:";
+        // the funky string syntax \n\ is to add a newline but skip the
+        // leading whitespace in the source code
+        let text = "%%Copyright: Copyright\n\
+                    %%Copyright: All rights reserved.\n\
+                    %%Copyright: Redistribution and use in source and binary forms, with or\n\
+                    %%Copyright: without modification, are permitted provided that the\n\
+                    %%Copyright: following conditions are met:\n\
+                    \n\
+                    abcd";
 
         let new_text = remove_common_tokens(text);
         println!("{}", new_text);
@@ -261,7 +281,9 @@ mod tests {
             "new text shouldn't contain the common substring"
         );
 
-        let text = "this string should still have\nthis word -> this <- in it even though\nthis is still the most common word";
+        let text = "this string should still have\n\
+                    this word -> this <- in it even though\n\
+                    this is still the most common word";
         let new_text = remove_common_tokens(text);
         println!("-- {}", new_text);
         // the "this" at the start of the line can be discarded...
@@ -269,9 +291,9 @@ mod tests {
         // ...but the "this" in the middle of sentences shouldn't be
         assert!(new_text.contains("this"));
 
-        let text = "aaaa bbbb cccc dddd
-        eeee ffff aaaa gggg
-        hhhh iiii jjjj";
+        let text = "aaaa bbbb cccc dddd\n\
+                    eeee ffff aaaa gggg\n\
+                    hhhh iiii jjjj";
         let new_text = remove_common_tokens(text);
         println!("-- {}", new_text);
         assert!(new_text.contains("aaaa")); // similar to above test
