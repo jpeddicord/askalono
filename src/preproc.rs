@@ -32,8 +32,8 @@ pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
 ];
 
 fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
-    let mut f_chars = fstr.trim().chars();
-    let mut s_chars = sstr.trim().chars();
+    let mut f_chars = fstr.chars();
+    let mut s_chars = sstr.chars();
     let mut substr = String::new();
 
     let skip_whitespace = |c| match c {
@@ -108,8 +108,8 @@ pub fn remove_common_tokens(text: &str) -> String {
             None => break,
         };
 
-        if largest_substr.trim().contains(new_largest_substr.as_str()) || largest_substr == "" {
-            largest_substr = new_largest_substr.trim().to_string();
+        if largest_substr.contains(new_largest_substr.as_str()) || largest_substr.len() == 0 {
+            largest_substr = new_largest_substr.to_string();
         }
     }
 
