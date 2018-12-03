@@ -1,8 +1,9 @@
 .cache/
 *.tgz
 *.wasm
-/dist/
+/demo/dist/
+/pkg/build/
+/pkg/node/
+/pkg/web/
 /wasm/
-build/
-lib/
 node_modules/

@@ -1,8 +1,9 @@
 {
   "name": "askalono",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a wasm-packed askalono library to identify licenses",
-  "main": "lib/askalono.js",
+  "main": "node/askalono.js",
+  "browser": "web/askalono.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amzn/askalono.git"
@@ -14,9 +15,11 @@
   },
   "homepage": "https://github.com/amzn/askalono#readme",
   "scripts": {
-    "prepack": "[ -f lib/askalono.js ]"
+    "prepack": "[ -f node/askalono.js ]"
   },
   "files": [
-    "lib/**/*"
+    "node/**/*",
+    "web/**/*",
+    "*.wasm"
   ]
 }

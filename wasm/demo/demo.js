@@ -1,12 +1,9 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-const wasm = import('./wasm/askalono_wasm_optimized');
-
-console.log('im here!');
+const wasm = import('askalono');
 
 wasm.then(({ AskalonoStore }) => {
-  console.log('im wasm!');
   const store = new AskalonoStore();
 
   const nameText = document.getElementById('result_name');
