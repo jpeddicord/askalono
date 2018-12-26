@@ -80,16 +80,20 @@ impl<'a> FileResult<'a> {
 
     fn as_text(&self, show_path: bool) -> String {
         match self {
-            FileResult::Ok { path, result } => if show_path {
-                format!("{}\n{}", path, result)
-            } else {
-                format!("{}", result)
-            },
-            FileResult::Err { path, error } => if show_path {
-                format!("{}\nError: {}", path, error)
-            } else {
-                format!("Error: {}", error)
-            },
+            FileResult::Ok { path, result } => {
+                if show_path {
+                    format!("{}\n{}", path, result)
+                } else {
+                    format!("{}", result)
+                }
+            }
+            FileResult::Err { path, error } => {
+                if show_path {
+                    format!("{}\nError: {}", path, error)
+                } else {
+                    format!("Error: {}", error)
+                }
+            }
         }
     }
 

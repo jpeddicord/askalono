@@ -118,7 +118,8 @@ impl Store {
                     })
                 });
                 acc
-            }).reduce(
+            })
+            .reduce(
                 Vec::new,
                 |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
                     a.extend(b);

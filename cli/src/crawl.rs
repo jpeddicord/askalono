@@ -51,7 +51,8 @@ pub fn crawl(
                 }
                 None
             }
-        }).filter(|entry| !entry.metadata().unwrap().is_dir())
+        })
+        .filter(|entry| !entry.metadata().unwrap().is_dir())
         .for_each(|entry| {
             let path = entry.path();
             let path_lossy = path.to_string_lossy();

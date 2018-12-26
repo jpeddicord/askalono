@@ -14,7 +14,6 @@ arg_enum! {
 #[derive(StructOpt)]
 #[structopt(name = "askalono")]
 pub struct Opt {
-
     /// Path to a cache file containing compiled license information
     #[structopt(long = "cache", short = "c", parse(from_os_str))]
     pub cache: Option<PathBuf>,
@@ -30,7 +29,6 @@ pub struct Opt {
 
 #[derive(StructOpt)]
 pub enum Subcommand {
-    
     /// Identify a single file
     #[structopt(name = "identify", alias = "id")]
     Identify {
@@ -77,7 +75,6 @@ pub enum Subcommand {
 
 #[derive(StructOpt)]
 pub enum CacheSubcommand {
-
     /// Load an SPDX license directory (see https://github.com/spdx/license-list-data/tree/master/json/details for format)
     #[structopt(name = "load-spdx")]
     LoadSpdx {

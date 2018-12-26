@@ -185,7 +185,8 @@ impl TextData {
                 } else {
                     line.clone()
                 }
-            }).collect();
+            })
+            .collect();
 
         let processed = apply_aggressive(&new_normalized.join("\n"));
         Ok(TextData {

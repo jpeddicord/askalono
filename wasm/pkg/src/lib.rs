@@ -46,9 +46,7 @@ impl AskalonoStore {
     #[wasm_bindgen(constructor)]
     pub fn new() -> AskalonoStore {
         let store = Store::from_cache(CACHE_DATA).unwrap();
-        AskalonoStore {
-            store,
-        }
+        AskalonoStore { store }
     }
 
     pub fn identify(&self, text: &str) -> MatchResult {

@@ -8,7 +8,7 @@ init:
 all +cmds: init
     cargo {{cmds}}
     cd cli && cargo {{cmds}}
-    cd wasm && cargo {{cmds}}
+    cd wasm/pkg && cargo {{cmds}}
 
 lint:
     just all clippy
