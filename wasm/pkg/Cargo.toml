@@ -18,3 +18,4 @@ askalono = { version = "*", path = "../../" }
 debug = false
 lto = true
 opt-level = "z"
+panic = "abort"

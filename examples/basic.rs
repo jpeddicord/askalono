@@ -16,7 +16,7 @@ fn main() {
         .load_spdx(
             Path::new(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/license-list-data/json/details"
+                "/datasets/spdx-json"
             )),
             false,
         ).unwrap();

@@ -31,14 +31,14 @@ impl MatchResult {
         self.score
     }
     pub fn license_text(&self) -> String {
-        self.license_text
+        self.license_text.clone()
     }
 }
 
 #[wasm_bindgen]
 pub fn normalize_text(text: &str) -> String {
     let data = TextData::new(text);
-    data.lines_normalized().unwrap().join("\n")
+    data.lines().unwrap().join("\n")
 }
 
 #[wasm_bindgen]
@@ -56,7 +56,7 @@ impl AskalonoStore {
         MatchResult {
             name: matched.name,
             score: matched.score,
-            license_text: matched.data.lines_normalized().unwrap().join("\n"),
+            license_text: matched.data.lines().unwrap().join("\n"),
         }
     }
 }
