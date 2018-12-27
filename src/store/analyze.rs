@@ -23,11 +23,6 @@ pub struct Match<'a> {
     /// The name of the closest matching license in the `Store`. This will
     /// always be something that exists in the store, regardless of the score.
     pub name: String,
-    /// Alternate names for the matched license.
-    ///
-    /// To be removed in favor of looking up aliases in the store as-needed.
-    #[deprecated]
-    pub aliases: Vec<String>,
     /// The type of the license that matched. Useful to know if the match was
     /// the complete text, a header, or something else.
     pub license_type: LicenseType,
@@ -130,12 +125,10 @@ impl Store {
 
         let m = &res[0];
         let license = &self.licenses[m.name];
-        #[allow(deprecated)]
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),
             license_type: m.license_type,
-            aliases: license.aliases.clone(),
             data: m.data,
         })
     }
@@ -181,12 +174,10 @@ impl Store {
 
         let m = &res[0];
         let license = &self.licenses[m.name];
-        #[allow(deprecated)]
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),
             license_type: m.license_type,
-            aliases: license.aliases.clone(),
             data: m.data,
         })
     }
