@@ -104,7 +104,7 @@ impl<'a> FileResult<'a> {
 }
 
 impl fmt::Display for Identification {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(ref license) = self.license {
             write!(
                 f,

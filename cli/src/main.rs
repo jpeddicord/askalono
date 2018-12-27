@@ -3,18 +3,16 @@
 
 #![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 
-extern crate askalono;
 #[macro_use]
 extern crate clap;
-extern crate env_logger;
-extern crate failure;
-extern crate ignore;
+use env_logger;
+
 #[macro_use]
 extern crate log;
-extern crate rayon;
+use rayon;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
+use serde_json;
 #[macro_use]
 extern crate structopt;
 
