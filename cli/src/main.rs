@@ -1,7 +1,7 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
+#![allow(clippy::match_bool)]
 
 #[macro_use]
 extern crate clap;

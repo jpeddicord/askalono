@@ -7,14 +7,12 @@
 //! in the `examples` directory.
 
 #![warn(missing_docs)]
-#![cfg_attr(feature = "cargo-clippy", allow(match_bool, useless_format))]
+#![allow(clippy::match_bool, clippy::useless_format)]
 
 #[macro_use]
 extern crate failure;
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate serde_derive;
 
 mod license;
 mod ngram;

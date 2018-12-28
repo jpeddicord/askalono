@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use failure::Error;
+use serde_derive::{Deserialize, Serialize};
 
 use crate::ngram::NgramSet;
 use crate::preproc::{apply_aggressive, apply_normalizers};
@@ -238,9 +239,9 @@ impl TextData {
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> Result<(Self, f32), Error> {
-        if let None = self.lines_normalized {
+        if self.lines_normalized.is_none() {
             return Err(format_err!("TextData does not have original text"));
-        };
+        }
 
         let view = self.lines_view;
 

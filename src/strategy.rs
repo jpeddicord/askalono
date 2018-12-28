@@ -4,6 +4,7 @@
 use std::borrow::Cow;
 
 use failure::Error;
+use serde_derive::Serialize;
 
 use crate::license::LicenseType;
 use crate::license::TextData;

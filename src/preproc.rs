@@ -129,7 +129,7 @@ fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
                 }
             }
             None => {
-                if substr.len() > 0 {
+                if !substr.is_empty() {
                     return Some(substr);
                 } else {
                     return None;
@@ -142,17 +142,15 @@ fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
                 if !skip_whitespace(s) {
                     if f == s {
                         substr.push(s);
+                    } else if !substr.is_empty() {
+                        return Some(substr);
                     } else {
-                        if substr.len() > 0 {
-                            return Some(substr);
-                        } else {
-                            return None;
-                        }
+                        return None;
                     }
                 }
             }
             None => {
-                if substr.len() > 0 {
+                if !substr.is_empty() {
                     return Some(substr);
                 } else {
                     return None;
@@ -163,7 +161,7 @@ fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
 }
 
 fn remove_common_tokens(text: &str) -> String {
-    let lines: Vec<&str> = text.split("\n").collect();
+    let lines: Vec<&str> = text.split('\n').collect();
     let mut largest_substr = String::new();
     let mut l_iter = lines.iter();
 
@@ -171,6 +169,7 @@ fn remove_common_tokens(text: &str) -> String {
 
     // pass 1: iterate through the text to find the largest substring
     // from the start of the line
+    #[allow(clippy::while_let_loop)]
     loop {
         let f_line = match l_iter.next() {
             Some(line) => line,
@@ -185,7 +184,7 @@ fn remove_common_tokens(text: &str) -> String {
             None => break,
         };
 
-        if largest_substr.contains(new_largest_substr.as_str()) || largest_substr.len() == 0 {
+        if largest_substr.contains(new_largest_substr.as_str()) || largest_substr.is_empty() {
             largest_substr = new_largest_substr.to_string();
         }
     }
@@ -198,9 +197,7 @@ fn remove_common_tokens(text: &str) -> String {
                 Some(index) => index == 0,
                 None => false,
             })
-            .map(|l| {
-                return l.replacen(&largest_substr, "", 1);
-            })
+            .map(|l| l.replacen(&largest_substr, "", 1))
             .collect::<Vec<String>>()
             .join("\n")
     } else {

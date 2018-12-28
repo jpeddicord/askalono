@@ -6,6 +6,8 @@ use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use serde_derive::{Deserialize, Serialize};
+
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct NgramSet {
     map: HashMap<String, u32>,
