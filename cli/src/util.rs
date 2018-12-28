@@ -41,5 +41,5 @@ pub fn diff_result(license: &TextData, other: &TextData) {
     }
 
     #[cfg(not(feature = "diagnostics"))]
-    println!("askalono wasn't compiled with diagnostics enabled. diff not available.")
+    println!("askalono wasn't compiled with diagnostics enabled. diff not available.");
 }
