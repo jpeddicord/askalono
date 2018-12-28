@@ -1,18 +1,14 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs::read_to_string;
-use std::path::Path;
+use std::{fs::read_to_string, path::Path};
 
 use failure::Error;
 use ignore::Error as IgnoreError;
 
 use askalono::TextData;
 
-use super::commands::*;
-use super::formats::*;
-use super::identify::identify_data;
-use super::util::*;
+use super::{commands::*, formats::*, identify::identify_data, util::*};
 
 pub fn crawl(
     cache_filename: &Path,

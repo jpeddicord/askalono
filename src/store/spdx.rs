@@ -1,15 +1,20 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::ffi::OsStr;
-use std::fs::{read_dir, File};
-use std::io::prelude::*;
-use std::path::Path;
+use std::{
+    ffi::OsStr,
+    fs::{read_dir, File},
+    io::prelude::*,
+    path::Path,
+};
 
-use failure::Error;
+use failure::{format_err, Error};
+use log::{debug, info};
 
-use crate::license::TextData;
-use crate::store::base::{LicenseEntry, Store};
+use crate::{
+    license::TextData,
+    store::base::{LicenseEntry, Store},
+};
 
 impl Store {
     /// Fill the store with SPDX JSON data.

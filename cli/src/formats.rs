@@ -1,10 +1,10 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fmt;
-use std::fmt::Display;
+use std::{fmt, fmt::Display};
 
 use failure::Error;
+use serde_derive::Serialize;
 
 use super::commands::*;
 use askalono::LicenseType;

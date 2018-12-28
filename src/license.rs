@@ -1,14 +1,15 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
-use failure::Error;
+use failure::{format_err, Error};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::ngram::NgramSet;
-use crate::preproc::{apply_aggressive, apply_normalizers};
+use crate::{
+    ngram::NgramSet,
+    preproc::{apply_aggressive, apply_normalizers},
+};
 
 /// The type of a license entry (typically in a `Store`).
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]

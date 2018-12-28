@@ -3,11 +3,10 @@
 
 use std::collections::HashMap;
 
-use failure::Error;
+use failure::{format_err, Error};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::license::LicenseType;
-use crate::license::TextData;
+use crate::{license::LicenseType, license::TextData};
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct LicenseEntry {

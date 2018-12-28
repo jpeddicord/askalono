@@ -1,10 +1,10 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs::File;
-use std::path::Path;
+use std::{fs::File, path::Path};
 
 use failure::Error;
+use log::info;
 
 use super::commands::*;
 use askalono::Store;

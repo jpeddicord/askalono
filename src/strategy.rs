@@ -4,11 +4,13 @@
 use std::borrow::Cow;
 
 use failure::Error;
+use log::trace;
 use serde_derive::Serialize;
 
-use crate::license::LicenseType;
-use crate::license::TextData;
-use crate::store::{Match, Store};
+use crate::{
+    license::{LicenseType, TextData},
+    store::{Match, Store},
+};
 
 /// A struct describing a license that was identified, as well as its type.
 #[derive(Serialize, Debug)]

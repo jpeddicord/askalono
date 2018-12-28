@@ -1,10 +1,10 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cmp::min;
-use std::collections::hash_map::Iter;
-use std::collections::HashMap;
-use std::collections::VecDeque;
+use std::{
+    cmp::min,
+    collections::{hash_map::Iter, HashMap, VecDeque},
+};
 
 use serde_derive::{Deserialize, Serialize};
 

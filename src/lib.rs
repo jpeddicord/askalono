@@ -9,17 +9,14 @@
 #![warn(missing_docs)]
 #![allow(clippy::match_bool, clippy::useless_format)]
 
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate log;
-
 mod license;
 mod ngram;
 mod preproc;
 mod store;
 mod strategy;
 
-pub use crate::license::{LicenseType, TextData};
-pub use crate::store::{Match, Store};
-pub use crate::strategy::{ScanMode, ScanResult, ScanStrategy};
+pub use crate::{
+    license::{LicenseType, TextData},
+    store::{Match, Store},
+    strategy::{ScanMode, ScanResult, ScanStrategy},
+};

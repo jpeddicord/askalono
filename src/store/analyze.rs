@@ -1,14 +1,11 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cmp::Ordering;
-use std::fmt;
+use std::{cmp::Ordering, fmt};
 
 use failure::Error;
 
-use crate::license::LicenseType;
-use crate::license::TextData;
-use crate::store::base::Store;
+use crate::{license::LicenseType, license::TextData, store::base::Store};
 
 /// Information about text that was compared against licenses in the store.
 ///

@@ -4,6 +4,7 @@
 use std::borrow::Cow;
 
 use lazy_static::lazy_static;
+use log::debug;
 use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 

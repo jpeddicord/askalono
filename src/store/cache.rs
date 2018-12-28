@@ -1,18 +1,11 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use failure::Error;
-use flate2::read::GzDecoder;
-use flate2::{Compression, GzBuilder};
-use std::io::copy;
-use std::io::prelude::*;
+use std::{io::copy, io::prelude::*};
 
-// dear reader:
-// you may think "gee, msgpack is great, but what if this used bincode instead?"
-// and you would be disappointed at the result -- for some reason, msgpack
-// compresses better overall, even though bincode has little-to-no overhead.
-// *shrug* feel free to experiment.
-
+use failure::{bail, format_err, Error};
+use flate2::{read::GzDecoder, Compression, GzBuilder};
+use log::info;
 use rmp_serde::Serializer;
 use serde::Serialize;
 

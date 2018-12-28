@@ -1,17 +1,17 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs::read_to_string;
-use std::io::prelude::*;
-use std::io::stdin;
-use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::{
+    fs::read_to_string,
+    io::{prelude::*, stdin},
+    path::{Path, PathBuf},
+    time::Instant,
+};
 
 use failure::{err_msg, Error};
+use log::info;
 
-use super::commands::*;
-use super::formats::*;
-use super::util::*;
+use super::{commands::*, formats::*, util::*};
 use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;

@@ -3,22 +3,6 @@
 
 #![allow(clippy::match_bool)]
 
-#[macro_use]
-extern crate clap;
-use env_logger;
-
-#[macro_use]
-extern crate log;
-use rayon;
-#[macro_use]
-extern crate serde_derive;
-use serde_json;
-#[macro_use]
-extern crate structopt;
-
-#[cfg(feature = "diagnostics")]
-extern crate difference;
-
 mod cache;
 mod commands;
 mod crawl;
@@ -26,9 +10,11 @@ mod formats;
 mod identify;
 mod util;
 
-use std::path::PathBuf;
-use std::process::exit;
+use std::{path::PathBuf, process::exit};
 
+use env_logger;
+use rayon;
+use serde_json;
 use structopt::StructOpt;
 
 use self::commands::*;

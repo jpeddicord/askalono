@@ -8,5 +8,4 @@ mod cache;
 #[cfg(feature = "spdx")]
 mod spdx;
 
-pub use self::analyze::Match;
-pub use self::base::Store;
+pub use self::{analyze::Match, base::Store};
