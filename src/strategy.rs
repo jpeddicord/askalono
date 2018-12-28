@@ -5,9 +5,9 @@ use std::borrow::Cow;
 
 use failure::Error;
 
-use license::LicenseType;
-use license::TextData;
-use store::{Match, Store};
+use crate::license::LicenseType;
+use crate::license::TextData;
+use crate::store::{Match, Store};
 
 /// A struct describing a license that was identified, as well as its type.
 #[derive(Serialize, Debug)]
@@ -216,7 +216,7 @@ impl<'a> ScanStrategy<'a> {
         if self.optimize {
             // repeatedly try to dig deeper
             // this loop effectively iterates once for each license it finds
-            let mut current_text: Cow<TextData> = Cow::Borrowed(text);
+            let mut current_text: Cow<'_, TextData> = Cow::Borrowed(text);
             for _n in 0..self.max_passes {
                 let (optimized, optimized_score) = current_text
                     .optimize_bounds(analysis.data)
@@ -281,7 +281,7 @@ impl<'a> ScanStrategy<'a> {
         starting_at: usize,
     ) -> Result<Option<ContainedResult>, Error> {
         let (_, text_end) = text.lines_view();
-        let mut found: (usize, usize, Option<Match>) = (0, 0, None);
+        let mut found: (usize, usize, Option<Match<'_>>) = (0, 0, None);
 
         trace!(
             "topdown_find_contained_license starting at line {}",
@@ -373,7 +373,7 @@ impl<'a> ScanStrategy<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    extern crate env_logger;
+    use env_logger;
 
     #[test]
     fn can_construct() {

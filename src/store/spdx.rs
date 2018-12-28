@@ -8,8 +8,8 @@ use std::path::Path;
 
 use failure::Error;
 
-use license::TextData;
-use store::base::{LicenseEntry, Store};
+use crate::license::TextData;
+use crate::store::base::{LicenseEntry, Store};
 
 impl Store {
     /// Fill the store with SPDX JSON data.
@@ -27,7 +27,7 @@ impl Store {
     /// benefit of allowing you to diff your result against what askalono has
     /// stored.
     pub fn load_spdx(&mut self, dir: &Path, include_texts: bool) -> Result<(), Error> {
-        use json::{from_str, Value};
+        use serde_json::{from_str, Value};
 
         // locate all json files in the directory
         let mut paths: Vec<_> = read_dir(dir)?

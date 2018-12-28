@@ -6,8 +6,8 @@ use std::fmt;
 
 use failure::Error;
 
-use ngram::NgramSet;
-use preproc::{apply_aggressive, apply_normalizers};
+use crate::ngram::NgramSet;
+use crate::preproc::{apply_aggressive, apply_normalizers};
 
 /// The type of a license entry (typically in a `Store`).
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
@@ -24,7 +24,7 @@ pub enum LicenseType {
 }
 
 impl fmt::Display for LicenseType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",
@@ -264,13 +264,17 @@ impl TextData {
         Ok((optimized, score))
     }
 
-    fn search_optimize(&self, score: &Fn(usize) -> f32, value: &Fn(usize) -> Self) -> (Self, f32) {
+    fn search_optimize(
+        &self,
+        score: &dyn Fn(usize) -> f32,
+        value: &dyn Fn(usize) -> Self,
+    ) -> (Self, f32) {
         // cache score checks, since they're kinda expensive
         let mut memo: HashMap<usize, f32> = HashMap::new();
         let mut check_score =
             |index: usize| -> f32 { *memo.entry(index).or_insert_with(|| score(index)) };
 
-        fn search(score: &mut FnMut(usize) -> f32, left: usize, right: usize) -> (usize, f32) {
+        fn search(score: &mut dyn FnMut(usize) -> f32, left: usize, right: usize) -> (usize, f32) {
             if right - left <= 3 {
                 // find the index of the highest score in the remaining items
                 return (left..=right)

@@ -13,10 +13,10 @@ use std::io::prelude::*;
 // compresses better overall, even though bincode has little-to-no overhead.
 // *shrug* feel free to experiment.
 
-use rmps::Serializer;
+use rmp_serde::Serializer;
 use serde::Serialize;
 
-use store::base::Store;
+use crate::store::base::Store;
 
 const CACHE_VERSION: &[u8] = b"askalono-03";
 
@@ -32,7 +32,7 @@ impl Store {
     where
         R: Read + Sized,
     {
-        use rmps::decode::from_read;
+        use rmp_serde::decode::from_read;
 
         let dec = GzDecoder::new(readable);
         {

@@ -5,8 +5,8 @@ use std::collections::HashMap;
 
 use failure::Error;
 
-use license::LicenseType;
-use license::TextData;
+use crate::license::LicenseType;
+use crate::license::TextData;
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct LicenseEntry {

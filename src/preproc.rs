@@ -1,12 +1,13 @@
-// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
+//  Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+//  SPDX-License-Identifier: Apache-2.0
 
 use std::borrow::Cow;
 
+use lazy_static::lazy_static;
 use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 
-type PreprocFn = Fn(&str) -> String;
+type PreprocFn = dyn Fn(&str) -> String;
 
 /// A list of preprocessors that normalize text without removing anything
 /// substantial. These operate on one line at a time.

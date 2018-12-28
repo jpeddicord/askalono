@@ -11,23 +11,10 @@
 
 #[macro_use]
 extern crate failure;
-extern crate flate2;
-#[macro_use]
-extern crate lazy_static;
 #[macro_use]
 extern crate log;
-extern crate regex;
-extern crate rmp_serde as rmps;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate unicode_normalization;
-
-#[cfg(feature = "spdx")]
-extern crate serde_json as json;
-
-#[cfg(not(target_arch = "wasm32"))]
-extern crate rayon;
 
 mod license;
 mod ngram;
@@ -35,6 +22,6 @@ mod preproc;
 mod store;
 mod strategy;
 
-pub use license::{LicenseType, TextData};
-pub use store::{Match, Store};
-pub use strategy::{ScanMode, ScanResult, ScanStrategy};
+pub use crate::license::{LicenseType, TextData};
+pub use crate::store::{Match, Store};
+pub use crate::strategy::{ScanMode, ScanResult, ScanStrategy};

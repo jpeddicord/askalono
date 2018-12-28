@@ -6,9 +6,9 @@ use std::fmt;
 
 use failure::Error;
 
-use license::LicenseType;
-use license::TextData;
-use store::base::Store;
+use crate::license::LicenseType;
+use crate::license::TextData;
+use crate::store::base::Store;
 
 /// Information about text that was compared against licenses in the store.
 ///
@@ -41,13 +41,13 @@ struct PartialMatch<'a> {
 }
 
 impl<'a> PartialOrd for PartialMatch<'a> {
-    fn partial_cmp(&self, other: &PartialMatch) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &PartialMatch<'_>) -> Option<Ordering> {
         self.score.partial_cmp(&other.score)
     }
 }
 
 impl<'a> PartialEq for PartialMatch<'a> {
-    fn eq(&self, other: &PartialMatch) -> bool {
+    fn eq(&self, other: &PartialMatch<'_>) -> bool {
         self.score.eq(&other.score)
             && self.name == other.name
             && self.license_type == other.license_type
@@ -55,7 +55,7 @@ impl<'a> PartialEq for PartialMatch<'a> {
 }
 
 impl<'a> fmt::Debug for Match<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Match {{ score: {}, name: {}, license_type: {:?} }}",
@@ -70,7 +70,7 @@ impl Store {
     /// This parallelizes the search as much as it can to find the best match.
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
-    pub fn analyze(&self, text: &TextData) -> Result<Match, Error> {
+    pub fn analyze(&self, text: &TextData) -> Result<Match<'_>, Error> {
         #[cfg(target_arch = "wasm32")]
         {
             self.analyze_single_thread(text)
@@ -84,12 +84,12 @@ impl Store {
 
     #[allow(unused)]
     #[cfg(not(target_arch = "wasm32"))]
-    fn analyze_parallel(&self, text: &TextData) -> Result<Match, Error> {
+    fn analyze_parallel(&self, text: &TextData) -> Result<Match<'_>, Error> {
         use rayon::prelude::*;
-        let mut res: Vec<PartialMatch> = self
+        let mut res: Vec<PartialMatch<'_>> = self
             .licenses
             .par_iter()
-            .fold(Vec::new, |mut acc: Vec<PartialMatch>, (name, data)| {
+            .fold(Vec::new, |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
                 acc.push(PartialMatch {
                     score: data.original.match_score(text),
                     name,
@@ -116,7 +116,7 @@ impl Store {
             })
             .reduce(
                 Vec::new,
-                |mut a: Vec<PartialMatch>, b: Vec<PartialMatch>| {
+                |mut a: Vec<PartialMatch<'_>>, b: Vec<PartialMatch<'_>>| {
                     a.extend(b);
                     a
                 },
@@ -134,17 +134,17 @@ impl Store {
     }
 
     #[allow(unused)]
-    fn analyze_single_thread(&self, text: &TextData) -> Result<Match, Error> {
+    fn analyze_single_thread(&self, text: &TextData) -> Result<Match<'_>, Error> {
         // TODO: this duplicates a lot of code from analyze_parallel (the closure is
         // almost identical). see if there's a way to factor out the closure;
         // ran into referencing issues when giving that a quick stab myself
-        let mut res: Vec<PartialMatch> = self
+        let mut res: Vec<PartialMatch<'_>> = self
             .licenses
             .iter()
             // XXX optimize: len of licenses isn't strictly correct, but it'll do for now
             .fold(
                 Vec::with_capacity(self.licenses.len()),
-                |mut acc: Vec<PartialMatch>, (name, data)| {
+                |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
                     acc.push(PartialMatch {
                         score: data.original.match_score(text),
                         name,

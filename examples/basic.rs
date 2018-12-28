@@ -1,4 +1,6 @@
-extern crate askalono;
+// Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 use askalono::{Store, TextData};
 use std::path::Path;
 
