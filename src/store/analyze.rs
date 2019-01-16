@@ -61,6 +61,38 @@ impl<'a> fmt::Debug for Match<'a> {
     }
 }
 
+// this could probably be a stand-alone closure, but I was hitting lifetime
+// hell, so a macro it is. feel free to attempt it yourself.
+macro_rules! analyze_fold_closure {
+    ($text:ident) => {
+        |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
+            acc.push(PartialMatch {
+                score: data.original.match_score($text),
+                name,
+                license_type: LicenseType::Original,
+                data: &data.original,
+            });
+            data.alternates.iter().for_each(|alt| {
+                acc.push(PartialMatch {
+                    score: alt.match_score($text),
+                    name,
+                    license_type: LicenseType::Alternate,
+                    data: alt,
+                })
+            });
+            data.headers.iter().for_each(|head| {
+                acc.push(PartialMatch {
+                    score: head.match_score($text),
+                    name,
+                    license_type: LicenseType::Header,
+                    data: head,
+                })
+            });
+            acc
+        }
+    };
+}
+
 impl Store {
     /// Compare the given `TextData` against all licenses in the `Store`.
     ///
@@ -68,109 +100,41 @@ impl Store {
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
     pub fn analyze(&self, text: &TextData) -> Result<Match<'_>, Error> {
-        #[cfg(target_arch = "wasm32")]
-        {
-            self.analyze_single_thread(text)
-        }
+        let mut res: Vec<PartialMatch<'_>>;
 
+        // parallel analysis
         #[cfg(not(target_arch = "wasm32"))]
         {
-            self.analyze_parallel(text)
+            use rayon::prelude::*;
+            res = self
+                .licenses
+                .par_iter()
+                .fold(Vec::new, analyze_fold_closure!(text))
+                .reduce(
+                    Vec::new,
+                    |mut a: Vec<PartialMatch<'_>>, b: Vec<PartialMatch<'_>>| {
+                        a.extend(b);
+                        a
+                    },
+                );
+            res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
         }
-    }
 
-    #[allow(unused)]
-    #[cfg(not(target_arch = "wasm32"))]
-    fn analyze_parallel(&self, text: &TextData) -> Result<Match<'_>, Error> {
-        use rayon::prelude::*;
-        let mut res: Vec<PartialMatch<'_>> = self
-            .licenses
-            .par_iter()
-            .fold(Vec::new, |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
-                acc.push(PartialMatch {
-                    score: data.original.match_score(text),
-                    name,
-                    license_type: LicenseType::Original,
-                    data: &data.original,
-                });
-                data.alternates.iter().for_each(|alt| {
-                    acc.push(PartialMatch {
-                        score: alt.match_score(text),
-                        name,
-                        license_type: LicenseType::Alternate,
-                        data: alt,
-                    })
-                });
-                data.headers.iter().for_each(|head| {
-                    acc.push(PartialMatch {
-                        score: head.match_score(text),
-                        name,
-                        license_type: LicenseType::Header,
-                        data: head,
-                    })
-                });
-                acc
-            })
-            .reduce(
-                Vec::new,
-                |mut a: Vec<PartialMatch<'_>>, b: Vec<PartialMatch<'_>>| {
-                    a.extend(b);
-                    a
-                },
-            );
-        res.par_sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+        // single-threaded analysis
+        #[cfg(target_arch = "wasm32")]
+        {
+            res = self
+                .licenses
+                .iter()
+                // len of licenses isn't strictly correct, but it'll do
+                .fold(
+                    Vec::with_capacity(self.licenses.len()),
+                    analyze_fold_closure!(text),
+                );
+            res.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+        }
 
         let m = &res[0];
-        let license = &self.licenses[m.name];
-        Ok(Match {
-            score: m.score,
-            name: m.name.to_string(),
-            license_type: m.license_type,
-            data: m.data,
-        })
-    }
-
-    #[allow(unused)]
-    fn analyze_single_thread(&self, text: &TextData) -> Result<Match<'_>, Error> {
-        // TODO: this duplicates a lot of code from analyze_parallel (the closure is
-        // almost identical). see if there's a way to factor out the closure;
-        // ran into referencing issues when giving that a quick stab myself
-        let mut res: Vec<PartialMatch<'_>> = self
-            .licenses
-            .iter()
-            // XXX optimize: len of licenses isn't strictly correct, but it'll do for now
-            .fold(
-                Vec::with_capacity(self.licenses.len()),
-                |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
-                    acc.push(PartialMatch {
-                        score: data.original.match_score(text),
-                        name,
-                        license_type: LicenseType::Original,
-                        data: &data.original,
-                    });
-                    data.alternates.iter().for_each(|alt| {
-                        acc.push(PartialMatch {
-                            score: alt.match_score(text),
-                            name,
-                            license_type: LicenseType::Alternate,
-                            data: alt,
-                        })
-                    });
-                    data.headers.iter().for_each(|head| {
-                        acc.push(PartialMatch {
-                            score: head.match_score(text),
-                            name,
-                            license_type: LicenseType::Header,
-                            data: head,
-                        })
-                    });
-                    acc
-                },
-            );
-        res.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
-
-        let m = &res[0];
-        let license = &self.licenses[m.name];
         Ok(Match {
             score: m.score,
             name: m.name.to_string(),
