@@ -38,7 +38,7 @@ impl MatchResult {
 #[wasm_bindgen]
 pub fn normalize_text(text: &str) -> String {
     let data = TextData::new(text);
-    data.lines().unwrap().join("\n")
+    data.lines().join("\n")
 }
 
 #[wasm_bindgen]
@@ -50,7 +50,7 @@ impl AskalonoStore {
     }
 
     pub fn identify(&self, text: &str) -> MatchResult {
-        let matched = self.store.analyze(&text.into()).unwrap();
+        let matched = self.store.analyze(&text.into());
         MatchResult {
             name: matched.name,
             score: matched.score,

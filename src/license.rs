@@ -3,7 +3,6 @@
 
 use std::{collections::HashMap, fmt};
 
-use failure::{format_err, Error};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
@@ -69,7 +68,7 @@ impl fmt::Display for LicenseType {
 /// # fn main() -> Result<(), Box<Error>> {
 /// # let license = TextData::from("My First License");
 /// let sample = TextData::from("copyright 20xx me irl\n// My First License\nfn hello() {\n ...");
-/// let (optimized, score) = sample.optimize_bounds(&license)?;
+/// let (optimized, score) = sample.optimize_bounds(&license);
 /// assert_eq!((1, 2), optimized.lines_view());
 /// assert!(score > 0.99f32, "license within text matches");
 /// # Ok(())
@@ -107,11 +106,6 @@ impl TextData {
         }
     }
 
-    // impl specialization might be nice to indicate that this type
-    // is lacking stored text; perhaps there's another way to indicate that?
-    // maybe an impl on an enum variant if/when that's available:
-    // https://github.com/rust-lang/rfcs/pull/1450
-
     /// Consume this `TextData`, returning one without normalized/processed
     /// text stored.
     ///
@@ -148,19 +142,16 @@ impl TextData {
     ///
     /// Other methods on `TextView` respect this boundary, so it's not needed
     /// outside this struct.
-    pub fn with_view(&self, start: usize, end: usize) -> Result<Self, Error> {
-        let view = match self.lines_normalized {
-            Some(ref lines) => &lines[start..end],
-            None => return Err(format_err!("TextData does not have original text")),
-        };
+    pub fn with_view(&self, start: usize, end: usize) -> Self {
+        let view = &self.lines_normalized.as_ref().expect("TextData does not have original text")[start..end];
         let view_joined = view.join("\n");
         let processed = apply_aggressive(&view_joined);
-        Ok(TextData {
+        TextData {
             match_data: NgramSet::from_str(&processed, 2),
             lines_view: (start, end),
             lines_normalized: self.lines_normalized.clone(),
             text_processed: Some(processed),
-        })
+        }
     }
 
     /// "Erase" the current lines in view and restore the view to its original
@@ -170,12 +161,12 @@ impl TextData {
     /// (and located) with `optimize_bounds`. Now you want to find the other:
     /// white-out the matched lines, and re-run the overall search to find a
     /// new high score.
-    pub fn white_out(&self) -> Result<Self, Error> {
+    pub fn white_out(&self) -> Self {
         // note that we're not using the view here...
         let lines = self
             .lines_normalized
             .as_ref()
-            .ok_or_else(|| format_err!("TextData does not have original text"))?;
+            .expect("TextData does not have original text");
 
         // ...because it's used here to exclude lines
         let new_normalized: Vec<String> = lines
@@ -191,22 +182,17 @@ impl TextData {
             .collect();
 
         let processed = apply_aggressive(&new_normalized.join("\n"));
-        Ok(TextData {
+        TextData {
             match_data: NgramSet::from_str(&processed, 2),
             lines_view: (0, new_normalized.len()),
             lines_normalized: Some(new_normalized),
             text_processed: Some(processed),
-        })
+        }
     }
 
     /// Get a slice of the normalized lines in this `TextData`.
-    ///
-    /// If the text was discarded with `without_text`, this returns `None`.
-    pub fn lines(&self) -> Option<&[String]> {
-        match self.lines_normalized {
-            Some(ref lines) => Some(&lines[self.lines_view.0..self.lines_view.1]),
-            None => None,
-        }
+    pub fn lines(&self) -> &[String] {
+        &self.lines_normalized.as_ref().expect("TextData does not have original text")[self.lines_view.0..self.lines_view.1]
     }
 
     #[doc(hidden)]
@@ -239,17 +225,17 @@ impl TextData {
     ///
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
-    pub fn optimize_bounds(&self, other: &TextData) -> Result<(Self, f32), Error> {
+    pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         if self.lines_normalized.is_none() {
-            return Err(format_err!("TextData does not have original text"));
+           panic!("TextData does not have original text");
         }
 
         let view = self.lines_view;
 
         // optimize the ending bounds of the text match
         let (end_optimized, _) = self.search_optimize(
-            &|end| self.with_view(view.0, end).unwrap().match_score(other),
-            &|end| self.with_view(view.0, end).unwrap(),
+            &|end| self.with_view(view.0, end).match_score(other),
+            &|end| self.with_view(view.0, end),
         );
         let new_end = end_optimized.lines_view.1;
 
@@ -258,12 +244,11 @@ impl TextData {
             &|start| {
                 end_optimized
                     .with_view(start, new_end)
-                    .unwrap()
                     .match_score(other)
             },
-            &|start| end_optimized.with_view(start, new_end).unwrap(),
+            &|start| end_optimized.with_view(start, new_end),
         );
-        Ok((optimized, score))
+        (optimized, score)
     }
 
     fn search_optimize(
@@ -327,25 +312,25 @@ mod tests {
         let license = TextData::from(license_text).without_text();
         let sample = TextData::from(sample_text);
 
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone().unwrap());
+        println!("{:?}", optimized.lines_normalized.clone());
         assert_eq!((0, 3), optimized.lines_view);
 
         // add more to the string, try again (avoid int trunc screwups)
         let sample_text = format!("{}\none more line", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone().unwrap());
+        println!("{:?}", optimized.lines_normalized.clone());
         assert_eq!((0, 3), optimized.lines_view);
 
         // add to the beginning too
         let sample_text = format!("some content\nat\n\nthe beginning\n{}", sample_text);
         let sample = TextData::from(sample_text.as_str());
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone().unwrap());
+        println!("{:?}", optimized.lines_normalized.clone());
         // end bounds at 7 and 8 have the same score, since they're empty lines (not
         // counted). askalono is not smart enough to trim this as close as it
         // can.
@@ -365,22 +350,22 @@ mod tests {
         let license = TextData::from(license_text).without_text();
 
         // sanity: the optimized bounds should be at (3, 7)
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let (optimized, _) = sample.optimize_bounds(&license);
         assert_eq!((3, 7), optimized.lines_view);
 
         // this should still work
-        let sample = sample.with_view(3, 7).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let sample = sample.with_view(3, 7);
+        let (optimized, _) = sample.optimize_bounds(&license);
         assert_eq!((3, 7), optimized.lines_view);
 
         // but if we shrink the view further, it shouldn't be outside that range
-        let sample = sample.with_view(4, 6).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let sample = sample.with_view(4, 6);
+        let (optimized, _) = sample.optimize_bounds(&license);
         assert_eq!((4, 6), optimized.lines_view);
 
         // restoring the view should still be OK too
-        let sample = sample.with_view(0, 9).unwrap();
-        let (optimized, _) = sample.optimize_bounds(&license).unwrap();
+        let sample = sample.with_view(0, 9);
+        let (optimized, _) = sample.optimize_bounds(&license);
         assert_eq!((3, 7), optimized.lines_view);
     }
 
@@ -413,11 +398,11 @@ mod tests {
         let a = TextData::from("aaa\nbbb\nccc\nddd");
         assert_eq!(Some("aaa bbb ccc ddd"), a.text_processed());
 
-        let b = a.with_view(1, 3).expect("with_view must be ok");
-        assert_eq!(2, b.lines().unwrap().len());
+        let b = a.with_view(1, 3);
+        assert_eq!(2, b.lines().len());
         assert_eq!(Some("bbb ccc"), b.text_processed());
 
-        let c = b.white_out().expect("white_out must be ok");
+        let c = b.white_out();
         assert_eq!(Some("aaa ddd"), c.text_processed());
     }
 }

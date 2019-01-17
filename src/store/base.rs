@@ -32,7 +32,7 @@ pub(crate) struct LicenseEntry {
 ///
 /// # fn main() -> Result<(), Box<Error>> {
 /// let store = Store::from_cache(File::open("askalono-cache.bin.gz")?)?;
-/// let result = store.analyze(&TextData::from("what's this"))?;
+/// let result = store.analyze(&TextData::from("what's this"));
 /// # Ok(())
 /// # }
 /// ```

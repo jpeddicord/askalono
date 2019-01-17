@@ -95,7 +95,7 @@ pub fn identify_data(
     want_diff: bool,
 ) -> Result<Identification, Error> {
     let inst = Instant::now();
-    let matched = store.analyze(&text_data)?;
+    let matched = store.analyze(&text_data);
 
     info!(
         "{:?} in {} ms",
@@ -126,7 +126,7 @@ pub fn identify_data(
     // try again, optimizing for the current best match
     if optimize {
         let inst = Instant::now();
-        let (opt, score) = text_data.optimize_bounds(matched.data)?;
+        let (opt, score) = text_data.optimize_bounds(matched.data);
         let (lower, upper) = opt.lines_view();
 
         info!(

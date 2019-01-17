@@ -48,7 +48,7 @@ fn assert_license(
     f.read_to_string(&mut text).unwrap();
     let text_data: TextData = text.into();
 
-    let matched = store.analyze(&text_data).unwrap();
+    let matched = store.analyze(&text_data);
     assert_eq!(
         license_id, matched.name,
         "{} was identified as {} but should have been {}",

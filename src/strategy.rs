@@ -194,7 +194,7 @@ impl<'a> ScanStrategy<'a> {
     }
 
     fn scan_elimination(&self, text: &TextData) -> Result<ScanResult, Error> {
-        let mut analysis = self.store.analyze(text)?;
+        let mut analysis = self.store.analyze(text);
         let score = analysis.score;
         let mut license = None;
         let mut containing = Vec::new();
@@ -222,8 +222,7 @@ impl<'a> ScanStrategy<'a> {
             let mut current_text: Cow<'_, TextData> = Cow::Borrowed(text);
             for _n in 0..self.max_passes {
                 let (optimized, optimized_score) = current_text
-                    .optimize_bounds(analysis.data)
-                    .expect("optimize_bounds failed in elimination loop");
+                    .optimize_bounds(analysis.data);
 
                 // stop if we didn't find anything acceptable
                 if optimized_score < self.confidence_threshold {
@@ -241,8 +240,8 @@ impl<'a> ScanStrategy<'a> {
                 });
 
                 // and white-out + reanalyze for next iteration
-                current_text = Cow::Owned(optimized.white_out().expect("optimized must have text"));
-                analysis = self.store.analyze(&current_text)?;
+                current_text = Cow::Owned(optimized.white_out());
+                analysis = self.store.analyze(&current_text);
             }
         }
 
@@ -304,8 +303,8 @@ impl<'a> ScanStrategy<'a> {
         'start: for start in (starting_at..text_end).step_by(self.step_size) {
             // ...and also the end of window to find high scores.
             for end in (start..=text_end).step_by(self.step_size) {
-                let view = text.with_view(start, end).expect("view missing text");
-                let analysis = self.store.analyze(&view)?;
+                let view = text.with_view(start, end);
+                let analysis = self.store.analyze(&view);
 
                 // just getting a feel for the data at this point, not yet
                 // optimizing the view.
@@ -346,10 +345,9 @@ impl<'a> ScanStrategy<'a> {
             None => return Ok(None),
         };
         let check = matched.data;
-        let view = text.with_view(found.0, found.1).expect("view missing text");
+        let view = text.with_view(found.0, found.1);
         let (optimized, optimized_score) = view
-            .optimize_bounds(check)
-            .expect("optimize_bounds failed narrowing top-down result");
+            .optimize_bounds(check);
 
         trace!(
             "optimized {} {} at ({:?})",

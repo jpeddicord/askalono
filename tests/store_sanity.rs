@@ -30,7 +30,7 @@ fn self_licenses() {
         let mut text = String::new();
         f.read_to_string(&mut text).unwrap();
         let text_data: TextData = text.into();
-        let matched = store.analyze(&text_data).unwrap();
+        let matched = store.analyze(&text_data);
 
         assert_eq!(license, &matched.name);
         assert_eq!(
@@ -46,7 +46,7 @@ fn self_licenses() {
 fn empty_match() {
     let store = common::load_store();
     let text = TextData::from("");
-    let matched = store.analyze(&text).unwrap();
+    let matched = store.analyze(&text);
 
     assert_eq!(0f32, matched.score);
 }

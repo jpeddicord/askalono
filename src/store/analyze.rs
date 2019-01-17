@@ -3,8 +3,6 @@
 
 use std::{cmp::Ordering, fmt};
 
-use failure::Error;
-
 use crate::{license::LicenseType, license::TextData, store::base::Store};
 
 /// Information about text that was compared against licenses in the store.
@@ -99,7 +97,7 @@ impl Store {
     /// This parallelizes the search as much as it can to find the best match.
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
-    pub fn analyze(&self, text: &TextData) -> Result<Match<'_>, Error> {
+    pub fn analyze(&self, text: &TextData) -> Match<'_> {
         let mut res: Vec<PartialMatch<'_>>;
 
         // parallel analysis
@@ -135,11 +133,11 @@ impl Store {
         }
 
         let m = &res[0];
-        Ok(Match {
+        Match {
             score: m.score,
             name: m.name.to_string(),
             license_type: m.license_type,
             data: m.data,
-        })
+        }
     }
 }

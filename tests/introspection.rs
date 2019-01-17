@@ -31,14 +31,14 @@ fn self_apache_header() {
     let mut text = String::new();
     f.read_to_string(&mut text).unwrap();
     let text_data: TextData = text.into();
-    let matched = store.analyze(&text_data).unwrap();
+    let matched = store.analyze(&text_data);
 
     // check that it looked apache-2.0-ish
     assert_eq!("Apache-2.0", &matched.name);
     assert_eq!(askalono::LicenseType::Header, matched.license_type);
 
     // now try to find the bounds of the license header
-    let (optimized, _) = text_data.optimize_bounds(&matched.data).unwrap();
+    let (optimized, _) = text_data.optimize_bounds(&matched.data);
 
     // the license is from (0-indexed) lines 3 thru 12 of this file, excluding
     // that copyright statement on line 1.
