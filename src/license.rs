@@ -82,6 +82,8 @@ pub struct TextData {
     text_processed: Option<String>,
 }
 
+const TEXTDATA_TEXT_ERROR: &'static str = "TextData does not have original text";
+
 impl TextData {
     /// Create a new TextData structure from a string.
     ///
@@ -143,7 +145,7 @@ impl TextData {
     /// Other methods on `TextView` respect this boundary, so it's not needed
     /// outside this struct.
     pub fn with_view(&self, start: usize, end: usize) -> Self {
-        let view = &self.lines_normalized.as_ref().expect("TextData does not have original text")[start..end];
+        let view = &self.lines_normalized.as_ref().expect(TEXTDATA_TEXT_ERROR)[start..end];
         let view_joined = view.join("\n");
         let processed = apply_aggressive(&view_joined);
         TextData {
@@ -166,7 +168,7 @@ impl TextData {
         let lines = self
             .lines_normalized
             .as_ref()
-            .expect("TextData does not have original text");
+            .expect(TEXTDATA_TEXT_ERROR);
 
         // ...because it's used here to exclude lines
         let new_normalized: Vec<String> = lines
@@ -192,7 +194,7 @@ impl TextData {
 
     /// Get a slice of the normalized lines in this `TextData`.
     pub fn lines(&self) -> &[String] {
-        &self.lines_normalized.as_ref().expect("TextData does not have original text")[self.lines_view.0..self.lines_view.1]
+        &self.lines_normalized.as_ref().expect(TEXTDATA_TEXT_ERROR)[self.lines_view.0..self.lines_view.1]
     }
 
     #[doc(hidden)]
@@ -227,7 +229,7 @@ impl TextData {
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         if self.lines_normalized.is_none() {
-           panic!("TextData does not have original text");
+           panic!(TEXTDATA_TEXT_ERROR);
         }
 
         let view = self.lines_view;
