@@ -166,7 +166,7 @@ fn remove_common_tokens(text: &str) -> String {
     let mut largest_substr = String::new();
     let mut l_iter = lines.iter();
 
-    // TODO: consider whether this can all be done in one pass
+    // TODO: consider whether this can all be done in one pass https://github.com/amzn/askalono/issues/36
 
     // pass 1: iterate through the text to find the largest substring
     // from the start of the line

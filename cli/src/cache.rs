@@ -10,7 +10,6 @@ use super::commands::*;
 use askalono::Store;
 
 pub fn cache(cache_filename: &Path, subcommand: CacheSubcommand) -> Result<(), Error> {
-    // TODO
     match subcommand {
         CacheSubcommand::LoadSpdx { dir, store_texts } => {
             cache_load_spdx(cache_filename, &dir, store_texts)

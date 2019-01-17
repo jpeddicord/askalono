@@ -16,7 +16,7 @@ use askalono::{Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
 
-// general TODO: replace a bunch of this logic with ScanStrategy
+// TODO: replace a bunch of this logic with ScanStrategy https://github.com/amzn/askalono/issues/35
 
 pub fn identify(
     cache_filename: &Path,
@@ -66,7 +66,6 @@ pub fn identify(
             break;
         }
 
-        // FIXME: wrap into FileResult error
         let filename: PathBuf = buf.trim().into();
         let content = match read_to_string(filename) {
             Ok(c) => c,

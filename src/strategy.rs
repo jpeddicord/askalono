@@ -93,7 +93,6 @@ pub enum ScanMode {
     /// text files containing multiple licenses (and not much else). It's more
     /// accurate than Elimination, but significantly slower.
     TopDown,
-    // Smart, // TODO
 }
 
 impl<'a> ScanStrategy<'a> {
@@ -189,7 +188,6 @@ impl<'a> ScanStrategy<'a> {
         match self.mode {
             ScanMode::Elimination => self.scan_elimination(text),
             ScanMode::TopDown => self.scan_topdown(text),
-            // ScanMode::Smart => unimplemented!(), // TODO... and make this the default
         }
     }
 
@@ -289,12 +287,6 @@ impl<'a> ScanStrategy<'a> {
             "topdown_find_contained_license starting at line {}",
             starting_at
         );
-
-        // TODO: areas for improvement
-        // - use something different from the confidence threshold for the start/end
-        // loops, something more relaxed
-        // - once above the relaxed threshold, change the step interval to
-        // line-by-line to ensure we don't skip over anything
 
         // speed: only start tracking once conf is met, and bail out after
         let mut hit_threshold = false;
