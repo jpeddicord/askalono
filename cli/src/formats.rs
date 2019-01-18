@@ -14,7 +14,7 @@ use askalono::LicenseType;
 pub enum FileResult<'a> {
     Ok {
         path: &'a str,
-        result: &'a Identification,
+        result: &'a CLIIdentification,
     },
     Err {
         path: &'a str,
@@ -23,30 +23,30 @@ pub enum FileResult<'a> {
 }
 
 #[derive(Serialize, Debug)]
-pub struct Identification {
+pub struct CLIIdentification {
     pub score: f32,
-    pub license: Option<IdentifiedLicense>,
-    pub containing: Vec<ContainedResult>,
+    pub license: Option<CLIIdentifiedLicense>,
+    pub containing: Vec<CLIContainedResult>,
 }
 
 #[derive(Serialize, Debug)]
-pub struct IdentifiedLicense {
+pub struct CLIIdentifiedLicense {
     pub name: String,
     pub kind: LicenseType,
     pub aliases: Vec<String>,
 }
 
 #[derive(Serialize, Debug)]
-pub struct ContainedResult {
+pub struct CLIContainedResult {
     pub score: f32,
-    pub license: IdentifiedLicense,
+    pub license: CLIIdentifiedLicense,
     pub line_range: (usize, usize),
 }
 
 impl<'a> FileResult<'a> {
     pub fn from_identification_result(
         path: &'a str,
-        result: &'a Result<Identification, Error>,
+        result: &'a Result<CLIIdentification, Error>,
     ) -> FileResult<'a> {
         match result {
             Ok(id) => FileResult::Ok { path, result: &id },
@@ -103,7 +103,7 @@ impl<'a> FileResult<'a> {
     }
 }
 
-impl fmt::Display for Identification {
+impl fmt::Display for CLIIdentification {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(ref license) = self.license {
             write!(
@@ -111,9 +111,6 @@ impl fmt::Display for Identification {
                 "License: {} ({})\nScore: {:.3}",
                 license.name, license.kind, self.score
             )?;
-            if !license.aliases.is_empty() {
-                write!(f, "\nAliases: {}", license.aliases.join(", "))?;
-            }
         } else {
             write!(f, "License: Unknown\nScore: {:.3}", self.score)?;
         }

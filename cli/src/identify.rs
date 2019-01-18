@@ -12,11 +12,9 @@ use failure::{err_msg, Error};
 use log::info;
 
 use super::{commands::*, formats::*, util::*};
-use askalono::{Store, TextData};
+use askalono::{ScanMode, ScanStrategy, Store, TextData};
 
 const MIN_SCORE: f32 = 0.8;
-
-// TODO: replace a bunch of this logic with ScanStrategy https://github.com/amzn/askalono/issues/35
 
 pub fn identify(
     cache_filename: &Path,
@@ -48,11 +46,8 @@ pub fn identify(
 
         let idres = identify_data(&store, &content.into(), optimize, want_diff);
         let file_lossy = filename.to_string_lossy();
-        // NLL plz
-        {
-            let fileres = FileResult::from_identification_result(&file_lossy, &idres);
-            fileres.print_as(&output_format, false);
-        }
+        let fileres = FileResult::from_identification_result(&file_lossy, &idres);
+        fileres.print_as(&output_format, false);
 
         return idres.map(|_| ());
     }
@@ -92,66 +87,62 @@ pub fn identify_data(
     text_data: &TextData,
     optimize: bool,
     want_diff: bool,
-) -> Result<Identification, Error> {
+) -> Result<CLIIdentification, Error> {
     let inst = Instant::now();
-    let matched = store.analyze(&text_data);
+
+    let strategy = ScanStrategy::new(store)
+        .mode(ScanMode::Elimination)
+        .confidence_threshold(MIN_SCORE)
+        .optimize(optimize)
+        .max_passes(1);
+    let result = strategy.scan(text_data)?;
 
     info!(
         "{:?} in {} ms",
-        matched,
+        result,
         inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
     );
 
-    if want_diff {
-        diff_result(&text_data, matched.data);
-    }
-
-    let mut output = Identification {
-        score: matched.score,
+    // start building an output structure to print
+    let mut output = CLIIdentification {
+        score: result.score,
         license: None,
-        containing: Vec::new(),
+        containing: result
+            .containing
+            .iter()
+            .map(|cr| CLIContainedResult {
+                score: cr.score,
+                license: CLIIdentifiedLicense {
+                    aliases: store.aliases(&cr.license.name).unwrap().clone(),
+                    name: cr.license.name.clone(),
+                    kind: cr.license.kind,
+                },
+                line_range: cr.line_range,
+            })
+            .collect(),
     };
 
-    if matched.score > MIN_SCORE {
-        output.license = Some(IdentifiedLicense {
-            aliases: store.aliases(&matched.name).unwrap().clone(),
-            name: matched.name,
-            kind: matched.license_type,
+    // include the overall license if present
+    if let Some(license) = result.license {
+        output.license = Some(CLIIdentifiedLicense {
+            aliases: store.aliases(&license.name).unwrap().clone(),
+            name: license.name,
+            kind: license.kind,
         });
+
+        if want_diff {
+            diff_result(&text_data, &license.data);
+        }
 
         return Ok(output);
     }
 
-    // try again, optimizing for the current best match
-    if optimize {
-        let inst = Instant::now();
-        let (opt, score) = text_data.optimize_bounds(matched.data);
-        let (lower, upper) = opt.lines_view();
-
-        info!(
-            "Optimized to {} lines ({}, {}) in {} ms",
-            score,
-            lower,
-            upper,
-            inst.elapsed().subsec_nanos() as f32 / 1_000_000.0
-        );
-
+    // not a good enough match overall, but maybe inside
+    if output.containing.len() > 0 {
         if want_diff {
-            diff_result(&opt, matched.data);
+            diff_result(&text_data, &result.containing[0].license.data);
         }
-
-        if score > MIN_SCORE {
-            output.containing.push(ContainedResult {
-                score,
-                license: IdentifiedLicense {
-                    aliases: store.aliases(&matched.name).unwrap().clone(),
-                    name: matched.name,
-                    kind: matched.license_type,
-                },
-                line_range: (lower + 1, upper), // inclusive range using 1-indexed numbers
-            });
-            return Ok(output);
-        }
+        return Ok(output);
     }
 
     Err(err_msg(

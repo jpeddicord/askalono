@@ -38,7 +38,7 @@ pub(crate) struct LicenseEntry {
 /// ```
 #[derive(Default, Serialize, Deserialize)]
 pub struct Store {
-    pub(super) licenses: HashMap<String, LicenseEntry>,
+    pub(crate) licenses: HashMap<String, LicenseEntry>,
 }
 
 impl LicenseEntry {
