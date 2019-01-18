@@ -18,5 +18,5 @@ mod strategy;
 pub use crate::{
     license::{LicenseType, TextData},
     store::{Match, Store},
-    strategy::{ScanMode, ScanResult, ScanStrategy},
+    strategy::{ContainedResult, IdentifiedLicense, ScanMode, ScanResult, ScanStrategy},
 };

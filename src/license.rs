@@ -82,7 +82,7 @@ pub struct TextData {
     text_processed: Option<String>,
 }
 
-const TEXTDATA_TEXT_ERROR: &'static str = "TextData does not have original text";
+const TEXTDATA_TEXT_ERROR: &str = "TextData does not have original text";
 
 impl TextData {
     /// Create a new TextData structure from a string.
@@ -165,10 +165,7 @@ impl TextData {
     /// new high score.
     pub fn white_out(&self) -> Self {
         // note that we're not using the view here...
-        let lines = self
-            .lines_normalized
-            .as_ref()
-            .expect(TEXTDATA_TEXT_ERROR);
+        let lines = self.lines_normalized.as_ref().expect(TEXTDATA_TEXT_ERROR);
 
         // ...because it's used here to exclude lines
         let new_normalized: Vec<String> = lines
@@ -194,7 +191,8 @@ impl TextData {
 
     /// Get a slice of the normalized lines in this `TextData`.
     pub fn lines(&self) -> &[String] {
-        &self.lines_normalized.as_ref().expect(TEXTDATA_TEXT_ERROR)[self.lines_view.0..self.lines_view.1]
+        &self.lines_normalized.as_ref().expect(TEXTDATA_TEXT_ERROR)
+            [self.lines_view.0..self.lines_view.1]
     }
 
     #[doc(hidden)]
@@ -229,7 +227,7 @@ impl TextData {
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         if self.lines_normalized.is_none() {
-           panic!(TEXTDATA_TEXT_ERROR);
+            panic!(TEXTDATA_TEXT_ERROR);
         }
 
         let view = self.lines_view;
@@ -243,11 +241,7 @@ impl TextData {
 
         // then optimize the starting bounds
         let (optimized, score) = end_optimized.search_optimize(
-            &|start| {
-                end_optimized
-                    .with_view(start, new_end)
-                    .match_score(other)
-            },
+            &|start| end_optimized.with_view(start, new_end).match_score(other),
             &|start| end_optimized.with_view(start, new_end),
         );
         (optimized, score)

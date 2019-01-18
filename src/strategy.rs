@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::borrow::Cow;
+use std::fmt;
 
 use failure::Error;
-use log::trace;
+use log::{info, trace};
 use serde_derive::Serialize;
 
 use crate::{
@@ -13,35 +14,46 @@ use crate::{
 };
 
 /// A struct describing a license that was identified, as well as its type.
-#[derive(Serialize, Debug)]
-pub struct IdentifiedLicense {
+#[derive(Serialize, Clone)]
+pub struct IdentifiedLicense<'a> {
     /// The identifier of the license.
     pub name: String,
     /// The type of the license that was matched.
     pub kind: LicenseType,
+    /// A reference to the license data inside the store.
+    pub data: &'a TextData,
+}
+
+impl<'a> fmt::Debug for IdentifiedLicense<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("IdentifiedLicense")
+            .field("name", &self.name)
+            .field("kind", &self.kind)
+            .finish()
+    }
 }
 
 /// Information about scanned content.
 ///
 /// Produced by `ScanStrategy.scan`.
 #[derive(Serialize, Debug)]
-pub struct ScanResult {
+pub struct ScanResult<'a> {
     /// The confidence of the match from 0.0 to 1.0.
     pub score: f32,
     /// The identified license of the overall text, or None if nothing met the
     /// confidence threshold.
-    pub license: Option<IdentifiedLicense>,
+    pub license: Option<IdentifiedLicense<'a>>,
     /// Any licenses discovered inside the text, if `optimize` was enabled.
-    pub containing: Vec<ContainedResult>,
+    pub containing: Vec<ContainedResult<'a>>,
 }
 
 /// A struct describing a single license identified within a larger text.
-#[derive(Serialize, Debug)]
-pub struct ContainedResult {
+#[derive(Serialize, Debug, Clone)]
+pub struct ContainedResult<'a> {
     /// The confidence of the match within the line range from 0.0 to 1.0.
     pub score: f32,
     /// The license identified in this portion of the text.
-    pub license: IdentifiedLicense,
+    pub license: IdentifiedLicense<'a>,
     /// A 0-indexed (inclusive, exclusive) range of line numbers identifying
     /// where in the overall text a license was identified.
     ///
@@ -196,12 +208,14 @@ impl<'a> ScanStrategy<'a> {
         let score = analysis.score;
         let mut license = None;
         let mut containing = Vec::new();
+        info!("Elimination top-level analysis: {:?}", analysis);
 
         // meets confidence threshold? record that
         if analysis.score > self.confidence_threshold {
             license = Some(IdentifiedLicense {
                 name: analysis.name.clone(),
                 kind: analysis.license_type,
+                data: analysis.data,
             });
 
             // above the shallow limit -> exit
@@ -219,8 +233,7 @@ impl<'a> ScanStrategy<'a> {
             // this loop effectively iterates once for each license it finds
             let mut current_text: Cow<'_, TextData> = Cow::Borrowed(text);
             for _n in 0..self.max_passes {
-                let (optimized, optimized_score) = current_text
-                    .optimize_bounds(analysis.data);
+                let (optimized, optimized_score) = current_text.optimize_bounds(analysis.data);
 
                 // stop if we didn't find anything acceptable
                 if optimized_score < self.confidence_threshold {
@@ -228,11 +241,18 @@ impl<'a> ScanStrategy<'a> {
                 }
 
                 // otherwise, save it
+                info!(
+                    "Optimized to {} lines ({}, {})",
+                    optimized_score,
+                    optimized.lines_view().0,
+                    optimized.lines_view().1
+                );
                 containing.push(ContainedResult {
                     score: optimized_score,
                     license: IdentifiedLicense {
                         name: analysis.name,
                         kind: analysis.license_type,
+                        data: analysis.data,
                     },
                     line_range: optimized.lines_view(),
                 });
@@ -338,8 +358,7 @@ impl<'a> ScanStrategy<'a> {
         };
         let check = matched.data;
         let view = text.with_view(found.0, found.1);
-        let (optimized, optimized_score) = view
-            .optimize_bounds(check);
+        let (optimized, optimized_score) = view.optimize_bounds(check);
 
         trace!(
             "optimized {} {} at ({:?})",
@@ -357,6 +376,7 @@ impl<'a> ScanStrategy<'a> {
             license: IdentifiedLicense {
                 name: matched.name,
                 kind: matched.license_type,
+                data: matched.data,
             },
             line_range: optimized.lines_view(),
         }))

@@ -14,7 +14,6 @@ use std::{path::PathBuf, process::exit};
 
 use env_logger;
 use rayon;
-use serde_json;
 use structopt::StructOpt;
 
 use self::commands::*;
