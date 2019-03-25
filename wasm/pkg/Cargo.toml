@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 askalono = { version = "*", path = "../../" }
-wasm-bindgen = "0.2.15"
+wasm-bindgen = "0.2.40"
 
 [build-dependencies]
 askalono = { version = "*", path = "../../" }
