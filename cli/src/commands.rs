@@ -63,6 +63,10 @@ pub enum Subcommand {
         #[structopt(name = "DIR", parse(from_os_str))]
         directory: PathBuf,
 
+        /// Try to find the location of a license within the given file
+        #[structopt(long = "optimize", short = "o")]
+        optimize: bool,
+
         /// Follow symlinks
         #[structopt(long = "follow")]
         follow_links: bool,

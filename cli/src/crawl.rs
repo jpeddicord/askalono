@@ -14,6 +14,7 @@ pub fn crawl(
     cache_filename: &Path,
     output_format: &OutputFormat,
     directory: &Path,
+    optimize: bool,
     follow_links: bool,
     glob: Option<&str>,
 ) -> Result<(), Error> {
@@ -56,7 +57,7 @@ pub fn crawl(
             match read_to_string(path) {
                 Ok(content) => {
                     let data = TextData::new(&content);
-                    let idres = identify_data(&store, &data, false, false);
+                    let idres = identify_data(&store, &data, optimize, false);
                     let fileres = FileResult::from_identification_result(&path_lossy, &idres);
                     fileres.print_as(&output_format, true);
                 }

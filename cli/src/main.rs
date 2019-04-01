@@ -39,12 +39,14 @@ fn main() {
         } => identify::identify(&cache_file, &output_format, filename, optimize, diff, batch),
         Subcommand::Crawl {
             directory,
+            optimize,
             follow_links,
             glob,
         } => crawl::crawl(
             &cache_file,
             &output_format,
             &directory,
+            optimize,
             follow_links,
             glob.as_ref().map(String::as_str),
         ),
