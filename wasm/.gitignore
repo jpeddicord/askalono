@@ -1,4 +1,5 @@
 .cache/
+*.log
 *.tgz
 *.wasm
 /demo/dist/

@@ -54,7 +54,7 @@ impl AskalonoStore {
         MatchResult {
             name: matched.name,
             score: matched.score,
-            license_text: matched.data.lines().unwrap().join("\n"),
+            license_text: matched.data.lines().join("\n"),
         }
     }
 }

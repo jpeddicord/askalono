@@ -2,8 +2,7 @@
   "name": "askalono",
   "version": "0.0.2",
   "description": "a wasm-packed askalono library to identify licenses",
-  "main": "node/askalono.js",
-  "browser": "web/askalono.js",
+  "main": "build/askalono.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amzn/askalono.git"

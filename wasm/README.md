@@ -4,6 +4,8 @@ The content in this directory should not be considered stable.
 
 It has no defined API and its use is not currently supported.
 
+As of writing, it requires nightly Rust.
+
 It's pretty neat though! askalono can run in a web browser! This presents some
 interesting use cases:
 
