@@ -7,16 +7,16 @@ const wasm = import("askalono");
 const resultInfo = document.getElementById("resultinfo");
 const diffBox = document.getElementById("diff");
 
-wasm.then(({ AskalonoStore }) => {
+wasm.then(({ AskalonoStore, normalize_text }) => {
   const store = new AskalonoStore();
 
   const field = document.getElementById("identify");
   field.addEventListener("input", e => {
-    analyze(store, e.currentTarget.value);
+    analyze(store, normalize_text(e.currentTarget.value));
   });
 
   // analyze on startup, because browsers tend to keep textbox text on reload
-  analyze(store, field.value);
+  analyze(store, normalize_text(field.value));
 });
 
 function analyze(store, input) {
@@ -77,5 +77,3 @@ function generateDiff(identify, original) {
   }
   return frag;
 }
-
-function updateResult() {}
