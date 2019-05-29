@@ -24,8 +24,8 @@ pub const PREPROC_NORMALIZE: [&PreprocFn; 6] = [
 /// A list of preprocessors that more aggressively normalize/mangle text
 /// to make for friendlier matching. May remove statements and lines, and
 /// more heavily normalize punctuation.
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
-    &remove_common_tokens,
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
+    // &remove_common_tokens,
     &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
