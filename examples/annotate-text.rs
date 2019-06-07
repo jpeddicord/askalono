@@ -37,7 +37,7 @@ fn main() {
     for result in &results.containing {
         annotations.insert(
             result.line_range.0,
-            Annotation::Begin(result.license.name.clone()),
+            Annotation::Begin(result.license.name.to_owned()),
         );
         annotations.insert(result.line_range.1, Annotation::End);
     }

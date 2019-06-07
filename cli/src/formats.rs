@@ -98,7 +98,6 @@ impl<'a> FileResult<'a> {
     }
 
     fn as_json(&self) -> String {
-        use serde_json;
         serde_json::to_string(self).expect("must produce valid json output")
     }
 }

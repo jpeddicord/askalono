@@ -17,7 +17,7 @@ pub struct Match<'a> {
     pub score: f32,
     /// The name of the closest matching license in the `Store`. This will
     /// always be something that exists in the store, regardless of the score.
-    pub name: String,
+    pub name: &'a str,
     /// The type of the license that matched. Useful to know if the match was
     /// the complete text, a header, or something else.
     pub license_type: LicenseType,
@@ -59,46 +59,14 @@ impl<'a> fmt::Debug for Match<'a> {
     }
 }
 
-// this could probably be a stand-alone closure, but I was hitting lifetime
-// hell, so a macro it is. feel free to attempt it yourself.
-macro_rules! analyze_fold_closure {
-    ($text:ident) => {
-        |mut acc: Vec<PartialMatch<'_>>, (name, data)| {
-            acc.push(PartialMatch {
-                score: data.original.match_score($text),
-                name,
-                license_type: LicenseType::Original,
-                data: &data.original,
-            });
-            data.alternates.iter().for_each(|alt| {
-                acc.push(PartialMatch {
-                    score: alt.match_score($text),
-                    name,
-                    license_type: LicenseType::Alternate,
-                    data: alt,
-                })
-            });
-            data.headers.iter().for_each(|head| {
-                acc.push(PartialMatch {
-                    score: head.match_score($text),
-                    name,
-                    license_type: LicenseType::Header,
-                    data: head,
-                })
-            });
-            acc
-        }
-    };
-}
-
 impl Store {
     /// Compare the given `TextData` against all licenses in the `Store`.
     ///
     /// This parallelizes the search as much as it can to find the best match.
     /// Once a match is obtained, it can be optimized further; see methods on
     /// `TextData` for more information.
-    pub fn analyze(&self, text: &TextData) -> Match<'_> {
-        let mut res: Vec<PartialMatch<'_>>;
+    pub fn analyze<'a>(&'a self, text: &TextData) -> Match<'a> {
+        let mut res: Vec<PartialMatch<'a>>;
 
         // parallel analysis
         #[cfg(not(target_arch = "wasm32"))]
@@ -107,10 +75,34 @@ impl Store {
             res = self
                 .licenses
                 .par_iter()
-                .fold(Vec::new, analyze_fold_closure!(text))
+                .fold(Vec::new, |mut acc, (name, data)| {
+                    acc.push(PartialMatch {
+                        score: data.original.match_score(text),
+                        name,
+                        license_type: LicenseType::Original,
+                        data: &data.original,
+                    });
+                    data.alternates.iter().for_each(|alt| {
+                        acc.push(PartialMatch {
+                            score: alt.match_score(text),
+                            name,
+                            license_type: LicenseType::Alternate,
+                            data: alt,
+                        })
+                    });
+                    data.headers.iter().for_each(|head| {
+                        acc.push(PartialMatch {
+                            score: head.match_score(text),
+                            name,
+                            license_type: LicenseType::Header,
+                            data: head,
+                        })
+                    });
+                    acc
+                })
                 .reduce(
                     Vec::new,
-                    |mut a: Vec<PartialMatch<'_>>, b: Vec<PartialMatch<'_>>| {
+                    |mut a: Vec<PartialMatch<'a>>, b: Vec<PartialMatch<'a>>| {
                         a.extend(b);
                         a
                     },
@@ -133,9 +125,10 @@ impl Store {
         }
 
         let m = &res[0];
+
         Match {
             score: m.score,
-            name: m.name.to_string(),
+            name: m.name,
             license_type: m.license_type,
             data: m.data,
         }
