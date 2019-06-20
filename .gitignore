@@ -1,6 +1,6 @@
 .env
 *.bin
-*.bin.gz
+*.bin.zstd
 /Cargo.lock
 gh-pages/
 target

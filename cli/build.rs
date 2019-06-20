@@ -7,7 +7,7 @@ use std::path::Path;
 
 use askalono::Store;
 
-const EMBEDDED_CACHE: &str = "embedded-cache.bin.gz";
+const EMBEDDED_CACHE: &str = "embedded-cache.bin.zstd";
 
 fn main() {
     if env::var("CARGO_FEATURE_EMBEDDED_CACHE").is_err() {

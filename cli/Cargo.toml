@@ -11,7 +11,7 @@ include = [
     "/src/**/*",
     "/build.rs",
     "/Cargo.*",
-    "/embedded-cache.bin.gz",
+    "/embedded-cache.bin.zstd",
 ]
 
 [dependencies]

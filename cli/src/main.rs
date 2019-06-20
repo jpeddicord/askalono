@@ -26,7 +26,7 @@ fn main() {
 
     let cache_file: PathBuf = options
         .cache
-        .unwrap_or_else(|| "./askalono-cache.bin.gz".into());
+        .unwrap_or_else(|| "./askalono-cache.bin.zstd".into());
 
     let output_format = options.format.unwrap_or(OutputFormat::text);
 
