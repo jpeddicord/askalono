@@ -540,10 +540,7 @@ mod tests {
 
     fn create_dummy_store() -> Store {
         let mut store = Store::new();
-        store.add_license(
-            "license-1".into(),
-            "aaaaa\nbbbbb\nccccc".into(),
-        );
+        store.add_license("license-1".into(), "aaaaa\nbbbbb\nccccc".into());
         store.add_license(
             "license-2".into(),
             "1234 5678 1234\n0000\n1010101010\n\n8888 9999".into(),

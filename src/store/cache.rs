@@ -16,7 +16,6 @@ const CACHE_VERSION: &[u8] = b"askalono-03";
 const CACHE_VERSION: &[u8] = b"askalono-04";
 
 impl Store {
-
     /// Create a store from a cache file.
     ///
     /// This method is highly useful for quickly loading a cache, as creating

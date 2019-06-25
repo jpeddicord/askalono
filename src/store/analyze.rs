@@ -3,7 +3,11 @@
 
 use std::{cmp::Ordering, fmt};
 
-use crate::{license::LicenseType, license::TextData, store::base::{LicenseEntry, Store}};
+use crate::{
+    license::LicenseType,
+    license::TextData,
+    store::base::{LicenseEntry, Store},
+};
 
 /// Information about text that was compared against licenses in the store.
 ///
@@ -68,31 +72,32 @@ impl Store {
     pub fn analyze<'a>(&'a self, text: &TextData) -> Match<'a> {
         let mut res: Vec<PartialMatch<'a>>;
 
-        let analyze_fold = |mut acc: Vec<PartialMatch<'a>>, (name, data): (&'a String, &'a LicenseEntry)| {
-            acc.push(PartialMatch {
-                score: data.original.match_score(text),
-                name,
-                license_type: LicenseType::Original,
-                data: &data.original,
-            });
-            data.alternates.iter().for_each(|alt| {
+        let analyze_fold =
+            |mut acc: Vec<PartialMatch<'a>>, (name, data): (&'a String, &'a LicenseEntry)| {
                 acc.push(PartialMatch {
-                    score: alt.match_score(text),
+                    score: data.original.match_score(text),
                     name,
-                    license_type: LicenseType::Alternate,
-                    data: alt,
-                })
-            });
-            data.headers.iter().for_each(|head| {
-                acc.push(PartialMatch {
-                    score: head.match_score(text),
-                    name,
-                    license_type: LicenseType::Header,
-                    data: head,
-                })
-            });
-            acc
-        };
+                    license_type: LicenseType::Original,
+                    data: &data.original,
+                });
+                data.alternates.iter().for_each(|alt| {
+                    acc.push(PartialMatch {
+                        score: alt.match_score(text),
+                        name,
+                        license_type: LicenseType::Alternate,
+                        data: alt,
+                    })
+                });
+                data.headers.iter().for_each(|head| {
+                    acc.push(PartialMatch {
+                        score: head.match_score(text),
+                        name,
+                        license_type: LicenseType::Header,
+                        data: head,
+                    })
+                });
+                acc
+            };
 
         // parallel analysis
         #[cfg(not(target_arch = "wasm32"))]
@@ -119,10 +124,7 @@ impl Store {
                 .licenses
                 .iter()
                 // len of licenses isn't strictly correct, but it'll do
-                .fold(
-                    Vec::with_capacity(self.licenses.len()),
-                    analyze_fold,
-                );
+                .fold(Vec::with_capacity(self.licenses.len()), analyze_fold);
             res.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
         }
 
