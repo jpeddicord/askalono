@@ -138,7 +138,7 @@ pub fn identify_data(
     }
 
     // not a good enough match overall, but maybe inside
-    if output.containing.len() > 0 {
+    if !output.containing.is_empty() {
         if want_diff {
             diff_result(&text_data, &result.containing[0].license.data);
         }
