@@ -52,7 +52,7 @@ impl AskalonoStore {
     pub fn identify(&self, text: &str) -> MatchResult {
         let matched = self.store.analyze(&text.into());
         MatchResult {
-            name: matched.name,
+            name: matched.name.to_owned(),
             score: matched.score,
             license_text: matched.data.lines().join("\n"),
         }

@@ -14,7 +14,7 @@ enum Annotation {
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() != 2 {
-        eprintln!("usage: annotate-text cache.bin.gz < input.txt > output.html");
+        eprintln!("usage: annotate-text cache.bin.zstd < input.txt > output.html");
         std::process::exit(1);
     }
 
