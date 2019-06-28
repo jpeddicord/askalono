@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use failure::{format_err, Error};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{license::LicenseType, license::TextData};
 

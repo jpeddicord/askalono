@@ -6,7 +6,7 @@ use std::fmt;
 
 use failure::Error;
 use log::{info, trace};
-use serde_derive::Serialize;
+use serde::Serialize;
 
 use crate::{
     license::{LicenseType, TextData},

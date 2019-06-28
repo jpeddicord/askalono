@@ -3,7 +3,7 @@
 
 use std::{collections::HashMap, fmt};
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     ngram::NgramSet,
