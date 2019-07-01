@@ -34,7 +34,7 @@ fn self_apache_header() {
     let matched = store.analyze(&text_data);
 
     // check that it looked apache-2.0-ish
-    assert_eq!("Apache-2.0", &matched.name);
+    assert_eq!("Apache-2.0", matched.name);
     assert_eq!(askalono::LicenseType::Header, matched.license_type);
 
     // now try to find the bounds of the license header

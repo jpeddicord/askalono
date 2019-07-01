@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use failure::{format_err, Error};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{license::LicenseType, license::TextData};
 
@@ -31,7 +31,7 @@ pub(crate) struct LicenseEntry {
 /// use askalono::{Store, TextData};
 ///
 /// # fn main() -> Result<(), Box<Error>> {
-/// let store = Store::from_cache(File::open("askalono-cache.bin.gz")?)?;
+/// let store = Store::from_cache(File::open("askalono-cache.bin.zstd")?)?;
 /// let result = store.analyze(&TextData::from("what's this"));
 /// # Ok(())
 /// # }

@@ -6,7 +6,7 @@ use std::{
     collections::{hash_map::Iter, HashMap, VecDeque},
 };
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct NgramSet {

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 extern crate wasm_bindgen;
+#[cfg(test)]
+extern crate wasm_bindgen_test;
 
 extern crate askalono;
 
@@ -52,9 +54,25 @@ impl AskalonoStore {
     pub fn identify(&self, text: &str) -> MatchResult {
         let matched = self.store.analyze(&text.into());
         MatchResult {
-            name: matched.name,
+            name: matched.name.to_owned(),
             score: matched.score,
             license_text: matched.data.lines().join("\n"),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use wasm_bindgen_test::*;
+
+    static LICENSE_TEXT: &str = include_str!("../../../LICENSE");
+
+    #[wasm_bindgen_test]
+    fn identify() {
+        let store = super::AskalonoStore::new();
+
+        let m = store.identify(LICENSE_TEXT);
+
+        assert_eq!(m.name, "Apache-2.0");
     }
 }

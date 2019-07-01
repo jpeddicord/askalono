@@ -6,7 +6,7 @@ use std::fmt;
 
 use failure::Error;
 use log::{info, trace};
-use serde_derive::Serialize;
+use serde::Serialize;
 
 use crate::{
     license::{LicenseType, TextData},
@@ -17,7 +17,7 @@ use crate::{
 #[derive(Serialize, Clone)]
 pub struct IdentifiedLicense<'a> {
     /// The identifier of the license.
-    pub name: String,
+    pub name: &'a str,
     /// The type of the license that was matched.
     pub kind: LicenseType,
     /// A reference to the license data inside the store.
@@ -213,7 +213,7 @@ impl<'a> ScanStrategy<'a> {
         // meets confidence threshold? record that
         if analysis.score > self.confidence_threshold {
             license = Some(IdentifiedLicense {
-                name: analysis.name.clone(),
+                name: analysis.name,
                 kind: analysis.license_type,
                 data: analysis.data,
             });

@@ -109,6 +109,7 @@ fn trim_line(input: &str) -> String {
 
 // Aggressive preprocessors
 
+#[allow(dead_code)]
 fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
     let mut f_chars = fstr.chars();
     let mut s_chars = sstr.chars();
@@ -161,6 +162,7 @@ fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
     }
 }
 
+#[allow(dead_code)]
 fn remove_common_tokens(text: &str) -> String {
     let lines: Vec<&str> = text.split('\n').collect();
     let mut largest_substr = String::new();

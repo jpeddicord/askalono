@@ -114,7 +114,7 @@ pub fn identify_data(
                 score: cr.score,
                 license: CLIIdentifiedLicense {
                     aliases: store.aliases(&cr.license.name).unwrap().clone(),
-                    name: cr.license.name.clone(),
+                    name: cr.license.name.to_owned(),
                     kind: cr.license.kind,
                 },
                 line_range: cr.line_range,
@@ -126,7 +126,7 @@ pub fn identify_data(
     if let Some(license) = result.license {
         output.license = Some(CLIIdentifiedLicense {
             aliases: store.aliases(&license.name).unwrap().clone(),
-            name: license.name,
+            name: license.name.to_owned(),
             kind: license.kind,
         });
 
@@ -138,7 +138,7 @@ pub fn identify_data(
     }
 
     // not a good enough match overall, but maybe inside
-    if output.containing.len() > 0 {
+    if !output.containing.is_empty() {
         if want_diff {
             diff_result(&text_data, &result.containing[0].license.data);
         }

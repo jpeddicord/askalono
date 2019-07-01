@@ -14,7 +14,7 @@ enum Annotation {
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() != 2 {
-        eprintln!("usage: annotate-text cache.bin.gz < input.txt > output.html");
+        eprintln!("usage: annotate-text cache.bin.zstd < input.txt > output.html");
         std::process::exit(1);
     }
 
@@ -37,7 +37,7 @@ fn main() {
     for result in &results.containing {
         annotations.insert(
             result.line_range.0,
-            Annotation::Begin(result.license.name.clone()),
+            Annotation::Begin(result.license.name.to_owned()),
         );
         annotations.insert(result.line_range.1, Annotation::End);
     }

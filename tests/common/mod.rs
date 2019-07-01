@@ -9,7 +9,7 @@ use askalono::Store;
 #[allow(dead_code)]
 pub const SPDX_TEXT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/datasets/spdx-text");
 pub const SPDX_JSON: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/datasets/spdx-json");
-pub const TEST_CACHE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/test-cache.bin.gz");
+pub const TEST_CACHE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/test-cache.bin.zstd");
 
 pub fn load_store() -> Store {
     if Path::new(TEST_CACHE).exists() {
