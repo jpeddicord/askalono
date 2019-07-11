@@ -24,11 +24,12 @@ pub const PREPROC_NORMALIZE: [&PreprocFn; 6] = [
 /// A list of preprocessors that more aggressively normalize/mangle text
 /// to make for friendlier matching. May remove statements and lines, and
 /// more heavily normalize punctuation.
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 6] = [
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
     // &remove_common_tokens,
     &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
+    &remove_title_line,
     &remove_copyright_statements,
     &collapse_whitespace,
     &final_trim,
@@ -230,16 +231,31 @@ fn lowercaseify(input: &str) -> String {
     input.to_lowercase()
 }
 
+fn remove_title_line(input: &str) -> String {
+    lazy_static! {
+        static ref RX: Regex = Regex::new(
+            r"^.*license( version \S+)?( copyright.*)?\n\n"
+        ).unwrap();
+    }
+
+    RX.replace_all(input, "").into()
+}
+
 fn remove_copyright_statements(input: &str) -> String {
     lazy_static! {
         static ref RX: Regex = Regex::new(
-            r"(?imx)
+            r"(?mx)
             (
                 # either a new paragraph, or the beginning of the text + empty lines
                 (\n\n|\A\n*)
                 # any number of lines starting with 'copyright' followed by a new paragraph
                 (^\x20*copyright.*?$)+
                 \n\n
+            )
+            |
+            (
+                # or the very first line if it has 'copyright' in it
+                \A.*copyright.*$
             )
             |
             (
