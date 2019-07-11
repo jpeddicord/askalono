@@ -16,7 +16,12 @@ lint:
 
 # run the CLI in release mode
 cli +args="": init
-    cd cli && cargo run --release -- {{args}}
+    cd cli && cargo build --release
+    ./target/release/askalono {{args}}
+
+diag +args="": init
+    cd cli && cargo build --release --features diagnostics
+    ./target/release/askalono id --diff {{args}}
 
 # update the gh-pages branch with generated documentation
 update-docs:
