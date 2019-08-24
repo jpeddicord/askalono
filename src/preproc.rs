@@ -110,99 +110,53 @@ fn trim_line(input: &str) -> String {
 
 // Aggressive preprocessors
 
-#[allow(dead_code)]
-fn lcs_substr(fstr: &str, sstr: &str) -> Option<String> {
-    let mut f_chars = fstr.chars();
-    let mut s_chars = sstr.chars();
-    let mut substr = String::new();
+fn lcs_substr(f_line: &str, s_line: &str) -> Option<String> {
+    #[allow(clippy::trivially_copy_pass_by_ref)]
+    fn is_nonwhitespace(&c: &char) -> bool {
+        c != ' ' && c != '\t'
+    }
 
-    let skip_whitespace = |c| match c {
-        ' ' | '\t' => true,
-        _ => false,
-    };
+    let substr = f_line.chars().filter(is_nonwhitespace)
+        .zip(s_line.chars().filter(is_nonwhitespace))
+        .take_while(|&(f, s)| f == s)
+        .map(|(f, _s)| f)
+        .collect::<String>();
 
-    loop {
-        let f = match f_chars.next() {
-            Some(f_str) => {
-                if skip_whitespace(f_str) {
-                    s_chars.next();
-                    continue;
-                } else {
-                    f_str
-                }
-            }
-            None => {
-                if !substr.is_empty() {
-                    return Some(substr);
-                } else {
-                    return None;
-                }
-            }
-        };
-
-        match s_chars.next() {
-            Some(s) => {
-                if !skip_whitespace(s) {
-                    if f == s {
-                        substr.push(s);
-                    } else if !substr.is_empty() {
-                        return Some(substr);
-                    } else {
-                        return None;
-                    }
-                }
-            }
-            None => {
-                if !substr.is_empty() {
-                    return Some(substr);
-                } else {
-                    return None;
-                }
-            }
-        }
+    if substr.is_empty() {
+        None
+    } else {
+        Some(substr)
     }
 }
 
 #[allow(dead_code)]
 fn remove_common_tokens(text: &str) -> String {
     let lines: Vec<&str> = text.split('\n').collect();
-    let mut largest_substr = String::new();
     let mut l_iter = lines.iter();
 
     // TODO: consider whether this can all be done in one pass https://github.com/amzn/askalono/issues/36
 
     // pass 1: iterate through the text to find the largest substring
-    // from the start of the line
-    #[allow(clippy::while_let_loop)]
-    loop {
-        let f_line = match l_iter.next() {
-            Some(line) => line,
-            None => break,
-        };
-
-        let new_largest_substr = match l_iter.next() {
-            Some(s_line) => match lcs_substr(f_line, s_line) {
-                Some(substr) => substr,
-                None => break,
-            },
-            None => break,
-        };
-
-        if largest_substr.contains(new_largest_substr.as_str()) || largest_substr.is_empty() {
-            largest_substr = new_largest_substr.to_string();
-        }
-    }
+    let largest_substr = std::iter::from_fn(|| Some((l_iter.next()?, l_iter.next()?)))
+        .map(|(f_line, s_line)| lcs_substr(f_line, s_line))
+        .take_while(Option::is_some)
+        .filter_map(std::convert::identity)
+        .fold(String::new(), |largest, current| {
+            if largest.is_empty() || largest.contains(&current) {
+                current
+            } else {
+                largest
+            }
+        });
 
     // pass 2: remove that substring
-    if largest_substr.len() > 3 {
+    let largest_len = largest_substr.len();
+    if largest_len > 3 {
         lines
             .iter()
-            .filter(|l| match l.find(&largest_substr) {
-                Some(index) => index == 0,
-                None => false,
-            })
-            .map(|l| l.replacen(&largest_substr, "", 1))
-            .collect::<Vec<String>>()
+            .filter(|line| line.starts_with(&largest_substr))
+            .map(|line| &line[largest_len..])
+            .collect::<Vec<_>>()
             .join("\n")
     } else {
         text.to_string()
