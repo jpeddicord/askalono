@@ -1,7 +1,8 @@
-//  Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//  SPDX-License-Identifier: Apache-2.0
+// Copyright 2018-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 use log::debug;
@@ -24,8 +25,8 @@ pub const PREPROC_NORMALIZE: [&PreprocFn; 6] = [
 /// A list of preprocessors that more aggressively normalize/mangle text
 /// to make for friendlier matching. May remove statements and lines, and
 /// more heavily normalize punctuation.
-pub const PREPROC_AGGRESSIVE: [&PreprocFn; 7] = [
-    // &remove_common_tokens,
+pub const PREPROC_AGGRESSIVE: [&PreprocFn; 8] = [
+    &remove_common_tokens,
     &normalize_vertical_whitespace,
     &remove_punctuation,
     &lowercaseify,
@@ -110,57 +111,78 @@ fn trim_line(input: &str) -> String {
 
 // Aggressive preprocessors
 
-fn lcs_substr(f_line: &str, s_line: &str) -> Option<String> {
-    #[allow(clippy::trivially_copy_pass_by_ref)]
-    fn is_nonwhitespace(&c: &char) -> bool {
-        c != ' ' && c != '\t'
-    }
+fn lcs_substr(f_line: &str, s_line: &str) -> String {
+    // grab character iterators from both strings
+    let f_line_chars = f_line.chars();
+    let s_line_chars = s_line.chars();
 
-    let substr = f_line.chars().filter(is_nonwhitespace)
-        .zip(s_line.chars().filter(is_nonwhitespace))
+    // zip them together and find the common substring from the start
+    f_line_chars
+        .zip(s_line_chars)
         .take_while(|&(f, s)| f == s)
         .map(|(f, _s)| f)
-        .collect::<String>();
-
-    if substr.is_empty() {
-        None
-    } else {
-        Some(substr)
-    }
+        .collect::<String>()
+        .trim()
+        .into() //TODO: big optimization needed, this is a wasteful conversion
 }
 
-#[allow(dead_code)]
 fn remove_common_tokens(text: &str) -> String {
     let lines: Vec<&str> = text.split('\n').collect();
-    let mut l_iter = lines.iter();
+    let mut l_iter = lines.iter().peekable();
 
     // TODO: consider whether this can all be done in one pass https://github.com/amzn/askalono/issues/36
 
-    // pass 1: iterate through the text to find the largest substring
-    let largest_substr = std::iter::from_fn(|| Some((l_iter.next()?, l_iter.next()?)))
-        .map(|(f_line, s_line)| lcs_substr(f_line, s_line))
-        .take_while(Option::is_some)
-        .filter_map(std::convert::identity)
-        .fold(String::new(), |largest, current| {
-            if largest.is_empty() || largest.contains(&current) {
-                current
-            } else {
-                largest
+    let mut prefix_counts: HashMap<String, u32> = HashMap::new();
+
+    // pass 1: iterate through the text to record common prefixes
+    while let Some(line) = l_iter.next() {
+        if let Some(next) = l_iter.peek() {
+            let common = lcs_substr(line, next);
+
+            // why start at 1, then immediately add 1?
+            // lcs_substr compares two lines!
+            // this doesn't need to be exact, just consistent.
+            if common.len() > 3 {
+                *prefix_counts.entry(common.to_owned()).or_insert(1) += 1;
             }
-        });
+        }
+    }
+
+    // look at the most common observed prefix
+    let max_prefix = prefix_counts.iter().max_by_key(|&(_k, v)| v);
+    if max_prefix.is_none() {
+        return text.to_string();
+    }
+    let (most_common, _) = max_prefix.unwrap();
+
+    // reconcile the count with other longer prefixes that may be stored
+    let mut final_common_count = 0;
+    for (k, v) in prefix_counts.iter() {
+        if k.starts_with(most_common) {
+            final_common_count += v;
+        }
+    }
+
+    // the common string must be at least 80% of the text
+    let prefix_threshold: u32 = (0.8f32 * lines.len() as f32) as u32;
+    if final_common_count < prefix_threshold {
+        return text.to_string();
+    }
 
     // pass 2: remove that substring
-    let largest_len = largest_substr.len();
-    if largest_len > 3 {
-        lines
-            .iter()
-            .filter(|line| line.starts_with(&largest_substr))
-            .map(|line| &line[largest_len..])
-            .collect::<Vec<_>>()
-            .join("\n")
-    } else {
-        text.to_string()
-    }
+    let prefix_len = most_common.len();
+    lines
+        .iter()
+        .map(|line| {
+            if line.starts_with(most_common) {
+                &line[prefix_len..]
+            } else {
+                &line
+            }
+        })
+        .map(|line| line.trim())
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn normalize_vertical_whitespace(input: &str) -> String {
@@ -187,9 +209,7 @@ fn lowercaseify(input: &str) -> String {
 
 fn remove_title_line(input: &str) -> String {
     lazy_static! {
-        static ref RX: Regex = Regex::new(
-            r"^.*license( version \S+)?( copyright.*)?\n\n"
-        ).unwrap();
+        static ref RX: Regex = Regex::new(r"^.*license( version \S+)?( copyright.*)?\n\n").unwrap();
     }
 
     RX.replace_all(input, "").into()
@@ -259,7 +279,10 @@ mod tests {
             false,
             "new text shouldn't contain the common substring"
         );
+    }
 
+    #[test]
+    fn greatest_substring_removal_keep_inner() {
         let text = "this string should still have\n\
                     this word -> this <- in it even though\n\
                     this is still the most common word";
@@ -276,6 +299,32 @@ mod tests {
         let new_text = remove_common_tokens(text);
         println!("-- {}", new_text);
         assert!(new_text.contains("aaaa")); // similar to above test
+    }
+
+    #[test]
+    fn greatest_substring_removal_42() {
+        // https://github.com/amzn/askalono/issues/42
+        let text = "AAAAAA line 1\n\
+                    AAAAAA another line here\n\
+                    AAAAAA yet another line here\n\
+                    AAAAAA how long will this go on\n\
+                    AAAAAA another line here\n\
+                    AAAAAA more\n\
+                    AAAAAA one more\n\
+                    AAAAAA two more\n\
+                    AAAAAA three more\n\
+                    AAAAAA four more\n\
+                    AAAAAA five more\n\
+                    AAAAAA six more\n\
+                    \n\
+                    preserve\n\
+                    keep";
+        let new_text = remove_common_tokens(text);
+        println!("{}", new_text);
+
+        assert!(new_text.contains("preserve"));
+        assert!(new_text.contains("keep"));
+        assert!(!new_text.contains("AAAAAA"));
     }
 
     #[test]
