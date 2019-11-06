@@ -6,7 +6,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-TBD. A 1.0 release is likely next, and will include full WebAssembly support.
+## [0.4.0] - ???
+
+### Added
+
+- askalono will attempt to ignore license "title lines" (e.g. "The MIT License") that occasionally appear on licenses.
+
+### Changed
+
+- (Breaking) Switch to Rust 2018 edition.
+- (Breaking) Drop the previously-deprecated `aliases` field. Aliases can instead be queried with the `aliases` function on a `Store`.
+- (Breaking) `analyze` (on `Store`) no longer returns a Result. There was no reasonable case where it could fail.
+- (Breaking) `with_view`, `white_out`, `optimize_bounds` on `TextData` also no longer return Result, as they never had an expected failure path outside of programming errors. A panic may occur if an out-of-bounds view is used -- this is intentional. See commit 8d11161c.
+- Stores are now compressed with zstd instead of gzip, which provides better compression and performance particularly for the dataset used by askalono.
+- Fresh SPDX dataset.
+- URLs in licenses will be "black-boxed" in case modified/re-hosted.
+
+### Fixed
+
+- The `lcs_removal` preprocessor has been fixed to be less aggressive on certain repeated statements (#42).
+- Fixed CLI help text strings (#34)
 
 ## [0.3.0] - 2018-09-27
 
@@ -66,6 +85,7 @@ TBD. A 1.0 release is likely next, and will include full WebAssembly support.
 - It's fast, though
 
 
+[0.4.0]: https://github.com/amzn/askalono/releases/tag/0.4.0
 [0.3.0]: https://github.com/amzn/askalono/releases/tag/0.3.0
 [0.2.0]: https://github.com/amzn/askalono/releases/tag/0.2.0
 [0.1.0]: https://github.com/amzn/askalono/releases/tag/0.1.0

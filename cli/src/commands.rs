@@ -4,8 +4,6 @@
 use std::path::PathBuf;
 
 use clap::{
-    // https://github.com/TeXitoi/structopt/issues/157
-    _clap_count_exprs,
     arg_enum,
 };
 use structopt::StructOpt;

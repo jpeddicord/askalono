@@ -26,14 +26,14 @@ unicode-normalization = "0.1.8"
 serde_json = { version = "1.0.39", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rayon = "1.1.0"
-zstd = "0.4.24+zstd.1.4.0"
+rayon = "1.2"
+zstd = "0.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-zstd = { version = "0.4.24+zstd.1.4.0", default-features = false, features = ["wasm"] }
+zstd = { version = "0.4", default-features = false, features = ["wasm"] }
 
 [dev-dependencies]
-env_logger = "0.6.1"
+env_logger = "0.7"
 
 [lib]
 name = "askalono"
