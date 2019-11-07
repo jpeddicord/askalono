@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-Nothing yet!
+### Fixed
+
+- Removed some extraneous files from the core `askalono` packaged crate.
+- Include LICENSE, NOTICE, and README.md in `askalono-cli` crate.
 
 ## [0.4.0] - 2019-11-06
 
