@@ -6,12 +6,15 @@ description = "a tool to detect the contents of license files"
 license = "Apache-2.0"
 repository = "https://github.com/amzn/askalono"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
-readme = "../README.md"
+readme = "README.md"
 include = [
-    "/src/**/*",
     "/build.rs",
     "/Cargo.*",
     "/embedded-cache.bin.zstd",
+    "/LICENSE",
+    "/NOTICE",
+    "/README.md",
+    "/src/**/*",
 ]
 
 [dependencies]
