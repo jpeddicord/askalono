@@ -57,7 +57,7 @@ In detail, the matching process:
 1. In parallel, the bigram set is compared with all of the other sets askalono knows about.
 1. The resulting list is sorted, the top match identified, and result returned.
 
-To optimize startup, askalono builds up a database of license texts (applying the same normalization techniques described above), and persists this data to a MessagePack'd & gzip'd cache file. This cache is loaded at startup, and is optionally embedded in the binary itself.
+To optimize startup, askalono builds up a database of license texts (applying the same normalization techniques described above), and persists this data to a MessagePack'd & zstd compressed cache file. This cache is loaded at startup, and is optionally embedded in the binary itself.
 
 ### Name
 
