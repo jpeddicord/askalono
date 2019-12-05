@@ -3,9 +3,7 @@
 
 use std::path::PathBuf;
 
-use clap::{
-    arg_enum,
-};
+use clap::arg_enum;
 use structopt::StructOpt;
 
 arg_enum! {

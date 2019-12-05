@@ -8,7 +8,7 @@ use failure::Error;
 use askalono::{Store, TextData};
 
 #[cfg(feature = "embedded-cache")]
-static CACHE_DATA: &'static [u8] = include_bytes!(env!("ASKALONO_EMBEDDED_CACHE"));
+static CACHE_DATA: &[u8] = include_bytes!(env!("ASKALONO_EMBEDDED_CACHE"));
 
 #[allow(unused_variables)]
 pub fn load_store(cache_filename: &Path) -> Result<Store, Error> {

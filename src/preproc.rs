@@ -167,7 +167,7 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     // look at the most common observed prefix
     let max_prefix = prefix_counts.iter().max_by_key(|&(_k, v)| v);
     if max_prefix.is_none() {
-        return input.into();
+        return input;
     }
     let (most_common, _) = max_prefix.unwrap();
 
@@ -182,7 +182,7 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     // the common string must be at least 80% of the text
     let prefix_threshold: u32 = (0.8f32 * lines.len() as f32) as u32;
     if final_common_count < prefix_threshold {
-        return input.into();
+        return input;
     }
 
     // pass 2: remove that substring
@@ -258,7 +258,7 @@ fn remove_copyright_statements(input: Cow<str>) -> Cow<str> {
         .unwrap();
     }
 
-    RX.replace_all_cow(input, "\n\n").into()
+    RX.replace_all_cow(input, "\n\n")
 }
 
 fn collapse_whitespace(input: Cow<str>) -> Cow<str> {
