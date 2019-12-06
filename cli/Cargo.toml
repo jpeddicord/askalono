@@ -1,6 +1,6 @@
 [package]
 name = "askalono-cli"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2018"
 description = "a tool to detect the contents of license files"
 license = "Apache-2.0"
@@ -18,7 +18,7 @@ include = [
 ]
 
 [dependencies]
-askalono = { version = "0.4.0", path = "../" }
+askalono = { version = "0.4.1", path = "../" }
 clap = "2.32.0"
 env_logger = "0.7"
 failure = "0.1.5"
