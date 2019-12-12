@@ -145,23 +145,44 @@ fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
 
 fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     let lines: Vec<&str> = input.split('\n').collect();
-    let mut l_iter = lines.iter().peekable();
+    let mut l_iter = lines.iter();
 
     // TODO: consider whether this can all be done in one pass https://github.com/amzn/askalono/issues/36
 
-    let mut prefix_counts: HashMap<String, u32> = HashMap::new();
+    let mut prefix_counts = HashMap::<_, u32>::new();
 
     // pass 1: iterate through the text to record common prefixes
-    while let Some(line) = l_iter.next() {
-        if let Some(next) = l_iter.peek() {
-            let common = lcs_substr(line, next);
+    if let(Some(first), Some(second)) = (l_iter.next(), l_iter.next()) {
+        let mut pair = (first, second);
+        let line_pairs = std::iter::from_fn(|| {
+            let ret = pair;
+            pair = (pair.1, l_iter.next()?);
+            Some(ret)
+        });
+        for (a, b) in line_pairs {
+            let common = lcs_substr(a, b);
 
             // why start at 1, then immediately add 1?
             // lcs_substr compares two lines!
             // this doesn't need to be exact, just consistent.
             if common.len() > 3 {
-                *prefix_counts.entry(common.to_owned()).or_insert(1) += 1;
+                *prefix_counts.entry(common).or_insert(1) += 1;
             }
+        }
+    }
+
+    // look at the most common observed prefix
+    let max_prefix = prefix_counts.iter().max_by_key(|&(_k, v)| v);
+    if max_prefix.is_none() {
+        return input;
+    }
+    let (most_common, _) = max_prefix.unwrap();
+
+    // reconcile the count with other longer prefixes that may be stored
+    let mut final_common_count = 0;
+    for (k, v) in prefix_counts.iter() {
+        if k.starts_with(most_common) {
+            final_common_count += v;
         }
     }
 
