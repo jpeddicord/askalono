@@ -127,19 +127,20 @@ fn trim(input: Cow<str>) -> Cow<str> {
 
 // Aggressive preprocessors
 
-fn lcs_substr(f_line: &str, s_line: &str) -> String {
+fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
     // grab character iterators from both strings
-    let f_line_chars = f_line.chars();
+    let f_line_chars = f_line.char_indices();
     let s_line_chars = s_line.chars();
 
     // zip them together and find the common substring from the start
-    f_line_chars
+    let common_len = f_line_chars
         .zip(s_line_chars)
-        .take_while(|&(f, s)| f == s)
-        .map(|(f, _s)| f)
-        .collect::<String>()
-        .trim()
-        .into() //TODO: big optimization needed, this is a wasteful conversion
+        .take_while(|&((_i, f), s)| f == s)
+        .map(|((i, _f), _s)| i)
+        .last()
+        .unwrap_or(0);
+    
+    f_line[..common_len].trim()
 }
 
 fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
