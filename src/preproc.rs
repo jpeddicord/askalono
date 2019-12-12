@@ -136,7 +136,7 @@ fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
     let common_len = f_line_chars
         .zip(s_line_chars)
         .take_while(|&((_i, f), s)| f == s)
-        .map(|((i, _f), _s)| i)
+        .map(|((i, f), _s)| i + f.len_utf8())
         .last()
         .unwrap_or(0);
     
