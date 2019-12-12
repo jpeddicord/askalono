@@ -193,16 +193,13 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     let (most_common, _) = max_prefix.unwrap();
 
     // reconcile the count with other longer prefixes that may be stored
-    let mut final_common_count = 0;
-    for (k, v) in prefix_counts.iter() {
-        if k.starts_with(most_common) {
-            final_common_count += v;
-        }
-    }
+    let common_count = prefix_counts.iter()
+        .filter_map(|(s, count)| Some(count).filter(|_| s.starts_with(most_common)))
+        .sum::<u32>();
 
     // the common string must be at least 80% of the text
-    let prefix_threshold: u32 = (0.8f32 * lines.len() as f32) as u32;
-    if final_common_count < prefix_threshold {
+    let prefix_threshold = (0.8f32 * lines.len() as f32) as _;
+    if common_count < prefix_threshold {
         return input;
     }
 
