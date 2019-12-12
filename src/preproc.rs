@@ -172,11 +172,10 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     }
 
     // look at the most common observed prefix
-    let max_prefix = prefix_counts.iter().max_by_key(|&(_k, v)| v);
-    if max_prefix.is_none() {
-        return input;
-    }
-    let (most_common, _) = max_prefix.unwrap();
+    let most_common = match prefix_counts.iter().max_by_key(|&(_k, v)| v) {
+        Some((prefix, _count)) => prefix,
+        None => return input,
+    };
 
     // reconcile the count with other longer prefixes that may be stored
     let mut final_common_count = 0;
