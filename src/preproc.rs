@@ -151,12 +151,11 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     let mut prefix_counts = HashMap::<_, u32>::new();
 
     // pass 1: iterate through the text to record common prefixes
-    if let(Some(first), Some(second)) = (l_iter.next(), l_iter.next()) {
-        let mut pair = (first, second);
+    if let Some(first) = l_iter.next() {
+        let mut pair = ("", first);
         let line_pairs = std::iter::from_fn(|| {
-            let ret = pair;
             pair = (pair.1, l_iter.next()?);
-            Some(ret)
+            Some(pair)
         });
         for (a, b) in line_pairs {
             let common = lcs_substr(a, b);
