@@ -127,19 +127,44 @@ fn trim(input: Cow<str>) -> Cow<str> {
 
 // Aggressive preprocessors
 
-fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
-    // grab character iterators from both strings
-    let f_line_chars = f_line.char_indices();
-    let s_line_chars = s_line.chars();
-
-    // zip them together and find the common substring from the start
-    let common_len = f_line_chars
-        .zip(s_line_chars)
-        .take_while(|&((_i, f), s)| f == s)
-        .last()
-        .map_or(0, |((i, f), _s)| i + f.len_utf8());
+// Cut prefix of string near given byte index.
+// If given index doesn't lie at char boundary,
+// returns the biggest prefix with length not exceeding idx.
+// If index is bigger than length or string, returns the whole string.
+fn trim_byte_adjusted(s: &str, idx: usize) -> &str {
+    if idx >= s.len() {
+        return s
+    }
     
-    f_line[..common_len].trim()
+    if let Some(sub) = s.get(..idx) {
+        sub
+    } else {
+        // Inspect bytes before index
+        let trailing_continuation = s.as_bytes()[..idx]
+            .iter()
+            .rev()
+            // Multibyte characters are encoded in UTF-8 in the following manner:
+            //    first byte | rest of bytes
+            //    1..10xxxxx   10xxxxxx
+            //    ^^^^ number of ones is equal to number of bytes in codepoint
+            // Number of 10xxxxxx bytes in codepoint is at most 3 in valid UTF-8-encoded string,
+            // so this loop actually runs a little iterations
+            .take_while(|&byte| byte & 0b1100_0000 == 0b1000_0000)
+            .count();
+        // Subtract 1 to take the first byte in codepoint into account
+        &s[..idx - trailing_continuation - 1]
+    }
+}
+
+fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
+    // find the length of common prefix in byte representations of strings
+    let prefix_len = f_line.as_bytes()
+        .iter()
+        .zip(s_line.as_bytes())
+        .take_while(|(&f, &s)| f == s)
+        .count();
+    
+    trim_byte_adjusted(f_line, prefix_len).trim()
 }
 
 fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
