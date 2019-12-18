@@ -189,7 +189,13 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     // pass 2: remove that substring
     lines
         .iter()
-        .map(|s| s.trim_start_matches(most_common).trim())
+        .map(|line| {
+            if line.starts_with(most_common) {
+                &line[most_common.len()..]
+            } else {
+                line
+            }.trim()
+        })
         .collect::<Vec<_>>()
         .join("\n")
         .into()
