@@ -297,6 +297,40 @@ mod tests {
     use super::*;
 
     #[test]
+    fn trim_byte_adjusted_respects_multibyte_characters() {
+        let input = "RustКраб橙蟹🦀";
+        let expected = [
+            "",
+            "R",
+            "Ru",
+            "Rus",
+            "Rust",
+            "Rust",
+            "RustК",
+            "RustК",
+            "RustКр",
+            "RustКр",
+            "RustКра",
+            "RustКра",
+            "RustКраб",
+            "RustКраб",
+            "RustКраб",
+            "RustКраб橙",
+            "RustКраб橙",
+            "RustКраб橙",
+            "RustКраб橙蟹",
+            "RustКраб橙蟹",
+            "RustКраб橙蟹",
+            "RustКраб橙蟹",
+            "RustКраб橙蟹🦀",
+        ];
+
+        for (i, &outcome) in expected.iter().enumerate() {
+            assert_eq!(outcome, trim_byte_adjusted(input, i))
+        }
+    }
+
+    #[test]
     fn greatest_substring_removal() {
         // the funky string syntax \n\ is to add a newline but skip the
         // leading whitespace in the source code
