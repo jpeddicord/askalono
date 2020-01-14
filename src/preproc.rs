@@ -133,9 +133,9 @@ fn trim(input: Cow<str>) -> Cow<str> {
 // If index is bigger than length or string, returns the whole string.
 fn trim_byte_adjusted(s: &str, idx: usize) -> &str {
     if idx >= s.len() {
-        return s
+        return s;
     }
-    
+
     if let Some(sub) = s.get(..idx) {
         sub
     } else {
@@ -158,12 +158,13 @@ fn trim_byte_adjusted(s: &str, idx: usize) -> &str {
 
 fn lcs_substr<'a>(f_line: &'a str, s_line: &'a str) -> &'a str {
     // find the length of common prefix in byte representations of strings
-    let prefix_len = f_line.as_bytes()
+    let prefix_len = f_line
+        .as_bytes()
         .iter()
         .zip(s_line.as_bytes())
         .take_while(|(&f, &s)| f == s)
         .count();
-    
+
     trim_byte_adjusted(f_line, prefix_len).trim()
 }
 
@@ -201,7 +202,8 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     };
 
     // reconcile the count with other longer prefixes that may be stored
-    let common_count = prefix_counts.iter()
+    let common_count = prefix_counts
+        .iter()
         .filter_map(|(s, count)| Some(count).filter(|_| s.starts_with(most_common)))
         .sum::<u32>();
 
@@ -219,7 +221,8 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
                 &line[most_common.len()..]
             } else {
                 line
-            }.trim()
+            }
+            .trim()
         })
         .collect::<Vec<_>>()
         .join("\n")
