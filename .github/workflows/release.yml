@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            flags: --target=x86_64-unknown-linux-musl
+          - os: windows-latest
+            suffix: .exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      ### Cache
+
+      - name: Cache cargo
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      ### Submodule hackery
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+        if: runner.os != 'Windows'
+
+      - name: Windows - Initialize submodules
+        if: runner.os == 'Windows'
+        run: |
+          git config core.symlinks true
+          rm -r datasets
+          git submodule update --init --recursive
+          git reset --hard
+
+      ### Prereqs
+
+      - name: Linux - Install musl-tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y musl-tools
+
+      - name: Add rustup target
+        if: matrix.target
+        run: |
+          rustup target add ${{ matrix.target }}
+
+      ### Release
+
+      - name: Build release CLI
+        if: github.event_name == 'release'
+        run: cargo build --release --verbose ${{ matrix.flags }}
+        working-directory: cli
+
+      - name: Linux - Strip CLI binary
+        if: github.event_name == 'release' && runner.os == 'Linux'
+        run: |
+          ls target
+          ls target/${{ matrix.target }}
+          ls target/${{ matrix.target }}/release
+          strip target/${{ matrix.target }}/release/askalono
+
+      ### Upload
+
+      - name: Zip release binary
+        if: runner.os != 'macOS'
+        run: 7z a askalono.zip askalono${{ matrix.suffix }}
+        working-directory: target/${{ matrix.target }}/release
+      
+      - name: macOS - Zip release binary
+        if: runner.os == 'macOS'
+        run: zip -r -X askalono.zip askalono${{ matrix.suffix }}
+        working-directory: target/${{ matrix.target }}/release
+
+      - name: Upload release binary
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./target/${{ matrix.target }}/release/askalono.zip
+          asset_name: askalono-${{ runner.os }}.zip
+          asset_content_type: application/octet-stream
