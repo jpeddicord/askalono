@@ -10,7 +10,7 @@ dependencies = [
 
 [[package]]
 name = "askalono"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -28,7 +28,7 @@ dependencies = [
 name = "askalono-wasm"
 version = "0.1.0"
 dependencies = [
- "askalono 0.4.1",
+ "askalono 0.4.2",
  "wasm-bindgen 0.2.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-bindgen-test 0.2.40 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

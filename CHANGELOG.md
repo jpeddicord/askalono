@@ -8,12 +8,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Nothing yet!
 
+## [0.4.2] - 2020-01-14
+
+### Changed
+
+- Performance improvements in text pre-processing ([#48], thanks [@AnthonyMikh])
+- Updated SPDX dataset
+
+[0.4.2]: https://github.com/amzn/askalono/releases/tag/0.4.2
+[#48]: https://github.com/amzn/askalono/pull/48
+[@AnthonyMikh]: https://github.com/AnthonyMikh
+
 ## [0.4.1] - 2019-12-06
 
 ### Fixed
 
 - Removed some extraneous files from the core `askalono` packaged crate.
 - Include LICENSE, NOTICE, and README.md in `askalono-cli` crate.
+
+[0.4.1]: https://github.com/amzn/askalono/releases/tag/0.4.1
 
 ## [0.4.0] - 2019-11-06
 
@@ -33,8 +46,12 @@ Nothing yet!
 
 ### Fixed
 
-- The `lcs_removal` preprocessor has been fixed to be less aggressive on certain repeated statements (#42).
-- Fixed CLI help text strings (#34)
+- The `lcs_removal` preprocessor has been fixed to be less aggressive on certain repeated statements ([#42]).
+- Fixed CLI help text strings ([#34])
+
+[0.4.0]: https://github.com/amzn/askalono/releases/tag/0.4.0
+[#42]: https://github.com/amzn/askalono/issues/42
+[#34]: https://github.com/amzn/askalono/issues/34
 
 ## [0.3.0] - 2018-09-27
 
@@ -61,6 +78,8 @@ Nothing yet!
 
 - `optimize_bounds` now respects existing line views/windows on TextData structs.
 
+[0.3.0]: https://github.com/amzn/askalono/releases/tag/0.3.0
+
 ## [0.2.0] - 2018-05-13
 
 ### Added
@@ -86,6 +105,8 @@ Nothing yet!
 
 - Resolved a potential panic for short/empty license files (a divide-by-zero was involved).
 
+[0.2.0]: https://github.com/amzn/askalono/releases/tag/0.2.0
+
 ## [0.1.0] - 2018-01-31
 
 - Initial release
@@ -93,8 +114,4 @@ Nothing yet!
 - Bad tests
 - It's fast, though
 
-
-[0.4.0]: https://github.com/amzn/askalono/releases/tag/0.4.0
-[0.3.0]: https://github.com/amzn/askalono/releases/tag/0.3.0
-[0.2.0]: https://github.com/amzn/askalono/releases/tag/0.2.0
 [0.1.0]: https://github.com/amzn/askalono/releases/tag/0.1.0
