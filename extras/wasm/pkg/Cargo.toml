@@ -8,14 +8,14 @@ authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-askalono = { version = "*", path = "../../../" }
+askalono = { version = "*", path = "../../../", features = ["gzip"], default-features = false }
 wasm-bindgen = "0.2.58"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
 
 [build-dependencies]
-askalono = { version = "*", path = "../../../" }
+askalono = { version = "*", path = "../../../", features = ["gzip"] }
 
 [profile.release]
 debug = false

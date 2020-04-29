@@ -8,7 +8,7 @@ use std::path::Path;
 
 use askalono::Store;
 
-const EMBEDDED_CACHE: &str = "wasm-embedded-cache.bin.zstd";
+const EMBEDDED_CACHE: &str = "wasm-embedded-cache.bin.gz";
 
 // copied over from the CLI
 

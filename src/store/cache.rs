@@ -31,7 +31,11 @@ impl Store {
             failure::bail!("cache version mismatch");
         }
 
+        #[cfg(not(feature = "gzip"))]
         let dec = zstd::Decoder::new(readable)?;
+        #[cfg(feature = "gzip")]
+        let dec = flate2::read::GzDecoder::new(readable);
+
         let store = rmp_serde::decode::from_read(dec)?;
         Ok(store)
     }
@@ -55,10 +59,14 @@ impl Store {
         info!("Pre-compressed output is {} bytes", buf.len());
 
         writable.write_all(CACHE_VERSION)?;
-        let mut zenc = zstd::Encoder::new(writable, 21)?;
 
-        copy(&mut buf.as_slice(), &mut zenc)?;
-        zenc.finish()?;
+        #[cfg(not(feature = "gzip"))]
+        let mut enc = zstd::Encoder::new(writable, 21)?;
+        #[cfg(feature = "gzip")]
+        let mut enc = flate2::write::GzEncoder::new(writable, flate2::Compression::default());
+
+        copy(&mut buf.as_slice(), &mut enc)?;
+        enc.finish()?;
 
         Ok(())
     }

@@ -43,3 +43,4 @@ path = "src/main.rs"
 default = ["embedded-cache"]
 diagnostics = ["difference"]
 embedded-cache = []
+gzip = ["askalono/gzip"]

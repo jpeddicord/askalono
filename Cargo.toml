@@ -28,12 +28,18 @@ unicode-normalization = "0.1.8"
 # spdx deps
 serde_json = { version = "1.0.39", optional = true }
 
+# gzip via flate2 is available via feature flag if you prefer that over
+# zstd. it's also enabled for wasm32 builds, as zstd doesn't yet compile for
+# that target. in order to build a gzip cache, you'll need the flag enabled
+# on your build machine too.
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rayon = "1.2"
 zstd = "0.5"
+flate2 = { version = "1.0.14", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-zstd = { version = "0.5", default-features = false, features = ["wasm"] }
+flate2 = "1.0.14"
 
 [dev-dependencies]
 env_logger = "0.7"
@@ -44,4 +50,5 @@ path = "src/lib.rs"
 
 [features]
 default = ["spdx"]
+gzip = ["flate2"]
 spdx = ["serde_json"]

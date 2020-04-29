@@ -7,6 +7,9 @@ use std::path::Path;
 
 use askalono::Store;
 
+#[cfg(feature = "gzip")]
+const EMBEDDED_CACHE: &str = "embedded-cache.bin.gz";
+#[cfg(not(feature = "gzip"))]
 const EMBEDDED_CACHE: &str = "embedded-cache.bin.zstd";
 
 fn main() {

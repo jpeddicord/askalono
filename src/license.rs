@@ -207,6 +207,7 @@ impl TextData {
         self.match_data.dice(&other.match_data)
     }
 
+    #[cfg(feature = "spdx")]
     pub(crate) fn eq_data(&self, other: &Self) -> bool {
         self.match_data.eq(&other.match_data)
     }
