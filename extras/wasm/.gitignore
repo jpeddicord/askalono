@@ -3,8 +3,5 @@
 *.tgz
 *.wasm
 /demo/dist/
-/pkg/build/
-/pkg/node/
-/pkg/web/
-/wasm/
+/pkg/
 node_modules/

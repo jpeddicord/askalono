@@ -1,11 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack -p && cp index.html dist",
     "start": "webpack-dev-server"
   },
   "dependencies": {
-    "askalono": "^0.0.2",
+    "askalono": "../pkg",
     "diff": "^4.0.1"
   },
   "devDependencies": {

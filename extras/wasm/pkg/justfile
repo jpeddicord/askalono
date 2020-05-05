@@ -1,9 +1,0 @@
-build:
-    cargo build --target wasm32-unknown-unknown --release
-    mkdir -p build
-    
-    # currently crashing out on latest binaryen builds
-    # wasm-opt -Oz -o ./build/askalono.wasm-tmp ./target/wasm32-unknown-unknown/release/askalono_wasm.wasm
-
-    # cargo install wasm-bindgen-cli
-    wasm-bindgen ./target/wasm32-unknown-unknown/release/askalono_wasm.wasm --out-dir ./build

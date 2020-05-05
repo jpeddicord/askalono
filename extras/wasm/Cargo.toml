@@ -3,19 +3,21 @@ name = "askalono-wasm"
 version = "0.1.0"
 license = "Apache-2.0"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
+description = "a wasm library to detect the contents of license files"
+repository = "https://github.com/amzn/askalono"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-askalono = { version = "*", path = "../../../", features = ["gzip"], default-features = false }
+askalono = { version = "*", path = "../../", features = ["gzip"], default-features = false }
 wasm-bindgen = "0.2.58"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
 
 [build-dependencies]
-askalono = { version = "*", path = "../../../", features = ["gzip"] }
+askalono = { version = "*", path = "../../", features = ["gzip"] }
 
 [profile.release]
 debug = false

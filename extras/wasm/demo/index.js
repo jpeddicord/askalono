@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { diffWords } from "diff";
-const wasm = import("askalono");
+const wasm = import("askalono-wasm");
 
 const resultInfo = document.getElementById("resultinfo");
 const diffBox = document.getElementById("diff");

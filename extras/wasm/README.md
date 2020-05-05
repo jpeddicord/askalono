@@ -14,3 +14,13 @@ interesting use cases:
 * Easy Node.js integration without the need for a compiler toolchain
 
 The excitement is real.
+
+## Build
+
+### Library
+
+Build it with `wasm-pack build --out-name`.
+
+### Demo
+
+Build the library first, then `cd demo` and `npm run build`. The output will be in `dist`. Alternatively, run `npm start` for webpack-dev-server.
