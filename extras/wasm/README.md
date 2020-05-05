@@ -19,7 +19,7 @@ The excitement is real.
 
 ### Library
 
-Build it with `wasm-pack build --out-name`.
+Build it with `wasm-pack build --out-name askalono`.
 
 ### Demo
 

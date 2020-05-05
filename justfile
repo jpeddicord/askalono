@@ -36,3 +36,23 @@ update-docs:
     git add doc
     git commit -m "Documentation update from master commit $rev"
     git push
+
+# update the wasm-demo stuff
+update-wasm-demo:
+    #!/bin/bash
+
+    rev=$(git rev-parse --short HEAD)
+    pushd extras/wasm
+    wasm-pack build --out-name askalono
+    pushd demo
+    rm -rf dist
+    npm run build
+    popd
+    popd
+    git clone . -b gh-pages gh-pages
+    rm -rf gh-pages/wasm-demo
+    cp -rv extras/wasm/demo/dist/. gh-pages/wasm-demo
+    cd gh-pages
+    git add wasm-demo
+    git commit -m "wasm-demo update from master commit $rev"
+    git push
