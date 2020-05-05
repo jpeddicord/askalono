@@ -1,36 +1,110 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <title>askalono wasm test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="./demo.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-    }
-    textarea {
-      width: 600px;
-      height: 300px;
-    }
-  </style>
-</head>
-<body>
-  Paste a license text here:<br/>
-  <textarea id="input"></textarea>
-  <p>
-    I think this is: <strong id="result_name">???</strong> with a score of <strong id="result_score">???</strong>
-  </p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>askalono license identification</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: sans-serif;
+        font-size: 18px;
+      }
 
-  Sample licenses to try:
-  <ul>
-    <li><a href="https://choosealicense.com/licenses/mit/">MIT</a></li>
-    <li><a href="https://opensource.org/licenses/BSD-2-Clause">BSD-2-Clause</a></li>
-    <li><a href="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</a></li>
-  </ul>
+      .container {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: auto 1fr auto;
+        grid-gap: 10px;
+        padding: 20px;
+      }
 
-  <p>
-    This demo now knows <strong>the full SPDX dataset</strong>, but it may take some time to load. It's ~4 MB. Pop open your browser console if you want to observe the time it takes to identify a license.
-  </p>
-</body>
+      .header,
+      .footer {
+        grid-column: span 2;
+      }
+
+      .header {
+        text-align: center;
+      }
+      
+      h1 {
+        font-size: 1.3em;
+        margin: 0;
+      }
+
+      #identify {
+        font-size: 18px;
+        padding: 5px;
+        resize: none;
+      }
+      
+      #results {
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      #resultinfo {
+        background-color: #deedff;
+        padding: 8px;
+      }
+
+      #diff {
+        background-color: #f8f8f8;
+        padding: 5px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>askalono license identification</h1>
+      </div>
+
+      <textarea
+        id="identify"
+        placeholder="Paste a license text here"
+      ></textarea>
+
+      <div id="results">
+        <div id="resultinfo"></div>
+        <div id="diff"></div>
+      </div>
+
+      <div class="footer">
+        Sample licenses to try:
+        <ul>
+          <li><a href="https://choosealicense.com/licenses/mit/">MIT</a></li>
+          <li>
+            <a href="https://opensource.org/licenses/BSD-2-Clause"
+              >BSD-2-Clause</a
+            >
+          </li>
+          <li>
+            <a href="https://opensource.org/licenses/BSD-3-Clause"
+              >BSD-3-Clause</a
+            >
+          </li>
+        </ul>
+
+        <p>
+          This demo now knows <strong>the full SPDX dataset</strong>, but it may
+          take some time to load. It's ~4 MB.
+        </p>
+      </div>
+    </div>
+    
+    <script src="./bundle.js"></script>
+  </body>
 </html>
