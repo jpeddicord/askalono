@@ -81,6 +81,11 @@ impl Store {
         self.licenses.keys()
     }
 
+    /// Get a license's standard TextData by name.
+    pub fn get_original(&self, name: &str) -> Option<&TextData> {
+        Some(&self.licenses.get(name)?.original)
+    }
+
     /// Add a single license to the store.
     ///
     /// If the license with the given name already existed, it and all of its
