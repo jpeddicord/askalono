@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { diffWords } from "diff";
-const wasm = import("askalono-wasm");
+const wasm = import("askalono");
 
 const resultInfo = document.getElementById("resultinfo");
 const diffBox = document.getElementById("diff");
@@ -11,13 +11,44 @@ wasm.then(({ AskalonoStore, normalize_text }) => {
   const store = new AskalonoStore();
 
   const field = document.getElementById("identify");
-  field.addEventListener("input", e => {
-    analyze(store, normalize_text(e.currentTarget.value));
+  let timeout = null;
+  field.addEventListener("input", (e) => {
+    // debounce to not kill the UI
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => {
+      analyze(store, normalize_text(field.value));
+      timeout = null;
+    }, 200);
+  });
+
+  const licenselist = document.getElementById("licenselist");
+  fillLicenses(store, licenselist);
+  licenselist.addEventListener("change", (e) => {
+    fillLicenseText(store, e.currentTarget.value, field);
+    e.currentTarget.value = "";
   });
 
   // analyze on startup, because browsers tend to keep textbox text on reload
-  analyze(store, normalize_text(field.value));
+  field.dispatchEvent(new Event("input"));
 });
+
+function fillLicenses(store, select) {
+  const licenses = store.licenses().sort();
+  for (const license of licenses) {
+    const opt = document.createElement("option");
+    opt.value = license;
+    opt.text = license;
+    select.appendChild(opt);
+  }
+}
+
+function fillLicenseText(store, name, target) {
+  const info = store.get_license(name);
+  target.value = info.text();
+  target.dispatchEvent(new Event("input"));
+}
 
 function analyze(store, input) {
   const startTime = performance.now();
@@ -53,7 +84,7 @@ function clearChildren(node) {
 function renderInfo(result, time) {
   if (result.score() > 0.1) {
     resultInfo.innerHTML = `
-      askalono thinks this is <strong>${result.name()}</strong> with
+      askalono thinks this is <strong>${result.name()}</strong><br/>with
       <strong>${(result.score() * 100).toFixed(1)}%</strong> confidence
       <small>(took ${time.toFixed(1)}ms)</small>
     `;

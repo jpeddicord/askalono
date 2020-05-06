@@ -1,6 +1,7 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+extern crate js_sys;
 extern crate wasm_bindgen;
 #[cfg(test)]
 extern crate wasm_bindgen_test;
@@ -8,6 +9,7 @@ extern crate wasm_bindgen_test;
 extern crate askalono;
 
 use askalono::*;
+use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
 static CACHE_DATA: &'static [u8] = include_bytes!(env!("ASKALONO_WASM_EMBEDDED_CACHE"));
@@ -38,6 +40,18 @@ impl MatchResult {
 }
 
 #[wasm_bindgen]
+pub struct LicenseInfo {
+    text: String,
+}
+
+#[wasm_bindgen]
+impl LicenseInfo {
+    pub fn text(&self) -> String {
+        self.text.clone()
+    }
+}
+
+#[wasm_bindgen]
 pub fn normalize_text(text: &str) -> String {
     let data = TextData::new(text);
     data.lines().join("\n")
@@ -58,6 +72,16 @@ impl AskalonoStore {
             score: matched.score,
             license_text: matched.data.lines().join("\n"),
         }
+    }
+
+    pub fn licenses(&self) -> Array {
+        self.store.licenses().map(JsValue::from).collect()
+    }
+
+    pub fn get_license(&self, name: &str) -> Option<LicenseInfo> {
+        let textdata = self.store.get_original(name)?;
+        let text = textdata.lines().join("\n");
+        return Some(LicenseInfo { text });
     }
 }
 

@@ -1,6 +1,7 @@
 [package]
 name = "askalono-wasm"
 version = "0.1.0"
+edition = "2018"
 license = "Apache-2.0"
 authors = ["Jacob Peddicord <peddicor@amazon.com>"]
 description = "a wasm library to detect the contents of license files"
@@ -11,6 +12,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 askalono = { version = "*", path = "../../", features = ["gzip"], default-features = false }
+js-sys = "0.3.39"
 wasm-bindgen = "0.2.58"
 
 [dev-dependencies]

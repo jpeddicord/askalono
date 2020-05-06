@@ -24,7 +24,7 @@
         width: 100%;
         height: 100%;
         grid-template-columns: 50% 50%;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto auto 1fr auto;
         grid-gap: 10px;
         padding: 20px;
       }
@@ -37,21 +37,10 @@
       .header {
         text-align: center;
       }
-      
+
       h1 {
         font-size: 1.3em;
         margin: 0;
-      }
-
-      #identify {
-        font-size: 18px;
-        padding: 5px;
-        resize: none;
-      }
-      
-      #results {
-        display: grid;
-        grid-template-rows: auto 1fr;
       }
 
       #resultinfo {
@@ -59,9 +48,19 @@
         padding: 8px;
       }
 
+      #identify {
+        padding: 5px;
+        resize: none;
+        overflow: hidden;
+      }
+
       #diff {
         background-color: #f8f8f8;
-        padding: 5px;
+        padding: 6px;
+      }
+
+      #identify, #diff {
+        font: 14px monospace;
       }
     </style>
   </head>
@@ -72,15 +71,17 @@
         <h1>askalono license identification</h1>
       </div>
 
+      <select id="licenselist">
+        <option value="">Pick a pre-loaded license text</option>
+      </select>
+      <div id="resultinfo"></div>
+
       <textarea
         id="identify"
-        placeholder="Paste a license text here"
+        placeholder="Or, paste a license text here"
       ></textarea>
 
-      <div id="results">
-        <div id="resultinfo"></div>
-        <div id="diff"></div>
-      </div>
+      <div id="diff"></div>
 
       <div class="footer">
         Sample licenses to try:
@@ -104,7 +105,7 @@
         </p>
       </div>
     </div>
-    
+
     <script src="./bundle.js"></script>
   </body>
 </html>
