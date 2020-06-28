@@ -9,7 +9,7 @@ all +cmds: init
     cargo {{cmds}}
     cd cli && cargo {{cmds}}
     cd extras/lambda && cargo {{cmds}}
-    cd extras/wasm/pkg && cargo {{cmds}}
+    cd extras/wasm && cargo {{cmds}}
 
 lint:
     just all clippy
