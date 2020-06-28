@@ -2,7 +2,6 @@
 
 askalono is a library and command-line tool to help detect license texts. It's designed to be fast, accurate, and to support a wide variety of license texts.
 
-[![releases](https://img.shields.io/github/release-date-pre/amzn/askalono.svg)](https://github.com/amzn/askalono/releases)
 [![askalono crate](https://img.shields.io/crates/v/askalono.svg)](https://crates.io/crates/askalono)
 [![documentation](https://docs.rs/askalono/badge.svg)](https://docs.rs/askalono)
 
@@ -14,7 +13,7 @@ This tool does not provide legal advice and it is not a lawyer. It endeavors to 
 
 ### On the command line
 
-Pre-built binaries are available on the [Releases section](https://github.com/amzn/askalono/releases) on GitHub. Rust developers may also grab a copy by running `cargo install askalono-cli`.
+Pre-built binaries are available on the [Releases section](https://github.com/jpeddicord/askalono/releases) on GitHub. Rust developers may also grab a copy by running `cargo install askalono-cli`.
 
 Basic usage:
 

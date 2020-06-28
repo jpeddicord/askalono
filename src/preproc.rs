@@ -172,8 +172,6 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     let lines: Vec<&str> = input.split('\n').collect();
     let mut l_iter = lines.iter();
 
-    // TODO: consider whether this can all be done in one pass https://github.com/amzn/askalono/issues/36
-
     let mut prefix_counts = HashMap::<_, u32>::new();
 
     // pass 1: iterate through the text to record common prefixes
@@ -377,7 +375,7 @@ mod tests {
 
     #[test]
     fn greatest_substring_removal_42() {
-        // https://github.com/amzn/askalono/issues/42
+        // https://github.com/jpeddicord/askalono/issues/42
         let text = "AAAAAA line 1\n\
                     AAAAAA another line here\n\
                     AAAAAA yet another line here\n\

@@ -3,9 +3,9 @@ name = "askalono-wasm"
 version = "0.1.0"
 edition = "2018"
 license = "Apache-2.0"
-authors = ["Jacob Peddicord <peddicor@amazon.com>"]
+authors = ["Jacob Peddicord <jacob@peddicord.net>"]
 description = "a wasm library to detect the contents of license files"
-repository = "https://github.com/amzn/askalono"
+repository = "https://github.com/jpeddicord/askalono"
 
 [lib]
 crate-type = ["cdylib"]
