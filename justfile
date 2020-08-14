@@ -20,6 +20,7 @@ cli +args="": init
     cd cli && cargo build --release
     ./target/release/askalono {{args}}
 
+# test askalono against a license file and show a diff
 diag +args="": init
     cd cli && cargo build --release --features diagnostics
     ./target/release/askalono id --diff {{args}}
@@ -27,32 +28,42 @@ diag +args="": init
 # update the gh-pages branch with generated documentation
 update-docs:
     #!/bin/bash
+    set -euxo pipefail
+
+    cargo doc --no-deps
 
     rev=$(git rev-parse --short HEAD)
-    cargo doc --no-deps
     git clone . -b gh-pages gh-pages
     cp -rv target/doc/. gh-pages/doc
-    cd gh-pages
-    git add doc
-    git commit -m "Documentation update from master commit $rev"
-    git push
+
+    pushd gh-pages
+        git add doc
+        git commit -m "Documentation update from master commit $rev"
+        git push
+    popd
 
 # update the wasm-demo stuff
 update-wasm-demo:
     #!/bin/bash
+    set -euxo pipefail
 
     rev=$(git rev-parse --short HEAD)
+
     pushd extras/wasm
-    wasm-pack build --out-name askalono
-    pushd demo
-    rm -rf dist
-    npm run build
+        wasm-pack build --out-name askalono
+        pushd demo
+            npm install
+            rm -rf dist
+            npm run build
+        popd
     popd
-    popd
+
     git clone . -b gh-pages gh-pages
     rm -rf gh-pages/wasm-demo
     cp -rv extras/wasm/demo/dist/. gh-pages/wasm-demo
-    cd gh-pages
-    git add wasm-demo
-    git commit -m "wasm-demo update from master commit $rev"
-    git push
+
+    pushd gh-pages
+        git add wasm-demo
+        git commit -m "wasm-demo update from master commit $rev"
+        git push
+    popd
