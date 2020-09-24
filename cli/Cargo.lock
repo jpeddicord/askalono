@@ -31,7 +31,7 @@ dependencies = [
 
 [[package]]
 name = "askalono"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -48,9 +48,9 @@ dependencies = [
 
 [[package]]
 name = "askalono-cli"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
- "askalono 0.4.2",
+ "askalono 0.4.3",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "difference 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -6,7 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-Nothing yet!
+## [0.4.3] - 2020-09-23
+
+### Added
+
+- Re-introduced gzip cache compression as an optional feature. The default is still zstd.
+- `Store` gained `get_original` to fetch the canonical license text, instead of needing to access the text via a match.
+
+### Changed
+
+- Updated SPDX dataset
+
+[0.4.3]: https://github.com/jpeddicord/askalono/releases/tag/0.4.3
 
 ## [0.4.2] - 2020-01-14
 

@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "askalono"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -403,7 +403,7 @@ dependencies = [
 name = "lambda"
 version = "0.1.0"
 dependencies = [
- "askalono 0.4.2",
+ "askalono 0.4.3",
  "lambda_http 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lambda_runtime 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
