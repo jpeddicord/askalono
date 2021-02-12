@@ -12,11 +12,17 @@ use askalono::*;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
-static CACHE_DATA: &'static [u8] = include_bytes!(env!("ASKALONO_WASM_EMBEDDED_CACHE"));
+static CACHE_DATA: &[u8] = include_bytes!(env!("ASKALONO_WASM_EMBEDDED_CACHE"));
 
 #[wasm_bindgen]
 pub struct AskalonoStore {
     store: Store,
+}
+
+impl Default for AskalonoStore {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[wasm_bindgen]
@@ -81,7 +87,7 @@ impl AskalonoStore {
     pub fn get_license(&self, name: &str) -> Option<LicenseInfo> {
         let textdata = self.store.get_original(name)?;
         let text = textdata.lines().join("\n");
-        return Some(LicenseInfo { text });
+        Some(LicenseInfo { text })
     }
 }
 

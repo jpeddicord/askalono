@@ -12,8 +12,6 @@ mod util;
 
 use std::{path::PathBuf, process::exit};
 
-use env_logger;
-use rayon;
 use structopt::StructOpt;
 
 use self::commands::*;
@@ -46,7 +44,7 @@ fn main() {
             &output_format,
             &directory,
             follow_links,
-            glob.as_ref().map(String::as_str),
+            glob.as_deref(),
         ),
         Subcommand::Cache { subcommand } => cache::cache(&cache_file, subcommand),
     };

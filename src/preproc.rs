@@ -215,8 +215,8 @@ fn remove_common_tokens(input: Cow<str>) -> Cow<str> {
     lines
         .iter()
         .map(|line| {
-            if line.starts_with(most_common) {
-                &line[most_common.len()..]
+            if let Some(stripped) = line.strip_prefix(most_common) {
+                stripped
             } else {
                 line
             }

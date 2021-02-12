@@ -9,13 +9,13 @@ use askalono::{Store, TextData};
 // borrowing this from the CLI
 static CACHE_DATA: &[u8] = include_bytes!("../embedded-cache.bin.zstd");
 
-fn main() -> Result<(), Box<dyn Error>> {
+pub fn main() -> Result<(), Box<dyn Error>> {
     lambda!(handler);
 
     Ok(())
 }
 
-fn handler(e: Request, _c: Context) -> Result<impl IntoResponse, HandlerError> {
+pub fn handler(e: Request, _c: Context) -> Result<impl IntoResponse, HandlerError> {
     lazy_static! {
         static ref STORE: Store = Store::from_cache(CACHE_DATA).unwrap();
     }
@@ -28,7 +28,7 @@ fn handler(e: Request, _c: Context) -> Result<impl IntoResponse, HandlerError> {
             .status(200)
             .body(format!(
                 "{}\n{}\n",
-                result.name.clone(),
+                result.name,
                 result.score,
             ))
             .unwrap());

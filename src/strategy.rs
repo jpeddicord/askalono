@@ -198,12 +198,12 @@ impl<'a> ScanStrategy<'a> {
     /// Returns a `ScanResult` containing all discovered information.
     pub fn scan(&self, text: &TextData) -> Result<ScanResult, Error> {
         match self.mode {
-            ScanMode::Elimination => self.scan_elimination(text),
-            ScanMode::TopDown => self.scan_topdown(text),
+            ScanMode::Elimination => Ok(self.scan_elimination(text)),
+            ScanMode::TopDown => Ok(self.scan_topdown(text)),
         }
     }
 
-    fn scan_elimination(&self, text: &TextData) -> Result<ScanResult, Error> {
+    fn scan_elimination(&self, text: &TextData) -> ScanResult {
         let mut analysis = self.store.analyze(text);
         let score = analysis.score;
         let mut license = None;
@@ -220,11 +220,11 @@ impl<'a> ScanStrategy<'a> {
 
             // above the shallow limit -> exit
             if analysis.score > self.shallow_limit {
-                return Ok(ScanResult {
+                return ScanResult {
                     score,
                     license,
                     containing,
-                });
+                };
             }
         }
 
@@ -263,21 +263,21 @@ impl<'a> ScanStrategy<'a> {
             }
         }
 
-        Ok(ScanResult {
+        ScanResult {
             score,
             license,
             containing,
-        })
+        }
     }
 
-    fn scan_topdown(&self, text: &TextData) -> Result<ScanResult, Error> {
+    fn scan_topdown(&self, text: &TextData) -> ScanResult {
         let (_, text_end) = text.lines_view();
         let mut containing = Vec::new();
 
         // find licenses working down thru the text's lines
         let mut current_start = 0usize;
         while current_start < text_end {
-            let result = self.topdown_find_contained_license(text, current_start)?;
+            let result = self.topdown_find_contained_license(text, current_start);
 
             let contained = match result {
                 Some(c) => c,
@@ -288,18 +288,18 @@ impl<'a> ScanStrategy<'a> {
             containing.push(contained);
         }
 
-        Ok(ScanResult {
+        ScanResult {
             score: 0.0,
             license: None,
             containing,
-        })
+        }
     }
 
     fn topdown_find_contained_license(
         &self,
         text: &TextData,
         starting_at: usize,
-    ) -> Result<Option<ContainedResult>, Error> {
+    ) -> Option<ContainedResult> {
         let (_, text_end) = text.lines_view();
         let mut found: (usize, usize, Option<Match<'_>>) = (0, 0, None);
 
@@ -354,7 +354,7 @@ impl<'a> ScanStrategy<'a> {
         // now we can optimize to find the best one
         let matched = match found.2 {
             Some(m) => m,
-            None => return Ok(None),
+            None => return None,
         };
         let check = matched.data;
         let view = text.with_view(found.0, found.1);
@@ -368,10 +368,10 @@ impl<'a> ScanStrategy<'a> {
         );
 
         if optimized_score < self.confidence_threshold {
-            return Ok(None);
+            return None;
         }
 
-        Ok(Some(ContainedResult {
+        Some(ContainedResult {
             score: optimized_score,
             license: IdentifiedLicense {
                 name: matched.name,
@@ -379,7 +379,7 @@ impl<'a> ScanStrategy<'a> {
                 data: matched.data,
             },
             line_range: optimized.lines_view(),
-        }))
+        })
     }
 }
 
