@@ -386,7 +386,6 @@ impl<'a> ScanStrategy<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     fn can_construct() {
@@ -411,7 +410,8 @@ mod tests {
         let result = strategy.scan(&test_data).unwrap();
         assert!(
             result.score > 0.5,
-            "score must meet threshold; was {}", result.score
+            "score must meet threshold; was {}",
+            result.score
         );
         assert_eq!(
             result.license.expect("result has a license").name,

@@ -227,9 +227,7 @@ impl TextData {
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
-        if self.lines_normalized.is_none() {
-            panic!("{}", TEXTDATA_TEXT_ERROR);
-        }
+        assert!(self.lines_normalized.is_some(), "{}", TEXTDATA_TEXT_ERROR);
 
         let view = self.lines_view;
 
