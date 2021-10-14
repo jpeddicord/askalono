@@ -311,7 +311,7 @@ mod tests {
 
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         assert_eq!((0, 3), optimized.lines_view);
 
         // add more to the string, try again (avoid int trunc screwups)
@@ -319,7 +319,7 @@ mod tests {
         let sample = TextData::from(sample_text.as_str());
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         assert_eq!((0, 3), optimized.lines_view);
 
         // add to the beginning too
@@ -327,7 +327,7 @@ mod tests {
         let sample = TextData::from(sample_text.as_str());
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         // end bounds at 7 and 8 have the same score, since they're empty lines (not
         // counted). askalono is not smart enough to trim this as close as it
         // can.

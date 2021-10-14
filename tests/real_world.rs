@@ -30,7 +30,7 @@ fn real_world_licenses() {
                 let test_name = &parts[0];
                 let confidence = f32::from_str(parts[1]).unwrap();
 
-                assert_license(&store, &file_path, &test_name, &license_id, confidence);
+                assert_license(&store, &file_path, test_name, &license_id, confidence);
             }
         }
     }

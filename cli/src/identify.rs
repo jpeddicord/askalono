@@ -47,7 +47,7 @@ pub fn identify(
         let idres = identify_data(&store, &content.into(), optimize, want_diff);
         let file_lossy = filename.to_string_lossy();
         let fileres = FileResult::from_identification_result(&file_lossy, &idres);
-        fileres.print_as(&output_format, false);
+        fileres.print_as(output_format, false);
 
         return idres.map(|_| ());
     }
@@ -69,14 +69,14 @@ pub fn identify(
                     path: &buf,
                     error: format!("Input error: {}", e),
                 };
-                fileres.print_as(&output_format, false);
+                fileres.print_as(output_format, false);
                 continue;
             }
         };
 
         let idres = identify_data(&store, &content.into(), optimize, want_diff);
         let fileres = FileResult::from_identification_result(&buf, &idres);
-        fileres.print_as(&output_format, false);
+        fileres.print_as(output_format, false);
     }
 
     Ok(())
@@ -113,7 +113,7 @@ pub fn identify_data(
             .map(|cr| CLIContainedResult {
                 score: cr.score,
                 license: CLIIdentifiedLicense {
-                    aliases: store.aliases(&cr.license.name).unwrap().clone(),
+                    aliases: store.aliases(cr.license.name).unwrap().clone(),
                     name: cr.license.name.to_owned(),
                     kind: cr.license.kind,
                 },
@@ -125,13 +125,13 @@ pub fn identify_data(
     // include the overall license if present
     if let Some(license) = result.license {
         output.license = Some(CLIIdentifiedLicense {
-            aliases: store.aliases(&license.name).unwrap().clone(),
+            aliases: store.aliases(license.name).unwrap().clone(),
             name: license.name.to_owned(),
             kind: license.kind,
         });
 
         if want_diff {
-            diff_result(&text_data, &license.data);
+            diff_result(text_data, license.data);
         }
 
         return Ok(output);
@@ -140,7 +140,7 @@ pub fn identify_data(
     // not a good enough match overall, but maybe inside
     if !output.containing.is_empty() {
         if want_diff {
-            diff_result(&text_data, &result.containing[0].license.data);
+            diff_result(text_data, result.containing[0].license.data);
         }
         return Ok(output);
     }

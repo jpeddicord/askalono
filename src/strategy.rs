@@ -386,7 +386,7 @@ impl<'a> ScanStrategy<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use env_logger;
+    
 
     #[test]
     fn can_construct() {
@@ -411,7 +411,7 @@ mod tests {
         let result = strategy.scan(&test_data).unwrap();
         assert!(
             result.score > 0.5,
-            format!("score must meet threshold; was {}", result.score)
+            "score must meet threshold; was {}", result.score
         );
         assert_eq!(
             result.license.expect("result has a license").name,
@@ -471,8 +471,8 @@ mod tests {
         // inspect the array and ensure we got both licenses
         let mut found1 = 0;
         let mut found2 = 0;
-        for (_, ref contained) in result.containing.iter().enumerate() {
-            match contained.license.name.as_ref() {
+        for (_, contained) in result.containing.iter().enumerate() {
+            match contained.license.name {
                 "license-1" => {
                     assert!(contained.score > 0.5, "license-1 score meets threshold");
                     found1 += 1;
@@ -516,8 +516,8 @@ mod tests {
         // inspect the array and ensure we got both licenses
         let mut found1 = 0;
         let mut found2 = 0;
-        for (_, ref contained) in result.containing.iter().enumerate() {
-            match contained.license.name.as_ref() {
+        for (_, contained) in result.containing.iter().enumerate() {
+            match contained.license.name {
                 "license-1" => {
                     assert!(contained.score > 0.5, "license-1 score meets threshold");
                     found1 += 1;
