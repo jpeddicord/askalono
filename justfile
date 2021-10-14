@@ -2,7 +2,7 @@ build: init
     cargo build
 
 init:
-    [ -f datasets/spdx-json/MIT.json ] || git submodule update --init
+    [ -f datasets/modules/spdx-license-list-data/json/details/MIT.json ] || git submodule update --init
 
 # run a Cargo command across all packages
 all +cmds: init
