@@ -228,7 +228,7 @@ impl TextData {
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
         if self.lines_normalized.is_none() {
-            panic!(TEXTDATA_TEXT_ERROR);
+            panic!("{}", TEXTDATA_TEXT_ERROR);
         }
 
         let view = self.lines_view;
