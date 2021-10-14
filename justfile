@@ -1,36 +1,38 @@
-build: init
-    cargo build
+build toolchain="": init
+    cargo {{toolchain}} build
 
 init:
     [ -f datasets/modules/spdx-license-list-data/json/details/MIT.json ] || git submodule update --init
 
 # run a Cargo command across all packages
-all +cmds: init
-    cargo {{cmds}}
-    cd cli && cargo {{cmds}}
-    cd extras/lambda && cargo {{cmds}}
-    cd extras/wasm && cargo {{cmds}}
+all toolchain="" +cmds="": init
+    cargo {{toolchain}} {{cmds}}
+    cd cli && cargo {{toolchain}} {{cmds}}
+    cd extras/lambda && cargo {{toolchain}} {{cmds}}
+    cd extras/wasm && cargo {{toolchain}} {{cmds}}
 
-lint:
-    just all clippy
-    just all fmt
+lint toolchain="":
+    just all {{toolchain}} clippy
+    just all {{toolchain}} fmt
 
 # run the CLI in release mode
+# doesn't support rustup toolchain selection
 cli +args="": init
     cd cli && cargo build --release
     ./target/release/askalono {{args}}
 
 # test askalono against a license file and show a diff
+# doesn't support rustup toolchain selection
 diag +args="": init
     cd cli && cargo build --release --features diagnostics
     ./target/release/askalono id --diff {{args}}
 
 # update the gh-pages branch with generated documentation
-update-docs:
+update-docs toolchain="":
     #!/bin/bash
     set -euxo pipefail
 
-    cargo doc --no-deps
+    cargo {{toolchain}} doc --no-deps
 
     rev=$(git rev-parse --short HEAD)
     git clone . -b gh-pages gh-pages
