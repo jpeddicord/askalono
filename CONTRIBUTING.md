@@ -44,7 +44,7 @@ GitHub provides additional document on [forking a repository](https://help.githu
 - Do check for linting errors with `cargo clippy`. If you're having trouble with this, feel free to ask for help.
 - Documenting your changes in `CHANGELOG.md` (in the Unreleased section) would be awesome, but is not required.
 - If you can, try to write some tests for your change (if it addresses a bug) or feature. Again, feel free to ask for help. Our CI will run these tests to ensure your code never breaks with future changes.
-- We have a [justfile](../justfile) that embodies frequent tasks. You can use it with the [just](https://crates.io/crates/just) runner, or refer to it for ideas.
+- We have a [justfile](./justfile) that embodies frequent tasks. You can use it with the [just](https://crates.io/crates/just) runner, or refer to it for ideas.
 - We have some UNIXy assumptions here. On Windows, Git-bundled bash or busybox sh can work in a pinch, but wasm-demo needs a Cygwin/MSYS2 environment.
 
 ## Finding contributions to work on
