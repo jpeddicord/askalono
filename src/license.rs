@@ -227,9 +227,7 @@ impl TextData {
     /// You should check the value of `lines_view` on the returned struct to
     /// find the line ranges.
     pub fn optimize_bounds(&self, other: &TextData) -> (Self, f32) {
-        if self.lines_normalized.is_none() {
-            panic!(TEXTDATA_TEXT_ERROR);
-        }
+        assert!(self.lines_normalized.is_some(), "{}", TEXTDATA_TEXT_ERROR);
 
         let view = self.lines_view;
 
@@ -311,7 +309,7 @@ mod tests {
 
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         assert_eq!((0, 3), optimized.lines_view);
 
         // add more to the string, try again (avoid int trunc screwups)
@@ -319,7 +317,7 @@ mod tests {
         let sample = TextData::from(sample_text.as_str());
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         assert_eq!((0, 3), optimized.lines_view);
 
         // add to the beginning too
@@ -327,7 +325,7 @@ mod tests {
         let sample = TextData::from(sample_text.as_str());
         let (optimized, _) = sample.optimize_bounds(&license);
         println!("{:?}", optimized.lines_view);
-        println!("{:?}", optimized.lines_normalized.clone());
+        println!("{:?}", optimized.lines_normalized);
         // end bounds at 7 and 8 have the same score, since they're empty lines (not
         // counted). askalono is not smart enough to trim this as close as it
         // can.

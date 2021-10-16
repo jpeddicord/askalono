@@ -42,15 +42,6 @@ jobs:
 
       - name: Initialize submodules
         run: git submodule update --init --recursive
-        if: runner.os != 'Windows'
-
-      - name: Windows - Initialize submodules
-        if: runner.os == 'Windows'
-        run: |
-          git config core.symlinks true
-          rm -r datasets
-          git submodule update --init --recursive
-          git reset --hard
 
       ### Prereqs
 

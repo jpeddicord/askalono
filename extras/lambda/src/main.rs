@@ -26,12 +26,11 @@ pub fn handler(e: Request, _c: Context) -> Result<impl IntoResponse, HandlerErro
 
         return Ok(Response::builder()
             .status(200)
-            .body(format!(
-                "{}\n{}\n",
-                result.name,
-                result.score,
-            ))
+            .body(format!("{}\n{}\n", result.name, result.score,))
             .unwrap());
     }
-    Ok(Response::builder().status(400).body("uh oh".to_string()).unwrap())
+    Ok(Response::builder()
+        .status(400)
+        .body("uh oh".to_string())
+        .unwrap())
 }

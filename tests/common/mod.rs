@@ -7,8 +7,14 @@ use std::path::Path;
 use askalono::Store;
 
 #[allow(dead_code)]
-pub const SPDX_TEXT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/datasets/spdx-text");
-pub const SPDX_JSON: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/datasets/spdx-json");
+pub const SPDX_TEXT: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/datasets/modules/spdx-license-list-data/text"
+);
+pub const SPDX_JSON: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/datasets/modules/spdx-license-list-data/json/details"
+);
 pub const TEST_CACHE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/test-cache.bin.zstd");
 
 pub fn load_store() -> Store {

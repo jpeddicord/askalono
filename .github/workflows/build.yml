@@ -38,16 +38,7 @@ jobs:
     ### Submodule hackery
 
     - name: Initialize submodules
-      if: runner.os != 'Windows'
       run: git submodule update --init --recursive
-
-    - name: Windows - Initialize submodules
-      if: runner.os == 'Windows'
-      run: |
-        git config core.symlinks true
-        rm -r datasets
-        git submodule update --init --recursive
-        git reset --hard
 
     ### Prereqs
 

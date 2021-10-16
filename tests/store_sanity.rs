@@ -11,7 +11,7 @@ use askalono::TextData;
 #[test]
 fn store_loads() {
     let store = common::load_store();
-    assert!(store.len() > 0, "store should have licenses");
+    assert!(!store.is_empty(), "store should have licenses");
 }
 
 #[test]
@@ -26,7 +26,7 @@ fn self_licenses() {
         "MPL-2.0",
     ] {
         let mut f = File::open(format!("{}/{}.txt", common::SPDX_TEXT, license))
-            .expect(&format!("couldn't open license file '{}'", license));
+            .unwrap_or_else(|_| panic!("couldn't open license file '{}'", license));
         let mut text = String::new();
         f.read_to_string(&mut text).unwrap();
         let text_data: TextData = text.into();

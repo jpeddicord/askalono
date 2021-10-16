@@ -16,7 +16,10 @@ fn main() {
     println!("Loading SPDX data, this may take a while...");
     store
         .load_spdx(
-            Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/datasets/spdx-json")),
+            Path::new(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/datasets/modules/spdx-license-list-data/json/details"
+            )),
             false,
         )
         .unwrap();

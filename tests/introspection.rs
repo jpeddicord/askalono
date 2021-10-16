@@ -11,8 +11,6 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-use askalono;
-
 mod common;
 
 use std::fs::File;
@@ -38,7 +36,7 @@ fn self_apache_header() {
     assert_eq!(askalono::LicenseType::Header, matched.license_type);
 
     // now try to find the bounds of the license header
-    let (optimized, _) = text_data.optimize_bounds(&matched.data);
+    let (optimized, _) = text_data.optimize_bounds(matched.data);
 
     // the license is from (0-indexed) lines 3 thru 12 of this file, excluding
     // that copyright statement on line 1.

@@ -49,7 +49,7 @@ impl<'a> FileResult<'a> {
         result: &'a Result<CLIIdentification, Error>,
     ) -> FileResult<'a> {
         match result {
-            Ok(id) => FileResult::Ok { path, result: &id },
+            Ok(id) => FileResult::Ok { path, result: id },
             Err(e) => FileResult::Err {
                 path,
                 error: format!("{}", e),

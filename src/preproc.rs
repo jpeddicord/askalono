@@ -346,9 +346,8 @@ mod tests {
         let new_text = remove_common_tokens(text.into());
         println!("{}", new_text);
 
-        assert_eq!(
-            new_text.contains("%%Copyright"),
-            false,
+        assert!(
+            !new_text.contains("%%Copyright"),
             "new text shouldn't contain the common substring"
         );
     }
