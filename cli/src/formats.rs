@@ -3,7 +3,7 @@
 
 use std::{fmt, fmt::Display};
 
-use failure::Error;
+use anyhow::Error;
 use serde_derive::Serialize;
 
 use super::commands::*;

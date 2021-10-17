@@ -3,7 +3,7 @@
 
 use std::{fs::File, path::Path};
 
-use failure::Error;
+use anyhow::Error;
 use log::info;
 
 use super::commands::*;

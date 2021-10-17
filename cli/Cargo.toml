@@ -21,7 +21,7 @@ include = [
 askalono = { version = "0.4.3", path = "../" }
 clap = "2.32.0"
 env_logger = "0.7"
-failure = "0.1.5"
+anyhow = "1.0.44"
 ignore = "0.4.6"
 log = "0.4.6"
 rayon = "1.0.3"
