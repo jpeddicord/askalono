@@ -3,7 +3,7 @@
 
 use std::{io::copy, io::prelude::*};
 
-use failure::Error;
+use anyhow::Error;
 use log::info;
 use rmp_serde::Serializer;
 use serde::Serialize;
@@ -28,7 +28,7 @@ impl Store {
         readable.read_exact(&mut header)?;
 
         if header != CACHE_VERSION {
-            failure::bail!("cache version mismatch");
+            anyhow::bail!("cache version mismatch");
         }
 
         #[cfg(not(feature = "gzip"))]

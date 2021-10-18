@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use failure::Error;
+use anyhow::Error;
 use log::{info, trace};
 use serde::Serialize;
 

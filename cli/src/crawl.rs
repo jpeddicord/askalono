@@ -3,7 +3,7 @@
 
 use std::{fs::read_to_string, path::Path};
 
-use failure::Error;
+use anyhow::Error;
 use ignore::Error as IgnoreError;
 
 use askalono::TextData;

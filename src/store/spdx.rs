@@ -8,7 +8,7 @@ use std::{
     path::Path,
 };
 
-use failure::{format_err, Error};
+use anyhow::{format_err, Error};
 use log::{debug, info};
 
 use crate::{

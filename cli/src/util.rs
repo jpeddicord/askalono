@@ -3,7 +3,7 @@
 
 use std::path::Path;
 
-use failure::Error;
+use anyhow::Error;
 
 use askalono::{Store, TextData};
 

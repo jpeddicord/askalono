@@ -8,7 +8,7 @@ use std::{
     time::Instant,
 };
 
-use failure::{err_msg, Error};
+use anyhow::{format_err, Error};
 use log::info;
 
 use super::{commands::*, formats::*, util::*};
@@ -145,7 +145,7 @@ pub fn identify_data(
         return Ok(output);
     }
 
-    Err(err_msg(
+    Err(format_err!(
         "Confidence threshold not high enough for any known license",
     ))
 }
