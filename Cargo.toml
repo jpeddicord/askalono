@@ -1,6 +1,6 @@
 [package]
 name = "askalono"
-version = "0.4.3"
+version = "0.4.4"
 edition = "2018"
 description = "a library to detect the contents of license files"
 license = "Apache-2.0"
