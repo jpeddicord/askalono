@@ -34,7 +34,7 @@ checksum = "61604a8f862e1d5c3229fdd78f8b02c68dcf73a4c4b05fd636d12240aaa242c1"
 
 [[package]]
 name = "askalono"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "anyhow",
  "flate2",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "askalono-cli"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "anyhow",
  "askalono",

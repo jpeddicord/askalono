@@ -22,19 +22,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    ### Cache
-
-    - name: Cache cargo
-      uses: actions/cache@v1
-      with:
-        path: ~/.cargo
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-    - name: Cache target
-      uses: actions/cache@v1
-      with:
-        path: target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-
     ### Submodule hackery
 
     - name: Initialize submodules

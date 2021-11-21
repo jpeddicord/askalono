@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.4.4] - 2021-11-21
+
+### Changed
+
+- Updated SPDX dataset
+- Tons of code cleanup; thanks [@hdhoang]
+- `zstd` update to 0.8; thanks [@decathorpe]
+- Replace `failure` with `anyhow`; thanks [@hdhoang]
+
+[0.4.4]: https://github.com/jpeddicord/askalono/releases/tag/0.4.4
+[@hdhoang]: https://github.com/hdhoang
+[@decathorpe]: https://github.com/decathorpe
+
 ## [0.4.3] - 2020-09-23
 
 ### Added
