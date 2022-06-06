@@ -10,9 +10,9 @@ checksum = "5d2e7343e7fc9de883d1b0341e0b13970f764c14101234857d2ddafa1cb1cac2"
 
 [[package]]
 name = "aho-corasick"
-version = "0.7.3"
+version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6f484ae0c99fec2e858eb6134949117399f222608d84cadb3f58c1f97c2364c"
+checksum = "1e37cfd5e7657ada45f742d6e99ca5788580b5c529dc78faf11ece6dc702656f"
 dependencies = [
  "memchr",
 ]
@@ -224,9 +224,9 @@ dependencies = [
 
 [[package]]
 name = "memchr"
-version = "2.2.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2efc7bc57c883d4a4d6e3246905283d8dae951bb3bd32f49d6ef297f546e1c39"
+checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memoffset"
@@ -326,25 +326,20 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.1.7"
+version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b2f0808e7d7e4fb1cb07feb6ff2f4bc827938f24f8c2e6a3beb7370af544bdd"
+checksum = "d83f127d94bdbcda4c8cc2e50f6f84f4b611f69c902699ca385a39c3a75f9ff1"
 dependencies = [
  "aho-corasick",
  "memchr",
  "regex-syntax",
- "thread_local",
- "utf8-ranges",
 ]
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.7"
+version = "0.6.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d76410686f9e3a17f06128962e0ecc5755870bb890c34820c7af7f1db2e1d48"
-dependencies = [
- "ucd-util",
-]
+checksum = "49b3de9ec5dc0a3417da371aab17d729997c15010e7fd24ff707773a33bddb64"
 
 [[package]]
 name = "rmp"
@@ -458,21 +453,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "thread_local"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6b53e329000edc2b34dbe8545fd20e55a333362d0a321909685a19bd28c3f1b"
-dependencies = [
- "lazy_static",
-]
-
-[[package]]
-name = "ucd-util"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0f8bfa9ff0cadcd210129ad9d2c5f145c13e9ced3d3e5d948a6213487d52444"
-
-[[package]]
 name = "unicode-normalization"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -492,12 +472,6 @@ name = "unicode-xid"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
-
-[[package]]
-name = "utf8-ranges"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "796f7e48bef87609f7ade7e06495a87d5cd06c7866e6a5cbfceffc558a243737"
 
 [[package]]
 name = "wasm-bindgen"
