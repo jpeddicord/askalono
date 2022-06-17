@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.4.6] - 2022-06-16
+
+## Changed
+
+- Updated SPDX dataset
+
+## Fixed
+
+- Fix silent failures in file I/O when using the CLI
+
 ## [0.4.5] - 2022-04-09
 
 ## Changed

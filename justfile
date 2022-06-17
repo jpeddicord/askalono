@@ -8,7 +8,6 @@ init:
 all toolchain="" +cmds="": init
     cargo {{toolchain}} {{cmds}}
     cd cli && cargo {{toolchain}} {{cmds}}
-    cd extras/lambda && cargo {{toolchain}} {{cmds}}
     cd extras/wasm && cargo {{toolchain}} {{cmds}}
 
 lint toolchain="":
