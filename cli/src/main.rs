@@ -49,6 +49,7 @@ fn main() {
         Subcommand::Cache { subcommand } => cache::cache(&cache_file, subcommand),
     };
     if res.is_err() {
+        eprintln!("Processing error: {}", res.unwrap_err());
         exit(1);
     }
 }
