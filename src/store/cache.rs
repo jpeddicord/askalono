@@ -28,7 +28,11 @@ impl Store {
         readable.read_exact(&mut header)?;
 
         if header != CACHE_VERSION {
-            anyhow::bail!("cache version mismatch");
+            anyhow::bail!(
+                "cache version mismatch; expected '{}', found '{}'",
+                String::from_utf8_lossy(CACHE_VERSION),
+                String::from_utf8_lossy(&header)
+            );
         }
 
         #[cfg(not(feature = "gzip"))]
