@@ -23,6 +23,7 @@ pub fn identify(
     optimize: bool,
     want_diff: bool,
     batch: bool,
+    topdown: bool,
 ) -> Result<(), Error> {
     // load the cache from disk or embedded data
     let cache_inst = Instant::now();
@@ -44,7 +45,7 @@ pub fn identify(
             read_to_string(&filename)?
         };
 
-        let idres = identify_data(&store, &content.into(), optimize, want_diff);
+        let idres = identify_data(&store, &content.into(), optimize, want_diff, topdown);
         let file_lossy = filename.to_string_lossy();
         let fileres = FileResult::from_identification_result(&file_lossy, &idres);
         fileres.print_as(output_format, false);
@@ -74,7 +75,7 @@ pub fn identify(
             }
         };
 
-        let idres = identify_data(&store, &content.into(), optimize, want_diff);
+        let idres = identify_data(&store, &content.into(), optimize, want_diff, topdown);
         let fileres = FileResult::from_identification_result(&buf, &idres);
         fileres.print_as(output_format, false);
     }
@@ -87,11 +88,13 @@ pub fn identify_data(
     text_data: &TextData,
     optimize: bool,
     want_diff: bool,
+    topdown: bool,
 ) -> Result<CLIIdentification, Error> {
     let inst = Instant::now();
+    let scan_mode = if topdown {ScanMode::TopDown} else {ScanMode::Elimination};
 
     let strategy = ScanStrategy::new(store)
-        .mode(ScanMode::Elimination)
+        .mode(scan_mode)
         .confidence_threshold(MIN_SCORE)
         .optimize(optimize)
         .max_passes(1);

@@ -69,3 +69,30 @@ fn output_json() {
             .len()
     );
 }
+
+#[test]
+fn multiple_licenses() {
+    let out = run(&["id", "./tests/data/python-zeep.LICENSE"]);
+    assert!(!out.status.success());
+
+    let json = run_json(&["id", "-m", "./tests/data/python-zeep.LICENSE"]);
+
+    assert_eq!("./tests/data/python-zeep.LICENSE", json["path"]);
+
+    // The score is currently zero for any file with multiple licenses in it
+    assert!(
+         json["result"]["score"]
+             .as_f64()
+             .expect("score must be a number")
+             == 0.0
+    );
+
+    assert_eq!("MIT", json["result"]["containing"][0]["license"]["name"]);
+    assert_eq!("original", json["result"]["containing"][0]["license"]["kind"]);
+
+    assert_eq!("BSD-3-Clause", json["result"]["containing"][1]["license"]["name"]);
+    assert_eq!("original", json["result"]["containing"][1]["license"]["kind"]);
+
+    assert_eq!("BSD-3-Clause", json["result"]["containing"][2]["license"]["name"]);
+    assert_eq!("original", json["result"]["containing"][2]["license"]["kind"]);
+}
