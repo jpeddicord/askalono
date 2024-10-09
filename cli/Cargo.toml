@@ -19,7 +19,7 @@ include = [
 
 [dependencies]
 askalono = { version = "0.4.6", path = "../" }
-clap = "2.32.0"
+clap = { version = "4", features = ["derive"] }
 env_logger = "0.7"
 anyhow = "1.0.44"
 ignore = "0.4.6"
@@ -28,7 +28,6 @@ rayon = "1.0.3"
 serde = "1.0.116"
 serde_derive = "1.0.116"
 serde_json = "1.0.39"
-structopt = "0.2.15"
 
 difference = { version = "2.0.0", optional = true }
 
