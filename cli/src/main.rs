@@ -12,12 +12,12 @@ mod util;
 
 use std::{path::PathBuf, process::exit};
 
-use structopt::StructOpt;
+use clap::Parser;
 
 use self::commands::*;
 
 fn main() {
-    let options = Opt::from_args();
+    let options = Opt::parse();
 
     env_logger::init();
     rayon::ThreadPoolBuilder::new().build_global().unwrap();
@@ -26,7 +26,7 @@ fn main() {
         .cache
         .unwrap_or_else(|| "./askalono-cache.bin.zstd".into());
 
-    let output_format = options.format.unwrap_or(OutputFormat::text);
+    let output_format = options.format.unwrap_or(OutputFormat::Text);
 
     let res = match options.subcommand {
         Subcommand::Identify {
