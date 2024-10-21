@@ -42,7 +42,7 @@ flate2 = { version = "1.0.14", optional = true }
 flate2 = "1.0.14"
 
 [dev-dependencies]
-env_logger = "0.7"
+env_logger = "0.11"
 
 [lib]
 name = "askalono"
