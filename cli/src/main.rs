@@ -34,7 +34,8 @@ fn main() {
             optimize,
             diff,
             batch,
-        } => identify::identify(&cache_file, &output_format, filename, optimize, diff, batch),
+            topdown,
+        } => identify::identify(&cache_file, &output_format, filename, optimize, diff, batch, topdown),
         Subcommand::Crawl {
             directory,
             follow_links,

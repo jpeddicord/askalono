@@ -50,6 +50,10 @@ pub enum Subcommand {
         /// Read in filenames on stdin for batch identification
         #[structopt(long = "batch", short = "b")]
         batch: bool,
+
+        /// Detect multiple licenses in the same file
+        #[structopt(long = "multiple", short = "m")]
+        topdown: bool,
     },
 
     /// Crawl a directory identifying license files
