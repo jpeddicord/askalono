@@ -3,52 +3,52 @@
 
 use std::path::PathBuf;
 
-use clap::arg_enum;
-use structopt::StructOpt;
+use clap::Parser;
 
-arg_enum! {
-    #[allow(non_camel_case_types)]
-    pub enum OutputFormat {
-        text,
-        json
-    }
+use clap::ValueEnum;
+
+#[derive(Clone, ValueEnum)]
+#[clap(rename_all = "lower")]
+#[allow(clippy::upper_case_acronyms)]
+pub enum OutputFormat {
+    Text,
+    JSON,
 }
 
-#[derive(StructOpt)]
-#[structopt(name = "askalono")]
+#[derive(Parser)]
+#[clap(name = "askalono", version)]
 pub struct Opt {
     /// Path to a cache file containing compiled license information
-    #[structopt(long = "cache", short = "c", parse(from_os_str))]
+    #[clap(long = "cache", short = 'c')]
     pub cache: Option<PathBuf>,
 
     /// Output type: text (default), json
-    #[structopt(long = "format")]
-    #[structopt(raw(possible_values = "&OutputFormat::variants()"))]
+    #[clap(long = "format")]
+    #[arg(value_enum)]
     pub format: Option<OutputFormat>,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub subcommand: Subcommand,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum Subcommand {
     /// Identify a single file
-    #[structopt(name = "identify", alias = "id")]
+    #[clap(name = "identify", alias = "id")]
     Identify {
         /// File to identify
-        #[structopt(name = "FILE", required_unless = "batch", parse(from_os_str))]
+        #[clap(name = "FILE", required_unless_present("batch"))]
         filename: Option<PathBuf>,
 
         /// Try to find the location of a license within the given file
-        #[structopt(long = "optimize", short = "o")]
+        #[clap(long = "optimize", short = 'o')]
         optimize: bool,
 
-        #[structopt(raw(hidden = "true"))]
-        #[structopt(long = "diff")]
+        #[clap(long = "diff", hide = true)]
         diff: bool,
 
         /// Read in filenames on stdin for batch identification
-        #[structopt(long = "batch", short = "b")]
+        #[clap(long = "batch", short = 'b')]
         batch: bool,
 
         /// Detect multiple licenses in the same file
@@ -57,40 +57,40 @@ pub enum Subcommand {
     },
 
     /// Crawl a directory identifying license files
-    #[structopt(name = "crawl")]
+    #[clap(name = "crawl")]
     Crawl {
         /// Directory to crawl
-        #[structopt(name = "DIR", parse(from_os_str))]
+        #[clap(name = "DIR")]
         directory: PathBuf,
 
         /// Follow symlinks
-        #[structopt(long = "follow")]
+        #[clap(long = "follow")]
         follow_links: bool,
 
         /// Glob of files to check (defaults to license-like files)
-        #[structopt(long = "glob")]
+        #[clap(long = "glob")]
         glob: Option<String>,
     },
 
     /// Cache management actions
-    #[structopt(name = "cache")]
+    #[clap(name = "cache")]
     Cache {
-        #[structopt(subcommand)]
+        #[clap(subcommand)]
         subcommand: CacheSubcommand,
     },
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum CacheSubcommand {
     /// Load an SPDX license directory (see https://github.com/spdx/license-list-data/tree/master/json/details for format)
-    #[structopt(name = "load-spdx")]
+    #[clap(name = "load-spdx")]
     LoadSpdx {
         /// JSON "details" directory
-        #[structopt(name = "DIR", parse(from_os_str))]
+        #[clap(name = "DIR")]
         dir: PathBuf,
 
         /// Store texts in cache along with match data
-        #[structopt(long = "store")]
+        #[clap(long = "store")]
         store_texts: bool,
     },
 }

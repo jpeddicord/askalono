@@ -68,13 +68,13 @@ impl<'a> FileResult<'a> {
         match output_format {
             // with the default text format, follow the unixy conventions of
             // printing successes to stdout and errors to stderr
-            OutputFormat::text => match self {
+            OutputFormat::Text => match self {
                 FileResult::Ok { .. } => println!("{}", self.as_text(show_path)),
                 FileResult::Err { .. } => eprintln!("{}", self.as_text(show_path)),
             },
             // for json format, print everything to stdout to ease
             // parsing consistency
-            OutputFormat::json => println!("{}", self.as_json()),
+            OutputFormat::JSON => println!("{}", self.as_json()),
         }
     }
 
