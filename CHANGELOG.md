@@ -6,24 +6,44 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.5.0] - 2024-10-21
+
+### Added
+
+- Add --multiple option to the CLI; thanks [@markus456]
+- Includes versions in cache version mismatch error; thanks [@hoijui]
+
+### Changed
+
+- Dependency updates for internals; thanks [@decathorpe], [@musicinmybrain]
+
+[@decathorpe]: https://github.com/decathorpe
+[@hoijui]: https://github.com/hoijui
+[@markus456]: https://github.com/markus456
+[@musicinmybrain]: https://github.com/musicinmybrain
+
+[0.5.0]: https://github.com/jpeddicord/askalono/releases/tag/0.5.0
+
 ## [0.4.6] - 2022-06-16
 
-## Changed
+### Changed
 
 - Updated SPDX dataset
 
-## Fixed
+### Fixed
 
 - Fix silent failures in file I/O when using the CLI
 
+[0.4.6]: https://github.com/jpeddicord/askalono/releases/tag/0.4.6
+
 ## [0.4.5] - 2022-04-09
 
-## Changed
+### Changed
 
 - Updated SPDX dataset
 - Bumped `zstd` up to 0.11; thanks [@mellowagain]
 
-[0.4.5]: https://github.com/jpeddicord/askalono/releases/tag/0.4.4
+[0.4.5]: https://github.com/jpeddicord/askalono/releases/tag/0.4.5
 [@mellowagain]: https://github.com/mellowagain
 
 ## [0.4.4] - 2021-11-21
