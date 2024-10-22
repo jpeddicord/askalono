@@ -55,18 +55,19 @@ jobs:
           ls target/${{ matrix.target }}
           ls target/${{ matrix.target }}/release
           strip target/${{ matrix.target }}/release/askalono
+        working-directory: cli
 
       ### Upload
 
       - name: Zip release binary
         if: runner.os != 'macOS'
         run: 7z a askalono.zip askalono${{ matrix.suffix }}
-        working-directory: target/${{ matrix.target }}/release
+        working-directory: cli/target/${{ matrix.target }}/release
       
       - name: macOS - Zip release binary
         if: runner.os == 'macOS'
         run: zip -r -X askalono.zip askalono${{ matrix.suffix }}
-        working-directory: target/${{ matrix.target }}/release
+        working-directory: cli/target/${{ matrix.target }}/release
 
       - name: Upload release binary
         uses: actions/upload-release-asset@v1.0.1
@@ -74,6 +75,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./target/${{ matrix.target }}/release/askalono.zip
+          asset_path: ./cli/target/${{ matrix.target }}/release/askalono.zip
           asset_name: askalono-${{ runner.os }}.zip
           asset_content_type: application/octet-stream
