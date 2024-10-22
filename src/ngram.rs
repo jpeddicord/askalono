@@ -17,7 +17,7 @@ pub struct NgramSet {
     size: usize,
 }
 
-impl<'a> NgramSet {
+impl NgramSet {
     pub fn new(n: u8) -> NgramSet {
         NgramSet {
             map: HashMap::new(),

@@ -77,7 +77,7 @@ impl Store {
     }
 
     /// Get all licenses by name via iterator.
-    pub fn licenses<'a>(&'a self) -> impl Iterator<Item = &String> + 'a {
+    pub fn licenses(&self) -> impl Iterator<Item = &String> {
         self.licenses.keys()
     }
 

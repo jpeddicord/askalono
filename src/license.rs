@@ -287,7 +287,7 @@ impl<'a> From<&'a str> for TextData {
     }
 }
 
-impl<'a> From<String> for TextData {
+impl From<String> for TextData {
     fn from(text: String) -> Self {
         Self::new(&text)
     }
