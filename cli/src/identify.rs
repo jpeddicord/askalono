@@ -91,7 +91,11 @@ pub fn identify_data(
     topdown: bool,
 ) -> Result<CLIIdentification, Error> {
     let inst = Instant::now();
-    let scan_mode = if topdown {ScanMode::TopDown} else {ScanMode::Elimination};
+    let scan_mode = if topdown {
+        ScanMode::TopDown
+    } else {
+        ScanMode::Elimination
+    };
 
     let strategy = ScanStrategy::new(store)
         .mode(scan_mode)
