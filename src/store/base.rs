@@ -30,7 +30,7 @@ pub(crate) struct LicenseEntry {
 /// # use std::error::Error;
 /// use askalono::{Store, TextData};
 ///
-/// # fn main() -> Result<(), Box<Error>> {
+/// # fn main() -> Result<(), Box<dyn Error>> {
 /// let store = Store::from_cache(File::open("askalono-cache.bin.zstd")?)?;
 /// let result = store.analyze(&TextData::from("what's this"));
 /// # Ok(())

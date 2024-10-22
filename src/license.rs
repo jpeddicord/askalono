@@ -65,7 +65,7 @@ impl fmt::Display for LicenseType {
 /// ```
 /// # use std::error::Error;
 /// # use askalono::TextData;
-/// # fn main() -> Result<(), Box<Error>> {
+/// # fn main() -> Result<(), Box<dyn Error>> {
 /// # let license = TextData::from("My First License");
 /// let sample = TextData::from("copyright 20xx me irl\n// My First License\nfn hello() {\n ...");
 /// let (optimized, score) = sample.optimize_bounds(&license);

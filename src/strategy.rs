@@ -74,7 +74,7 @@ pub struct ContainedResult<'a> {
 /// # use std::error::Error;
 /// use askalono::{ScanStrategy, Store};
 ///
-/// # fn main() -> Result<(), Box<Error>> {
+/// # fn main() -> Result<(), Box<dyn Error>> {
 /// let store = Store::new();
 /// // [...]
 /// let strategy = ScanStrategy::new(&store)
