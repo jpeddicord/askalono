@@ -52,7 +52,7 @@ pub enum Subcommand {
         batch: bool,
 
         /// Detect multiple licenses in the same file
-        #[structopt(long = "multiple", short = "m")]
+        #[clap(long = "multiple", short = 'm')]
         topdown: bool,
     },
 
